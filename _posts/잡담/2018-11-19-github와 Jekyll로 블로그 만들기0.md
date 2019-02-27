@@ -1,13 +1,16 @@
 ---
-layout: post
 title:  "Github page 만들기!"
-date: 2018-11-19
-author: kouzie
-categories: Github
-tags: Jeky11 github
-cover:  "/assets/posts/instacode.png"
-published: true
+read_time: false
+share: false
+toc: true
+author_profile: false
 
+
+categories:
+  - Github
+tags:
+  - Jekyll
+  - github
 ---
 
 ### Github and Jekyll
