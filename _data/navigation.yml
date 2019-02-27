@@ -1,12 +1,7 @@
 # main links
 main:
-  - title: "Quick-Start Guide"
-    url: /docs/quick-start-guide/
-  - title: "About"
-    url: /about/
-  - title: "Sample Posts"
-    url: /year-archive/
-  - title: "Sample Collections"
-    url: /collection-archive/
-  - title: "Terms &amp; Privacy Policy"
-    url: /terms/
+  - title: "About" # 네비게이션 바에 표시 되는 이름
+    url: "/about/" # 클릭시 이동할 URL
+  - title: "Category"
+    url: /categories/
+ 
