@@ -64,9 +64,9 @@ reCaptcha:
   secret                 :
 atom_feed:
   path                   : # blank (default) uses feed.xml
-search                   : # true, false (default)
-search_full_content      : # true, false (default)
-search_provider          : # lunr (default), algolia, google
+search                   : true # true, false (default)
+search_full_content      : rue # true, false (default)
+search_provider          : algolia # lunr (default), algolia, google
 algolia:
   application_id         : # YOUR_APPLICATION_ID
   index_name             : # YOUR_INDEX_NAME
@@ -107,7 +107,7 @@ analytics:
 # Site Author
 author:
   name             : "Kouzie"
-  avatar           : # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
+  avatar           : "/assets/images/icon-home.png" # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
   bio              : "Newbie"
   location         : "Seoul"
   email            :
@@ -142,7 +142,7 @@ footer:
       # url:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
-      # url:
+       url: "https://github.com/Kouzie/"
     - label: "GitLab"
       icon: "fab fa-fw fa-gitlab"
       # url:
@@ -293,3 +293,10 @@ defaults:
       comments: # true
       share: true
       related: true
+  # _pages
+  - scope:
+      path: "_pages"
+      type: pages
+    values:
+      layout: single
+      author_profile: true
