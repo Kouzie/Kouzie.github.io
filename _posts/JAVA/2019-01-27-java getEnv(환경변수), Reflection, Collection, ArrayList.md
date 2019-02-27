@@ -1,13 +1,15 @@
 ---
-layout: post
 title:  "java getEnv(환경변수), Reflection, Collection, ArrayList!"
-date: 2019-01-27
-author: kouzie
-categories: Java
-tags: java getEnv(환경변수) Reflection Collection ArrayList
-cover:  "/assets/instacode.png"
-published: true
+read_time: false
+share: false
+toc: true
+author_profile: false
 
+categories:
+  - Java
+tags:
+  - Java
+  - 문법
 ---
 
 ### 환경변수 읽기 - getEnv()

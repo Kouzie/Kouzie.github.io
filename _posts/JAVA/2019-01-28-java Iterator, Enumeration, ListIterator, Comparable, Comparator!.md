@@ -1,13 +1,15 @@
 ---
-layout: post
 title:  "java Iterator, Enumeration, ListIterator, Comparable, Comparator!"
-date: 2019-01-28
-author: kouzie
-categories: Java 
-tags: java Iterator Enumeration ListIterator Comparable Comparator
-cover:  "/assets/instacode.png"
-published: true
+read_time: false
+share: false
+toc: true
+author_profile: false
 
+categories:
+  - Java
+tags:
+  - Java
+  - 문법
 ---
 
 ### Iterator (반복자)

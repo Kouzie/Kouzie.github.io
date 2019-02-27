@@ -1,13 +1,15 @@
 ---
-layout: post
 title:  "java 초기화 순서, 메서드와 static!"
-date: 2019-01-18
-author: kouzie
-categories: Java
-tags: 문법 얕은복제 깊은복제 Singletone
-cover:  "/assets/instacode.png"
-published: true
+read_time: false
+share: false
+toc: true
+author_profile: false
 
+categories:
+  - Java
+tags:
+  - Java
+  - 문법
 ---
 
 ### 클래스 멤버 변수(필드)의 초기화 순서

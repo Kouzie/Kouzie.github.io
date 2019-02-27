@@ -1,14 +1,17 @@
 ---
-layout: post
 title:  "java 제네릭, 와일드카드, Date, Calendar, SimpleDateFormat!"
-date: 2019-02-02
-author: kouzie
-categories: Java 
-tags: java 제네릭 와일드카드 Date Calendar SimpleDateFormat
-cover:  "/assets/instacode.png"
-published: true
+read_time: false
+share: false
+toc: true
+author_profile: false
 
+categories:
+  - Java
+tags:
+  - Java
+  - 문법
 ---
+
 ### 제네릭(Generics)
 
 jdk1.5 부터 추가되었다.  

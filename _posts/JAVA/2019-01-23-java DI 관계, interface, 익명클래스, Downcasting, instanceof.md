@@ -1,13 +1,15 @@
 ---
-layout: post
 title:  "java DI 관계, interface, WindowListener & WindowAdapter, 익명클래스, Downcasting, instanceof!"
-date: 2019-01-23
-author: kouzie
-categories: Java
-tags: DI 관계 interface WindowListener WindowAdapter 익명클래스 Downcasting instanceof
-cover:  "/assets/instacode.png"
-published: true
+read_time: false
+share: false
+toc: true
+author_profile: false
 
+categories:
+  - Java
+tags:
+  - Java
+  - 문법
 ---
 
 ### DI(Dependency Injection)관계

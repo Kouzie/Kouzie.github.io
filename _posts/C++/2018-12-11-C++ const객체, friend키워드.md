@@ -1,14 +1,17 @@
 ---
-layout: post
 title:  "C++ static멤버변수, static멤버함수, const static 멤버변수, const객체, mutable키워드, friend.md!"
-date: 2018-12-11
-author: kouzie
-categories: C++
-tags: C++ 열혈 static멤버, mutable, const객체 friend
-cover:  "/assets/instacode.png"
-published: true
+read_time: false
+share: false
+toc: true
+author_profile: false
 
+categories:
+  - C++
+tags:
+  - C++
+  - 열혈
 ---
+
 ### static 멤버변수
 ```
 class SoSimple

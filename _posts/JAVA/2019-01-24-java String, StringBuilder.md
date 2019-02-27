@@ -1,13 +1,15 @@
 ---
-layout: post
 title:  "java String, StringBuilder!"
-date: 2019-01-24
-author: kouzie
-categories: Java
-tags: String StringBuilder
-cover:  "/assets/instacode.png"
-published: true
+read_time: false
+share: false
+toc: true
+author_profile: false
 
+categories:
+  - Java
+tags:
+  - Java
+  - 문법
 ---
 
 ## String 클래스

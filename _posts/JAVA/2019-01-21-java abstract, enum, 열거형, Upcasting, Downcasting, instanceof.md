@@ -1,14 +1,17 @@
 ---
-layout: post
 title:  "java abstract, enum, 열거형, Upcasting, Downcasting, instanceof!"
-date: 2019-01-21
-author: kouzie
-categories: Java
-tags: abstract enum 열거형 Upcasting Downcasting instanceof
-cover:  "/assets/instacode.png"
-published: true
+read_time: false
+share: false
+toc: true
+author_profile: false
 
+categories:
+  - Java
+tags:
+  - Java
+  - 문법
 ---
+
 
 ### 단일 상속
 

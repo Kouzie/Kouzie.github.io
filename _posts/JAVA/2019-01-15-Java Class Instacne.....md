@@ -1,13 +1,15 @@
 ---
-layout: post
 title:  "Java Class Instacne....!"
-date: 2019-01-17
-author: kouzie
-categories: Java
-tags: 문법 가변인자 오버로딩 오버라이딩 생성자 this 초기화 staic
-cover:  "/assets/instacode.png"
-published: true
+read_time: false
+share: false
+toc: true
+author_profile: false
 
+categories:
+  - Java
+tags:
+  - Java
+  - 문법
 ---
 
 ### 클래스, 객체, 인스턴스

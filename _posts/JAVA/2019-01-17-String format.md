@@ -1,13 +1,15 @@
 ---
-layout: post
 title:  "java String format!"
-date: 2019-01-17
-author: kouzie
-categories: Java
-tags: java String format
-cover:  "/assets/instacode.png"
-published: true
+read_time: false
+share: false
+toc: true
+author_profile: false
 
+categories:
+  - Java
+tags:
+  - Java
+  - 문법
 ---
 
 ### String format

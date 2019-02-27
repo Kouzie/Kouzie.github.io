@@ -1,13 +1,15 @@
 ---
-layout: post
 title:  "C++ new&delete, 생성자, 멤버 이니셜라이저!"
-date: 2018-12-02
-author: kouzie
-categories: C++
-tags: C++ 열혈 new delete
-cover:  "/assets/instacode.png"
-published: true
+read_time: false
+share: false
+toc: true
+author_profile: false
 
+categories:
+  - C++
+tags:
+  - C++
+  - 열혈
 ---
 
 ### new & delete

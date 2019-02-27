@@ -1,14 +1,17 @@
 ---
-layout: post
 title:  "java Thread!"
-date: 2019-02-13
-author: kouzie
-categories: Java 
-tags: java File
-cover:  "/assets/instacode.png"
-published: true
+read_time: false
+share: false
+toc: true
+author_profile: false
 
+categories:
+  - Java
+tags:
+  - Java
+  - 문법
 ---
+
 ### 프로세스와 스레드
 
 #### 각종 용어
