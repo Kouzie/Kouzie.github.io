@@ -16,7 +16,7 @@ tags:
 
 3개를 구분하기 전에 먼저 메모리에 대해 알 필요가 있다.
 메모리에는 힙영역과 스택 영역이 있다. 
-```
+```java
 String str1 = "WelcomeKorea";
 String str2 = new String("WelcomeKorea");
 ```
@@ -38,7 +38,7 @@ str1은 스택에 저장될거고 str1이 초기화될때 사용된 리터럴 �
 
 그럼 클래스, 객체, 인스턴스를 알아보자.
 *클래스는 객체를 만들기 위한 설계도*(코딩)
-```
+```java
 class Point
 {
 	private int x,y; 
@@ -78,7 +78,7 @@ n과 m 2개만 더하는게 아니라 3개, 4개, 5개, 10개를 매개변수로
 모두 더해 반환해주고 싶은 함수를 작성하고 싶다할때
 오버로딩만 알고있다면 매개변수가 다른 각종 add함수를 여러개 작성해야 한다.
 하지만 가변인자를 알고있다면 매개변수 개수를 동적으로 받는 add함수 하나만 작성하면 된다.
-```
+```java
 public class Ex01 {
 	public static void main(String[] args) {
 		int result = add(1, 3, 5, 6, 87, 1,1);
@@ -144,7 +144,7 @@ public class Ex01 {
     * .점 찍고 계속 메소드 호출할 수 있다.편리!  
     그리고 아래 예제의 this.addWindowListener(this); 에서도 사용된다.
 
-```
+```java
 class MyFrom extends Frame
 {
 
@@ -161,7 +161,7 @@ class MyFrom extends Frame
 
 자바는 윈도우 폼에서 발생하는 이벤트(닫기, 최대화, 최소화 등등)는 리스너가 있어야 
 이벤트를 듣고 폼에 적용할 수 있다.
-```
+```java
 class TestListener implements WindowListener
 {
 	@Override
@@ -180,7 +180,7 @@ class TestListener implements WindowListener
 ```
 
 따로따로 구현하니까 귀찮다! 합쳐보자
-```
+```java
 class MyFrom extends Frame implements WindowListener
 { //Frame상속과 WindowListener를 같이 받음
 
@@ -249,7 +249,7 @@ static { ... } 처럼 초기화 블럭에도 사용 가능하다.
 하나만 할당하고 각 인스턴스가 이 할당 공간을 기리킬수 있게 하는게 더 효율적이다.
 
 이렇게 고정값은 인스턴스가 생성되기전 먼저 값을 정해놓고 인스턴스가 생성될때 마다 이 값을 가리키도록 하는 키워드가 static이다.
-```
+```java
 class Save
 {
 	
