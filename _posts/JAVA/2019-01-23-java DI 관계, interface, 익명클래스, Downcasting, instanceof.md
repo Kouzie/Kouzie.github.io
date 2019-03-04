@@ -15,7 +15,7 @@ tags:
 ### DI(Dependency Injection)관계
 
 Car와 Engine클래스가 있을때 has-a 관계이다.  
-```
+```java
 class NewCar
 {
 	public Engine eng = new Engine();
@@ -42,14 +42,14 @@ public NewCar(Engine engine)
 }
 ```
 
-이렇게 생성자를 만들고 밖에서 인스턴스를 만든후 초기화하자  
-`NewCar car1 = new NewCar(new S_Engine);` 
-S_Engine과 Engine객체는 상속관계이다.  
+이렇게 생성자를 만들고 밖에서 인스턴스를 만든후 초기화하자   
+`NewCar car1 = new NewCar(new S_Engine);`   
+S_Engine과 Engine객체는 상속관계이다.   
 
 car객체를 만들때 마다 Upcasting을 통해 여러 engine객체를 상속하는 다른 Engine으로 인스턴스화 할 수 있다.  
 
 has-a 관계를 의존성(Dependency)관계라고 하는데 이런 관계에서 밖에서 인스턴스를 만들고 객체에 생성자를 통해 주입하는 방법을  
-Dependency + Injection = DI 관계라고 한다.  
+`Dependency + Injection = DI` 관계라고 한다.  
 
 --------------
 
@@ -66,7 +66,7 @@ JDK 1.8부터 추가로 가질수 있는게 default메소드와 static메소드�
 
 #### 인터페이스 선언형식
 
-```
+```java
 interface 인스페이스명
 {
 	final ...   		//상수 필드
@@ -75,13 +75,13 @@ interface 인스페이스명
 }
 ```
 
-final ... 	->   `public static final ...`  
-만약 final 제어자만 붙여 선언했다면 **자동으로 다음 접근제어타와 기타제어자가 붙는다**
+final ... 	->   `public static final ...`   
+만약 final 제어자만 붙여 선언했다면 **자동으로 다음 접근제어타와 기타제어자가 붙는다**  
 
 void ....()  ->  `public abstract void ...()`  
-abstract와 public이 자동으로 붙는다.
+abstract와 public이 자동으로 붙는다.  
 
-```
+```java
 public interface IEmployee {
 	int MALE = 1;       //-->public static final int MALE = 1;
 	int FEMALE = 0;		//-->public static final int FEMALE = 0;
@@ -92,34 +92,34 @@ public interface IEmployee {
 ```
 interface를 하나 선언하고 
 
-```
+```java
 public abstract class Employee implements IEmployee{
 	private String name;
 	private String addr;
 	...
 }
 ```
-이를 상속하는 Employee객체를 만들자.
+이를 상속하는 Employee객체를 만들자.  
 
-이제 Employee클래스와 Employee를 상속하는 클래스는 무조건 `getPay`와 `dispEmpInfo`함수를 오버라이딩해야한다.
-즉 interface는 재사용의 목적보단 규격을 정하고 사용법을 명확히 하기위해 사용되는 키워드이다.
-해당 추상클래스를 상속하는 클래스들이 무조건 구현해야하는 메소드들이 있다면 interface로 추상클래스를 만드자
+이제 Employee클래스와 Employee를 상속하는 클래스는 무조건 `getPay`와 `dispEmpInfo`함수를 오버라이딩해야한다.  
+즉 interface는 재사용의 목적보단 규격을 정하고 사용법을 명확히 하기위해 사용되는 키워드이다.  
+해당 추상클래스를 상속하는 클래스들이 무조건 구현해야하는 메소드들이 있다면 interface로 추상클래스를 만드자  
 
 
-예로 ArrayList 라는 클래스가 어떤 추상클래스(interface)들과 상속관계에있는지, 어떤 규격제약이 있는지지 알아보자.
+예로 ArrayList 라는 클래스가 어떤 추상클래스(interface)들과 상속관계에있는지, 어떤 규격제약이 있는지지 알아보자.  
 
-```
+```java
 public class ArrayList<E>  
 extends AbstractList<E>  
 implements List<E>, RandomAccess, Cloneable, Serializable  
 ```
 
-`List<E>, RandomAccess, Cloneable, Serializable` 안에는 여러가지 기능들이 있을거다,   
-복제, 랜덤접근(생성), 직렬화기능 등등 이런 기능들을 ArrayList만의 메소드로 오버라이딩을 통해 구현되어있을것이다.
+`List<E>, RandomAccess, Cloneable, Serializable` 안에는 여러가지 기능들이 있을거다,    
+복제, 랜덤접근(생성), 직렬화기능 등등 이런 기능들을 ArrayList만의 메소드로 오버라이딩을 통해 구현되어있을것이다.  
 
   
 **인터페이스 끼리는 상속이 가능하다.**
-```
+```java
 interface IA{
 	void a();
 	void b();
@@ -156,7 +156,7 @@ class AA implements IA, IB{
 obj는 IA의 함수 a(), b() 만 사용 가능하고 AA가 implements하고있는 IB의 c()는 사용 불가능하다.  
 이는 다중상속의 문제점을 막기위해(만약 IA에도 c()라는 함수가 있다면 어느interface의c()인지 모르니까) 구역을 정해놓은듯 하다.  
 
-```
+```java
 class AA implements IC{
 @Override
 	public void a() {}
@@ -183,12 +183,12 @@ IC와 IA는 상속관계이다.
 3. 서로 관계없는 클래스간 관계 형성 --> ArrayList도 Serializable를 구현하고 Employee도 Serializable구현했을때 서로 연관지을 수 있다.  
 4. 독립적 프로그래밍 가능  
 
-가장 중요한건 표준화와 다형성이다.
+가장 중요한건 표준화와 다형성이다.  
 
 #### 인터페이스 역할
 1. 객체 사용방법을 정의한 타입  
 2. 객체의 교환성을 높여준다. (다형성 구현에 중요한 역할)  
-물론 객체 인터페이스type에 따라 구현될 메소드만 사용 가능하다.
+물론 객체 인터페이스type에 따라 구현될 메소드만 사용 가능하다.  
 
 
 요약  
@@ -215,7 +215,7 @@ WindowAdapter의 구조는 우선 WindowListener를 implement하고
 
 우리는 WindowListener의 추상메소드를 모두 구현한 완전한 "클래스"인 WindowAdapter를 사용하기만 하면 된다.  
 
-```
+```java
 class MyForm extends Frame  {
 	// 기본 생성자
 	public MyForm() {
@@ -240,22 +240,22 @@ class FirstAdapter extends WindowAdapter
 
 1회용으로 한번쓰고 안쓰는 클래스 선언과 동시에 인스턴스화(생성) 되는 클래스  
 
-`new 클래스명();`
+`new 클래스명();`  
 평범한 객체 인스턴스화 구문이다  
 
-`new 조상클래스명() { ... }`
+`new 조상클래스명() { ... }`  
 익명클래스 객체 선언과 동시에 인스턴스화 구문  
-{...} 안에 각종 멤버들이 들어감  
+{...} 안에 각종 멤버들이 들어감    
 멤버는 조상클래스를 overiding한 메서드들이 들어간다.  
 
 interface로 익명클래스만들수 도 있다.    
 
-`new 인터페이스명() { ... }`
-... 안에 멤버는 인터페이스의 추상메서드를 오버라이딩한 메서드들이 있다.
-단 인터페이스이기 때문에 모두 오버라이딩 해줘야한다.
+`new 인터페이스명() { ... }`  
+... 안에 멤버는 인터페이스의 추상메서드를 오버라이딩한 메서드들이 있다.  
+단 인터페이스이기 때문에 모두 오버라이딩 해줘야한다.  
 
 
-```
+```java
 class MyForm extends Frame  {
 	// 기본 생성자
 	public MyForm() {
@@ -277,7 +277,7 @@ class FirstAdapter extends WindowAdapter
 아까 봤던 코드인데 FirstAdapter 만드는 과정을 익명클래스를 사용하면 생략 할 수 있다.  
 FirstAdapter라는 이름주기도 귀찮고 class정의할 위치찾는것도(파일추가하고 이름바꾸고...등등) 귀찮다할 때 익명클래스를 사용하면 된다!!  
 
-```
+```java
 class MyForm extends Frame  {
 	// 기본 생성자
 	public MyForm() {
