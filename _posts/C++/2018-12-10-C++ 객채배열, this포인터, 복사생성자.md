@@ -4,6 +4,7 @@ read_time: false
 share: false
 toc: true
 author_profile: false
+classes: wide
 
 categories:
   - C++
