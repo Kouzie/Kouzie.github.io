@@ -76,3 +76,5 @@ System.out.printf("[%1$10s], [%2$#10o], [%2$#10o]\n",name, age);
 ```
 String format 문서를 잘 찾아보면 따로 문자열을 변환하지 않아도  
 사용자가 원하는대로 화면에 문자를 변경해서 출력할 수 있다.  
+
+> https://micropai.tistory.com/48 좋은 설명...

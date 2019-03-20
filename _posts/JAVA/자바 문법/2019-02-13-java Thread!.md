@@ -12,9 +12,9 @@ tags:
   - 문법
 ---
 
-### 프로세스와 스레드
+## 프로세스와 스레드
 
-#### 각종 용어
+## 각종 용어
 
 1. Process  
 실행중인 프로그램: OS로부터 실행에 필요한 자원(메모리)를 할당받아 동작중인 프로그램  
@@ -50,14 +50,14 @@ tags:
 
 ---
 
-### Thread 클래스
+## Thread 클래스
 
-#### Thread.currentThread  
+### Thread.currentThread  
 
 현재 실행중인 스레드 반환하는 static 메서드
 Thread t = Thread.currentThread(); //현재 실행중인 스레드 반환
 
-#### getName
+### getName
 
 현재 실행중인 스레드 이름을 반환하는 인스턴스 메서드
 System.out.println(t.getName()); //main 출력(스레드 이름)
@@ -96,7 +96,7 @@ main 장보기: 100%
 스레드를 사용해 순차대로 말고 같이 수행되도록 만들어보자.
 
 먼저 Thread클래스를 상속받는 클래스를 만들어보자 (extends Thread)
-```
+```java
 class CleaningWorker extends Thread
 {
 	@Override
@@ -117,12 +117,12 @@ run을 오버라이딩 받아 자기가 멀티스레드로 동작시킬 코드�
 스레드가 독립적으로 수행해야 하는 기능을 `run()`이라는 메서드 안에 집어넣기 때문에  
 *스레드를 메서드 라고도 부른다.*  
 
-```
+```java
 CleaningWorker t1 = new CleaningWorker();
 t1.setName("Thread1");
 t1.start();
 System.out.println("=end=");
-````
+```
 start메서드가 내부적으로 run을 수행한다.
 
 출력값
@@ -142,7 +142,7 @@ main스레드는 Thread1의 진행상황과 관계없이 별도로 수행되기 
 
 
 이번엔 Runnable 인터페이스를 구현하는 클래스를 만들어보자
-```
+```java
 class ShoppingWorker implements Runnable{
 	@Override
 	public void run() {
@@ -162,7 +162,7 @@ class ShoppingWorker implements Runnable{
 ```
 Runnable또한 run()메서드를 필수로 오버라이딩 해야한다.
 
-```
+```java
 Runnable shop = new ShoppingWorker();
 Thread t2 = new Thread(shop);
 t2.start();
@@ -223,12 +223,12 @@ eclipse에서 위의 main스레드만 동작하는게 아니기 때문에 순서
 
 ----
 
-#### 추가 - 익명클래스, 람다식으로 Thread만들기
+### 추가 - 익명클래스, 람다식으로 Thread만들기
 
 익명클래스로 Runnable을 구현하는 클래스 만들기  
 람다식으로 Thread상속하는 클래스 만들기  
 
-```
+```java
 Thread t1 = new Thread(new Runnable() {
 	@Override
 	public void run() {
@@ -250,7 +250,7 @@ t2.start();
 
 ---
 
-### Thread 우선순위(Priority)
+## Thread 우선순위(Priority)
 
 package days30;
 
@@ -274,13 +274,13 @@ public class Ex08 {
 
 ----
 
-### Thread - join()
+## Thread - join()
 
 join() - 다른 스레드의 작업을 기다린다. 매개변수가 없으면 끝날때까지 자신은 대기상태에서 기다림.  
 join(long millis) - 다른 스레드의 작업을 기다린다. 밀리초 안에 안끝나면 기다리지 않고 진행.  
 join또한 sleep처럼 대기상테에서 interrupt()메서드 호출로 인해 깨어날 수 있다.  
 
-```
+```java
 JoinThread t1 = new JoinThread(100);
 t1.start();
 try {
@@ -294,7 +294,7 @@ System.out.println("1~100 합: "+t1.getSum());
 t1 스레드를 동작시키고 끝날때까지 main스레드를 정지시킨다.  
 join메서드에 long값을 넣을시 그 시간만큼만 main스레드를 정지시킨다.  
 
-```
+```java
 class JoinThread extends Thread
 {
 	private long sum = 0;
@@ -326,9 +326,9 @@ class JoinThread extends Thread
 
 ----
 
-### 스레드 동기화
+## 스레드 동기화
 
-```
+```java
 class PrintMachin
 {
 	public void printName(String name) //명찰출력 메서드
@@ -381,7 +381,7 @@ class PrintThread extends Thread
 run()메서드에서 printName(name)를 호출한다.
 
 메인에서 호출하는 다음과 같다.
-```
+```java
 PrintMachine machine = new PrintMachine();
 
 PrintThread t1 = new PrintThread("홍길동", machine);
@@ -414,7 +414,7 @@ t5.start();
 동기화 작업을 해보자.  
 
 함수 반환형 앞에 `synchronized`
-```
+```java
 public synchronized void printName(String name)
 {
 	System.out.print("[");
@@ -431,7 +431,7 @@ public synchronized void printName(String name)
 ```
 
 또는 블럭단위로 `synchronized`
-```
+```java
 public void printName(String name)
 {	
 	//이 블럭에 접근자체를 못하도록..
@@ -451,7 +451,7 @@ public void printName(String name)
 ```
 
 또는 PrintThread의 run()메서드안에 코드를 동기화 처리.
-```
+```java
 public void run() {
 	synchronized (machine) {
 		this.machine.printName(name);
@@ -464,7 +464,7 @@ run앞에 `synchronized` 키워드를 붙이면 좋겠지만 오버라이딩 되
 
 또다른 예로 공유자원 sharedData를 static 정적변수로 선언후 여러 스레드에서 접근하는 경우  
 
-```
+```java
 class Data
 {
 	public int num = 0;
@@ -484,7 +484,7 @@ public class Main {
 ```
 main 스레드에서 Tom과 Jane 스레드를 생성후 실행  
 Tom과 Jane은 공유자원 sharedData에 접근해서 하나씩 증가시킨다.  
-```
+```java
 class Tom extends Thread
 {
 	@Override
@@ -519,7 +519,7 @@ main 종료
 num++은 기계어로 read, add, store 3개의 명령으로 이루어지는데 읽어서 증가시키기 전에
 read명령 실행 후 cpu를 다른 스레드에게 뺏겨 자신이 증가시킨 num이 다른 스레드가 증가시킨 값으로 덮어씌어진다.  
 
-```
+```java
 public void run() {
 	for (int i = 0; i < 100000; i++) {
 		synchronized (Main.sharedData) {
@@ -533,12 +533,12 @@ public void run() {
 
 ---
 
-### Thread 각종 메서드 - start, stop, resume, suspand
+## Thread 각종 메서드 - start, stop, resume, suspand
 
 stop, resume, suspand 는 사라질 예정이다. 사용은 가능하지만
 교착상태 해결이 까다롭기 때문에 사용하지 않는걸 권장한다.
 
-```
+```java
 class InterruptThread implements Runnable
 {
 	boolean suspended = false;
@@ -593,7 +593,7 @@ class InterruptThread implements Runnable
 ```
 suspend, stop, resume 모두 직접구현함.
 
-```
+```java
 InterruptThread th1 = new InterruptThread("*");
 InterruptThread th2 = new InterruptThread("**");
 InterruptThread th3 = new InterruptThread("***");
@@ -626,12 +626,12 @@ wait와 notify를 사용하면 기다리는 시간이 필요없다.
 
 ---
 
-### Thead - wait, notify
+## Thead - wait, notify
 
 
 
 
-```
+```java
 class Person extends Thread{
 	VideoShop vShop;
 	public Person(VideoShop vShop) {
@@ -652,7 +652,7 @@ class Person extends Thread{
 	}
 }
 ```
-```
+```java
 class VideoShop{
 	private Vector<String> buffer = new Vector<String>();
 	public VideoShop(){
@@ -688,7 +688,7 @@ notify의 경우 하나의 스레드에게만 연락한다.
 
 
 
-```
+```java
 VideoShop videoShop = new VideoShop();
 
 System.out.println("프로그램 시작");
@@ -710,7 +710,7 @@ p7.start();
 
 ---
 
-### 데몬 스레드
+## 데몬 스레드
 
 다른 일반적인 스레드의 작업을 돕는 보조적인 역할을 수행하는 스레드를 뜻함.  
 주스레드가 종료하면 자동으로 데몬스레드도 종료되어야 한다.  
@@ -719,7 +719,7 @@ p7.start();
 `isDaemon()` 메서드로 실행중인 스레드가 데몬스레드 인지 아닌지 판별 가능하다.  
 
 
-```
+```java
 class AutoSaveThread extends Thread
 {
 	public void save()
@@ -739,7 +739,7 @@ class AutoSaveThread extends Thread
 }
 ```
 
-```
+```java
 AutoSaveThread t = new AutoSaveThread();
 t.start();
 
@@ -763,7 +763,7 @@ main이 종료되도 AutoSaveThread는 계속 실행중이다...
 interrupt메서드와 예외처리로 강제종료 시켜도 되지만  
 데몬스레드를 사용하면 main스레드 종료할때 같이 종료시킬 수 있다.  
 
-```
+```java
 AutoSaveThread t = new AutoSaveThread();
 t.setDaemon(true); 
 t.start();
@@ -779,7 +779,7 @@ main스레드가 종료됨과 동시에 데몬스레드들도 같이 종료된�
 
 ---
 
-### 스레드 그룹
+## 스레드 그룹
 
 스레드 관리를 편하게 하기위해 서로 관련있는 스레드를 묶어 스레드 그룹을 만든다.  
 JVM을 실행하면 main이 실행되고 main스레드가 만들어지고   main스레드도 System 이라는 스레드 그룹에 포함되어있다.  
@@ -787,7 +787,7 @@ JVM을 실행하면 main이 실행되고 main스레드가 만들어지고   main
 그리고 main스레드 에서 다른 스레드를 만들면 main스레드 그룹이 생기고 그안에 속하게된다.  
 스레드 그룹을 별도 설정하지 않을시 부모스레드 그룹에 속하게된다.
 즉 모든 스레드는 자동으로 어떤 그룹에 속하게 된다.  
-```
+```java
 ThreadGroup mainTG = Thread.currentThread().getThreadGroup();
 System.out.println(mainTG.toString());
 System.out.println(mainTG.getName());
@@ -800,12 +800,12 @@ main
 system
 ```
 
-#### Thread의 getAllStackTraces() 메서드.
+### Thread의 getAllStackTraces() 메서드.
 
 실행중 또는 대기상태, 즉 작업완료 되지 않은 모든 스레드의 호출스택을 출력할 수 있다.  
 `public static Map<Thread,StackTraceElement[]> getAllStackTraces()`
 반환값은 Map 컬렉션...  
-```
+```java
 AutoSaveThread t = new AutoSaveThread();
 t.setDaemon(true);
 t.setName("autoThread");
@@ -831,11 +831,11 @@ main 	 main 	 false
 main과 autoThread말고도 뒤에서 실행중인 스레드들이 많다....  
 
 
-#### ThreadGroup의 interrupt() 메서드
+### ThreadGroup의 interrupt() 메서드
 
 스레드 그룹을 사용하면 그룹에 해당하는 모른 스레드에게 인터럽트를 발생시킬 수 있다.  
 
-```
+```java
 class WorkThread extends Thread
 {
 	public WorkThread(ThreadGroup tg, String name)
@@ -862,7 +862,7 @@ Thread객체의 생성자의 인자값 2개를 넘길 수 있다. 소속될 스�
 WorkThread는 인터럽트가 발생하기 전까지 무한루프....  
 
 스레드 그룹 MyGroup을 만들고 t1,t2,t3 생성시 myGruop에 속하도록 설정.  
-```
+```java
 ThreadGroup myGroup = new ThreadGroup("MyGroup");
 //myGroup 스레드 그룹에 3개의 스레드 추가
 WorkThread t1 = new WorkThread(myGroup, "t1");
@@ -876,7 +876,7 @@ t3.start();
 
 myGroup역시 main스레드에서 만들어 졌기때문에 main스레드 그룹에 속한다.  
 
-```
+```java
 myGroup.interrupt();
 System.out.println("main 종료");
 ```
@@ -894,12 +894,12 @@ t2종료....
 그룹에 interrupt 메서드를 전달함으로 그에 속한 모든 스레드를 인터럽트.  
 
 
-#### ThreadGroup의 list
+### ThreadGroup의 list
 
 해당 스레드 그룹에 속한 스레드 그룹, 스레드 목록을 출력하고 싶다면
 ThreadGroup의 list메서드를 사용하면 된다.  
 
-```
+```java
 System.out.println("[main] 스레드 그룹 목록 출력...");
 ThreadGroup tg = Thread.currentThread().getThreadGroup();
 tg.list();
