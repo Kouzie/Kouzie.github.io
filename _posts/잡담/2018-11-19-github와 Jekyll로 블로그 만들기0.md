@@ -7,7 +7,7 @@ author_profile: false
 
 
 categories:
-  - Github
+  - 잡담
 tags:
   - Jekyll
   - github
