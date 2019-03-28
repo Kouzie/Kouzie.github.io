@@ -16,7 +16,7 @@ minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt"
 
 # Site Settings
 locale                   : "ko-KR"
-title                    : "ficonalst..."
+title                    : "confinalst"
 title_separator          : "-"
 name                     : &name "Kouzie"
 description              : "아무거나 다쓰는 블로그."
