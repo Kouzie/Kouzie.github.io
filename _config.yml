@@ -71,7 +71,7 @@ algolia:
   application_id         : AL7O7T4TQZ # YOUR_APPLICATION_ID
   index_name             : github # YOUR_INDEX_NAME
   search_only_api_key    : 2b0fc26b917dcd6597b41a33086dea66 # YOUR_SEARCH_ONLY_API_KEY
-  powered_by             : # true (default), false
+  powered_by             : true #(default), false
   extensions_to_index:
     - html
     - md
