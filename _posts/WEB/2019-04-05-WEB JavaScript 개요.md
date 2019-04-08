@@ -171,7 +171,7 @@ html출력해주는 내장객체, 함수 사용
 
 `console.log("출력문자열")`처럼 사용한다.  
 
-![image1]({{ "/assets/web/js/iamge1.png" | absolute_url }}){: .shadow}  
+![js1]({{ "/assets/web/js/js1.png" | absolute_url }}){: .shadow}  
 
 <br><br>
 
