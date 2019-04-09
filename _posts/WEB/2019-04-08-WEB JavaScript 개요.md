@@ -62,8 +62,6 @@ type속성은 적어도 되고 안적어도 된다.(브라우저가 알아서 JS
 
 보통은 `head` 혹은 `body` 태그 안에서 사용한다. 태그 밖에서 사용하면 브라우저가 알아서 해석해서 `head`나 `body`태그 안으로 집어넣음.  
 
-JavaScript에선 문자열표현시 `"`쌍따옴표 혹은 `'`홀따옴표를 사용한다.    
-
 JavaScript에서도 다른 언어들 처럼 명령라인 구분을 위해 세미콜론`;`을 추가해도 되고 엔터로 구분해도 된다. 단 한줄에서 명령라인 구분을 위해선 추가한다.(사용 권장)
 
 ### .js확장자 파일 - 외부 스크립트 파일
@@ -90,7 +88,7 @@ function name([매개변수]) {
 ```
 리턴자료형을 따로 명시하기 않고 리턴값이 없을 수도 있다.  
 
-### Javascript 함수호출
+### Javascript 함수 호출
 
 **1. 만들어진 함수는 이벤트 처리(`onclick`같은)에서 호출**  
 `<button onclick="btn_click();">ok</button>`  
@@ -113,7 +111,7 @@ function sum(a, b) {
 
 
 
-### Javascript 변수선언
+### Javascript 변수 선언
 
 `var`키워드로 변수선언한다. 다른 언어처럼 한 라인에 여러 변수 선언 및 초기화가 가능하다.
 
@@ -197,7 +195,6 @@ html출력해주는 내장객체, 함수 사용
   }
 </script>
 ```
-<br><br>
 
 한박자 느린데 `onkeyup`을 사용하면 된다.  
 
@@ -338,6 +335,21 @@ object
 <br>
 
 ### JavaScript 문자열
+
+JavaScript에선 문자열표현시 `"`쌍따옴표 혹은 `'`홀따옴표를 사용한다.  
+만약 홀따옴표나 쌍따옴표를 출력하고 싶다면 다음과 같이 작성
+
+```js
+var x1 = "hello 'world'!"
+var x2 = 'hello "world"!'
+var x3 = 'hello \'world\'!'
+var x4 = "hello \"world\"!"
+```
+역슬레시`\`를 통해 제어문자도 사용 가능하다. `\n`, `\t`, `\b` 등...  
+`var x4 = "hello \"world\"!\nwelcome!"`
+
+
+
 
 ```html
 <script>
