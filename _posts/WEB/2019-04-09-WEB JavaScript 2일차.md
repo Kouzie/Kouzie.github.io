@@ -494,7 +494,7 @@ console.log(3 !== '3') // true
 console.log(4 !== 3) // true
 ```
 
-## 각종 문자열 함수  
+## String.prototype 문자열 함수  
 ### indexOf 메서드
 
 못찾으면 -1, 찾으면 찾은 위치값을 돌리는 함수,  
@@ -540,4 +540,44 @@ console.log(src);
 console.log("hello".concat("my ", "world"));
 console.log("hello".concat("my ").concat("world"));
 ```
+
+`+`연산자를 통해 문자열을 접합할 수 있지만 `concate`메서드를 사용해도 된다.  
+
+뒤에 계속 `.`을 붙여가며 이어도 되지만 가변인자처럼 매개변수로 계속 나열해도 됨.  
+
+### trim, toUpperCase, toLowerCase
+
+설명 생략, 공백 지우고, 대문자로 변경하고 소문자로 변경하는 메서드.
+
+### charAt, charCodeAt
+
+매개변수로 문자 위치를 가리키는 정수형 index값이 들어감.  
+
+`charAt`: 문자열의 특정 index에 해당하는 문자를 반환하는 함수  
+`charCodeAt`: `charAt`과 같지만 반환하는 값이 문자의 ASCII코드값이다.  
+
+
+
+```js
+var data = "hello world~";
+for (var i = 0; i < data.length; i++) {
+  document.write(data.data[i]);
+}
+```
+`ECMA Script 5`부터 문자열을 배열처럼 사용 가능하다, 굳이 `charAt`을 사용하지 않고 `[]`인덱스 연산자를 사용하면 된다.  
+
+### split
+
+문자열을 잘라 배열로 반환하는 함수  
+```js
+var str = event.srcElement.value;
+var str_arr = str.split(/\s*,\s*/);
+var demo = document.getElementById("demo");
+
+for (var i = 0; i < str_arr.length; i++) {
+  demo.innerHTML += "<li>[" + str_arr[i] + "]</li>";
+}
+```
+
+`split` 매개변수로는 정규식이 사용됨
 
