@@ -326,128 +326,16 @@ object
 >초기화 하지 않은 변수를 넣으면 undifiend로 출력된다. null은 object로 출력됨.
 
 총 5가지의 자료형 존재  
+
 1. string  
 2. number  
 3. boolean  
 4. object  
 5. function  
 
+자바 스크립트에선 `===` 연산자가 있는데 안의 데이터 뿐 아니라 type까지 비교해서 일치하는지 검사한다.  
+
 <br>
-
-### JavaScript 문자열
-
-JavaScript에선 문자열표현시 `"`쌍따옴표 혹은 `'`홀따옴표를 사용한다.  
-만약 홀따옴표나 쌍따옴표를 출력하고 싶다면 다음과 같이 작성
-
-```js
-var x1 = "hello 'world'!"
-var x2 = 'hello "world"!'
-var x3 = 'hello \'world\'!'
-var x4 = "hello \"world\"!"
-```
-역슬레시`\`를 통해 제어문자도 사용 가능하다. `\n`, `\t`, `\b` 등...  
-`var x4 = "hello \"world\"!\nwelcome!"`
-
-
-
-
-```html
-<script>
-  var x = 10;
-  var k = 30;
-  var y = "20";
-  console.log(x+k+y);
-</script>
-```
-
-출력되는 값은 `"4020"`이다.(일반적인 연산은 좌측에서 우측으로 진행)  
-`문자열 + 정수` 는 자바처럼 문자열간의 연산으로 취급받는다.   
-
-문자열 숫자를 형변환하는 방법은 2가지 있다.
-
-### 1. Number() 전역 메서드
-
-`console.log(Number(n1) + Number(n2));`
-
-`window`객체가 가지고 있는 Number 메서드를 사용하여 문자열을 숫자형으로 변환
-
-```js
-console.log(Number(""));
-console.log(Number(" "));
-console.log(Number("10a"));
-```
-
-출력값
-```
-0
-0
-NaN
-```
-
-`Number` 메서드는 숫자 사이 혹은 뒤에 숫자가 아닌 다른 문자가 껴있으면 빡빡하게 검사해서 `NaN`으로 반환한다.
-
-
-### 2. parseInt() 전역 메서드
-
-10진수의 경우 `parseInt('n')` 이런 형식으로 사용하면 된다.  
-
-`parseInt` 메서드는 `10a`같은 숫자형태가 아니더라도 `NaN`을 반환하지 않고 a를 제외한 10을 가져온다.(문자밖에 없다면 `NaN`반환함)
-
-10진수외 다른 진법으로 문자형을 숫자형으로 바꾸고 싶다면 `parseInt('n', 16)` 이런식으로 쓰거나 `parseInt('0x100')` 으로 쓴다(16진수임을 알려주는 0x필요)  
-
-문자형을 실수형으로 바꾸는 parseFloat도 있다.  
-어느정도 공백이나 숫자 사이에 숫자가 아닌 문자가 들어있어도 어느정도 관용적으로 구분한다.  
-
-> https://www.codingfactory.net/11026
-
-예제
-```js
-function num2_enter() {
-  var num1 = document.getElementById("num1").value;
-  var num2 = document.getElementById("num2").value;
-
-  if (event.keyCode == 13) {
-    if(isNaN(num1))
-    {
-      alert("숫자를 입력하세요!");
-      document.getElementById("num1").focus();
-      return;
-    }
-    if(isNaN(num2))
-    {
-      alert("숫자를 입력하세요!");
-      document.getElementById("num2").select(); /* select쓰면 모두 선택 */
-      return;
-    }
-    document.getElementById("result").value = window.parseInt(num1, 10)+parseInt(num2, 10);
-  }
-}
-```
->focus와 select의 차이는 드래그 되어있냐, 커서만 위치하느냐 차이  
-
-
-
-숫자에서 문자형으로 변환할때에도 몇가지 방법이 있다.  
-
-### `+`와 `""` 사용
-```js
-var num = 10;
-var msg = 10 + "";
-```
-자바처럼 간단하게 숫자형 뒤에 문자열을 더하는것으로 문자형으로 변환한다.  
-
-### new String() 사용
-```js
-var num = 10;
-var msg = new String(num)
-```
-`String`**객체** 생성시 매개변수로 숫자형을 전달.  
-
-### Number의 toString() 사용
-
-`var num = 10;` 에서 var는 사실 그냥 number라는 
-
-<br><br>
 
 ## JavaScript 객체
 
@@ -461,7 +349,7 @@ var msg = new String(num)
 
 
 ### Object
-자바에서 객체는 특징(속성)과 기능(메서드)로 이루어졌는데 JS도 비슷하다.  
+자바의 객체는 특징(속성)과 기능(메서드)로 이루어졌는데 JS도 비슷하다.  
 
 `var s1 = {name: "홍길동", age: 12}`  
 JavaScript에선 필드 초기화를 위해 `:`콜론을 사용, 
