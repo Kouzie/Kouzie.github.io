@@ -534,6 +534,14 @@ console.log(src);
 `replace`메서드에선 제일 앞의 일치하는 문자열만 바꾸기 때문에 일치하는 모든 문자열을 변경하고 싶다면 정규식 modify에 `g`옵션을 적용해야 한다.  
 (JavaScript에는 `replaceAll`없음)
 
+
+### repeat
+
+문자열을 입력한 정수만큼 반복한 문자열을 반환하는 함수  
+`document.write("-".repeat(10));`  
+하이폰이 10개 이어진 문자열을 반환해서 출력한다.  
+
+
 ### concate
 
 ```js
