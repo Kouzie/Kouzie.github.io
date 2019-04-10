@@ -178,9 +178,13 @@ html출력해주는 내장객체, 함수 사용
 | | |
 :-----:|:-----:|:-----:
 **`onkeydown`**|키를 개체 위에서 눌렀을 때 발생
-**`onkeypress`**|키(key)를 개체 위에서 눌렀다 놓았을 때 발생
+**`onkeypress`**|키를 개체 위에서 눌렀을 때 (영어, 숫자 등)문자가 입력되면 이벤트 발생
 **`onkeyup`**|키를 개체 위에서 놓았을 때 발생
 
+`onkeydown`과 `onkeypress`의 발생시기는 동일하며 차이점은  
+`onkeydown`는 키보드의 모든 자판이 눌리면 감지하고 `onkeypress`는 키보드에서 입력가능한 자판이 눌리면 이벤트가 발생.  
+
+> https://dororongju.tistory.com/91
 
 ```html
 <input type="text" id="in" autofocus="autofocus"
@@ -196,9 +200,10 @@ html출력해주는 내장객체, 함수 사용
 </script>
 ```
 
-한박자 느린데 `onkeyup`을 사용하면 된다.  
+`onkeydown`은 실제 화면에 문자가 찍히기 전에 동작하기 때문에 한박자 느린데  
+이게 불편하다면 `onkeyup`을 사용하면 된다.  
 
-채팅 프로그램에서 상대방이 채팅중인지 아닌지 알 수 있는데 `onkey`함수와 소켓을 통해 실시간으로 상태를 전송중인 javascript함수가 있는것.  
+채팅 프로그램에서 상대방이 채팅중인지 아닌지 알 수 있는데 `onkey...`함수와 소켓을 통해 실시간으로 상태를 전송중인 javascript함수가 있는 것 이다.  
 
 
 ### event객체 - keyCode
