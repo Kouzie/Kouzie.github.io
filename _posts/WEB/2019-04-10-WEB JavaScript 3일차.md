@@ -1,5 +1,5 @@
 ---
-title:  "Web - JavaScript 3일차!"
+title:  "Web - JavaScript 3일차 배열, Date객체!"
 
 read_time: false
 share: false
@@ -241,7 +241,7 @@ console.log(Math.min.apply(null, m)); //1
 비교 함수를 `apply()` 메서드의 첫번째 매개변수로 넣을 수 있다. 문자열, 숫자는 알아서 가장 큰 값을 가져오지만 객체같은 경우 비교함수를 지정해야 큰지 작은지 비교 가능하다.  
 
 
-### forEach, filter, map
+## forEach, filter, map
 
 `forEach, filter, map` 세 함수를 사용하면 반복문을 사용하지 않아도 반복문 처리를 할 수 있는 직관적인 코드 작성이 가능하다.  
 
@@ -300,7 +300,7 @@ console.log(n.toString());
 만약 부합하는 배열이 없다면 빈 배열 `[]`을 반환한다.  
 
 짝수에 해당하는 요소를 `filter`하고 싶다면 다음과 같이 작성
-```
+```js
 var n = m.filter(function (value, index, array) {
     return value % 2 == 0;
 });
@@ -321,6 +321,23 @@ console.log(n.toString()); //135,9,30,54,27
 value(각 요소)에 3을 곱한 배열을 반환한다.  
 
 <br><br>
+
+### every
+
+`every()` 메서드는 배열 안의 모든 요소가 주어진 판별 함수를 통과하는지 테스트합니다.  
+
+> 참고: 빈 배열에서 호출하면 무조건 true를 반환합니다.
+>https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/every
+
+```js
+function checkDuplicate(arr, num) {
+    return arr.every(function (value, index, array) {
+        return value != num;
+    })
+}
+```
+배열의 모든 요소가 `num`과 불일치 하는지 검사하고 일치하는게 하나라도 있다면 `false`를 반환한다.
+
 
 ## arguments
 
@@ -353,6 +370,8 @@ console.log(sumAll(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)); //55
 
 매개변수 개수가 정확히 정할 수 없을 경우 `arguments.length` 속성을 사용해서 동적으로 처리 가능하다.  
 
+<br>
+<br>
 
 ## select, option
 
@@ -489,7 +508,7 @@ console.log(d1.toLocaleTimeString()); //오후 3:34:51
 ```
 
 출력 형식이 마음에 들지 않는다면 다음과 같이 `get...`메서드를 사용해서 문자열로 조합하면 된다.   
-```
+```js
 var demo = document.getElementById("demo");
 var d = new Date();
 var year = d.getFullYear();
@@ -501,6 +520,8 @@ var dayofWeeks = ["일", "월", "화", "수", "목", "금", "토"]
 console.log(year + "년 " + month + "월 " + days + "일(" + dayofWeeks[week] +")");
 ```
 `2019년 4월 10일(수)` <- 출력된다.
+
+> getYear(): 현재년도 - 1900 을 반환, 2019년으로 설정된 Date객체의 경우 119를 반환.
 
 
 ### Date 객체 밀리세컨드 출력
@@ -518,7 +539,6 @@ console.log(Number(new Date())); //1554878559152
 console.log(new Date(1554878559000)); //Wed Apr 10 2019 15:42:39 GMT+0900 (한국 표준시)
 ```
 
-날짜끼리 연산시 밀리세컨드가 쓰임으로 중요하다.
 
 
 ### Date 객체 `set...`
@@ -547,7 +567,7 @@ console.log(d.toLocaleString()); //2019. 4. 10. 오후 3:42:39
 
 JavaScript에는 `java.util.date`에서 제공하는 `add`와 같은 메서드가 없다.  
 
-대신 `set...`과 `get...`을 사용해 날짜끼리 빼거나 더할 수 있다.  
+setDate에 현재 날짜를 빼서 연산 해야함.  
 
 ```js
 var d = new Date(2016, 2, 1);
@@ -555,3 +575,19 @@ d.setDate(d.getDate()-1);
 console.log(d.getDate()); //29
 ```
 
+만약 1일 이하로 내려가거나 31일 이상으로 올라가면 이전, 이후 달로 설정된다.  
+
+만약 3월의 마지막 날짜를 구하고 싶다면 다음과 같이 하면 된다.
+```js
+var d = new Date(2016, 4, 1);
+d.setDate(0);
+```
+
+for문을 사용해서 각 달의 모든 날짜를 가져 올 수 있다.
+```js
+for (var i = 1; i <= 12; i++) {
+    var lastDay = new Date(2019, i);
+    lastDay.setDate(0);
+    console.log(lastDay.toLocaleDateString());
+}
+```
