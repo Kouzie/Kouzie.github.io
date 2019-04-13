@@ -104,9 +104,9 @@ function m_change() {
 주의할 점은 다시 달을 선택할때 `cmbday.options.length = 0;` 설정하는 것,  
 2월의 마지막일은 28일인데 다른 달 로 인해 생긴 `index[28]` ~ `index[30]`이 지워지지 않아 2월 선택 시 표시될 수 있음.  
 
-![js5-1]({{ "/assets/web/html/js5-1.png" | absolute_url }}){: .shadow}  
+![js5-1]({{ "/assets/web/js5-1.png" | absolute_url }}){: .shadow}  
 
-![js5]({{ "/assets/web/html/js5.png" | absolute_url }}){: .shadow}  
+![js5]({{ "/assets/web/js5.png" | absolute_url }}){: .shadow}  
 
 달력을 만들기 위해 필요한 시작요일은 쉽게 얻어올 수 있다.  
 해당 달의 1일로 설정된 Date객체에서 `getDay()` 메서드를 호출하면 된다.  
@@ -156,7 +156,7 @@ function getStartDay(year, month) {
     
 </ul>
 ```
-![js6]({{ "/assets/web/html/js6.png" | absolute_url }}){: .shadow}  
+![js6]({{ "/assets/web/js6.png" | absolute_url }}){: .shadow}  
 
 
 년, 월을 콤보박스에서 선택하면 
@@ -194,7 +194,7 @@ function printCalender(year, month) {
 `document.createElement`와 `document.createTextNode`, `li_date.appendChild` **DOM 내장 객체**를 사용해서 `li`태그를 생성한다.  
 
 
-![js7]({{ "/assets/web/html/js7.png" | absolute_url }}){: .shadow}{: .align-right}
+![js7]({{ "/assets/web/js7.png" | absolute_url }}){: .shadow}{: .align-right}
 
 `startDay`만큼 빈 `li`태그를 생성하고 `appendChild` 함수를 통해  `ul_days`에 집어넣고  
 
@@ -323,7 +323,7 @@ body {
 ```
 
 
-![js8]({{ "/assets/web/html/js8.png" | absolute_url }}){: .shadow}{: .align-right}
+![js8]({{ "/assets/web/js8.png" | absolute_url }}){: .shadow}{: .align-right}
 
 ### 날짜 선택시 표시
 
@@ -417,7 +417,7 @@ for (let i = 0; i < colls.length; i++) {
 
 > `nextElementSibling`은 자기자신 바로 다음 요소를 가져올 때 사용하는 `DOM Property`
 
-![js9]({{ "/assets/web/html/js9.png" | absolute_url }}){: .shadow}{: .align-right}
+![js9]({{ "/assets/web/js9.png" | absolute_url }}){: .shadow}{: .align-right}
 
 전체코드
 ```html
