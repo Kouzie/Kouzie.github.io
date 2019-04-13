@@ -1,5 +1,5 @@
 ---
-title:  "Web - JavaScript 2일차!"
+title:  "Web - JavaScript 2일차 자료형, 이벤트!"
 
 read_time: false
 share: false
@@ -293,6 +293,16 @@ for (var i = 0; i < tags.length; i++) {
 }
 ```
 
+## getElementsByClassName
+
+Element를 class명을 사용해서도 가져올 수 있다.  
+
+class명은 여러개체가 그룹으로 사용할 수 있기 때문에 반환값이 배열이다.
+class명을 가지는 특정 객체 하나만 가져오고 싶다면 index값을 사용해야 한다.  
+
+`document.getElementsByClassName("days")[0];`
+
+class명이 days로 설정된 개체중 첫 번째 객체를 가져온다.  
 
 
 
@@ -357,7 +367,7 @@ var x4 = "hello \"world\"!"
 출력되는 값은 `"4020"`이다.(일반적인 연산은 좌측에서 우측으로 진행)  
 `문자열 + 정수` 는 자바처럼 문자열간의 연산으로 취급받는다.   
 
-문자열 숫자를 형변환하는 방법은 2가지 있다.
+문자열 숫자를 형변환하는 방법은 3가지 있다.
 
 ### 1. Number() 전역 메서드
 
@@ -419,9 +429,17 @@ function num2_enter() {
 ```
 >focus와 select의 차이는 드래그 되어있냐, 커서만 위치하느냐 차이  
 
+### 3. eval() 전역 메서드
+
+`eval()`메서드는 단순히 문자열을 숫자로 변환하는 함수가 아니다.  
+문자열로 된 코드를 실행시키는 함수로 여러가지 특권을 가지고 있어 남발하는 것은 좋지 않다.  
+> https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/eval  
 
 
-숫자에서 문자형으로 변환할때에도 몇가지 방법이 있다.  
+`eval("2 + 2");` 완전 문자열로 된 식을 실행시켜 4를 반환한다.  
+
+
+## 숫자에서 문자형
 
 ### `+`와 `""` 사용
 ```js
@@ -506,16 +524,30 @@ console.log(4 !== 3) // true
 
 `lastIndexOf`함수도 사용할 수 있음(설명 생략)
 
-### substring, slice, substr
+### serach 메서드
 
-3개 메서드 모두 문자열을 `beginIndex`부터 `endIndex`까지 자르는 역할을 한다, `endIndex`는 생략 가능하며 생략시 마지막을 가리킴.
+정규표현식과 주어진 스트링간에 첫번째로 매치되는 것의 인덱스를 반환한다.
+찾지 못하면 -1 를 반환한다.
 
-`slice` 메서드의 특징은 매개변수로 음수 입력이 가능하다.  
-만약 음수라면, `beginIndex`는  `strLength(문자열 길이) + beginIndex`  
-음수를 사용해 뒷자리부터 잘라올 수 있다.  
+```js
+var msg = "hello world~~";
+var pattern = "world";
+var result = msg.search(pattern);
+```
 
-`substr` 메서드는 `beginIndex`와 가져올 문자 수를 지정한다.  
-`str.substr(2, 2)` 2번째 index부터 2글자를 가져오도록 설정.  
+### match
+
+정규식에 일치하는 문자열을 찾아 반환한다.  
+
+문자열이 정규식과 일치하면, 일치하는 전체 문자열을 첫 번째 요소로 포함하는 `Array`를 반환, 없다면 `null`반환
+```js
+var test = 'love you. love me. love everything!'
+var regExp = /love/gi;
+
+result = test.match(regExp);
+console.log(result); //Array(3)0: "love"1: "love"2: "love"length: 3__proto__: Array(0)
+```
+
 
 ### replace
 
@@ -534,6 +566,16 @@ console.log(src);
 `replace`메서드에선 제일 앞의 일치하는 문자열만 바꾸기 때문에 일치하는 모든 문자열을 변경하고 싶다면 정규식 modify에 `g`옵션을 적용해야 한다.  
 (JavaScript에는 `replaceAll`없음)
 
+### substring, slice, substr
+
+3개 메서드 모두 문자열을 `beginIndex`부터 `endIndex`까지 자르는 역할을 한다, `endIndex`는 생략 가능하며 생략시 마지막을 가리킴.
+
+`slice` 메서드의 특징은 매개변수로 음수 입력이 가능하다.  
+만약 음수라면, `beginIndex`는  `strLength(문자열 길이) + beginIndex`  
+음수를 사용해 뒷자리부터 잘라올 수 있다.  
+
+`substr` 메서드는 `beginIndex`와 가져올 문자 수를 지정한다.  
+`str.substr(2, 2)` 2번째 index부터 2글자를 가져오도록 설정.  
 
 ### repeat
 
