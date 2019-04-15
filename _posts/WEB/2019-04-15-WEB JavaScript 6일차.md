@@ -1,5 +1,5 @@
 ---
-title:  "Web - JavaScript 6일차!"
+title:  "Web - JavaScript 6일차 - Obejct, setTimeout, 클로저!"
 
 read_time: false
 share: false
