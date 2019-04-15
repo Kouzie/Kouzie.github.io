@@ -352,66 +352,7 @@ object
 
 자바 스크립트에선 `===` 연산자가 있는데 안의 데이터 뿐 아니라 type까지 비교해서 일치하는지 검사한다.  
 
-<br>
 
-## JavaScript 객체
-
-그리고 객체는 총 6가지로 나뉜다.  
-1. Object  
-2. Date  
-3. Array  
-4. String  
-5. Number  
-6. Boolean  
-
-
-### Object
-자바의 객체는 특징(속성)과 기능(메서드)로 이루어졌는데 JS도 비슷하다.  
-
-`var s1 = {name: "홍길동", age: 12}`  
-JavaScript에선 필드 초기화를 위해 `:`콜론을 사용, 
-```js
-var s1 = {
-			name : "홍길동",
-			age : 21,
-			
-			toString: function () {
-				return this.name + "/" + this.age;
-			}
-		};
-		console.log(typeof s1);
-		console.log(s1.name);
-		console.log(s1["name"]);
-		console.log(s1.toString());
-```
-`toString`이라는 이름의 함수를 정의, 
-
-
-출력값
-```
-object
-홍길동
-홍길동
-홍길동/21
-```
-
-### Array
-
-`var m = [1, 2, 3, 4];`
-`var m = new Array(1, 2, 3, 4);`
-
-두개는 같은 Array객체를 만드는 코딩, 
-
-### String
-`var msg = new String("홍길동");`
-`var msg = "홍길동";`
-
-
-### Number
-`var  x = 10;`
-`var y = new  Number(20);`
-
-<br><br>
 
 ## JavaScript 반올림 함수 - Math 객체
 
