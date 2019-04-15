@@ -84,8 +84,30 @@ function exec() {
 ```
 만약 `input`태그 내용이 if조건문에 걸린다면 `throw`를 통해 예외가 발생하고 `p`태그에 출력된다.  
 
+## JavaScript hoisiting
 
-### JavaScript 변수 - 지역, 전역, 블럭
+변수선언을 어디서 하던 **브라우저가 알아서** 맨 위로 끌어 올려 위에서 선언된것 처럼 해석한다. 선 사용 후 선언이 가능!  
+이를 막고싶다면 `"use strict"` 키워드를 사용
+```js
+x = 20;
+console.log(x);
+var x = 10;
+```
+x는 전역변수로 선언된 것이 아닌 `hoisiting`을 사용한것,(권장하지 않는다)  
+
+이는 변수 뿐 아니라 함수에도 적용된다.  
+```js
+//함수 호출을 선언보다 먼저해도 상관 없다 (hoisting)
+console.log(multi(1, 2)); //정상 출력됨
+
+function multi(a, b) {
+    return a * b;
+}
+```
+
+
+
+## JavaScript 변수 - 지역, 전역, 블럭
 
 JavaScript에는 지역범위(local scope), 전역범위(global scope) 이외에 블록범위(block scope) 개념이 있다.  
 ECMA SCRIPT 2015 이후에 추가되었으며 `let`, `const` 키워드를 사용해 블록범위 변수를 선언한다.  
@@ -104,14 +126,6 @@ function test() {
 
 `functoin {}` 안에 선언된 변수는 지역변수, 밖에 선언될 경우 전역변수이다. 그리고 전역변수는 `window`최상위 객체의 멤버로 소속된다.
 
-
-> JavaScript hoisiting: 변수선언을 어디서 하던 브라우저가 알아서 맨 위로 끌어 올려 위에서 선언된것 처럼 해석한다. 선 사용 후 선언이 가능! 이를 막고싶다면 "use strict" 키워드를 사용
-```js
-x = 20;
-console.log(x);
-var x = 10;
-```
-x는 전역변수로 선언된 것이 아닌 `hoisiting`을 사용한것, (권장하지 않는다) 막고싶다면 `"use strice"` 키워드 사용.  
 
 위는 함수안의 지역변수 설명이었고 새로 추가된 블록범위 변수는 다음과 같다.
 ```js
@@ -181,7 +195,7 @@ console.log(j); //5
 ```
 for문안의 `let j`는 블록안에 별도 공간에서 사용되기 위해 선언된 변수로 for문 밖의 `j`와 전혀 관계 없다.  
 
-#### const  
+### const  
 
 `const`는 `let`과 똑같은 개념이지만  
 **선언과 초기화를 한번에** 해야하고 그이후에 값은 바뀔 수 없다.  
