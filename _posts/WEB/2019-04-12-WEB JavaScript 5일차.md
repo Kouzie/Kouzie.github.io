@@ -1,5 +1,5 @@
 ---
-title:  "Web - JavaScript 5일차!"
+title:  "Web - JavaScript 5일차 - 참/거짓, 예외처리, 블럭범위!"
 
 read_time: false
 share: false
