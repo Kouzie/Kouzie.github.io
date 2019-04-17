@@ -19,10 +19,8 @@ toc: true
 
 ## HTML DOM 객체
 
-
 문서 객체 모델(`Document Object Model`)은 객체 지향 모델로써 **구조화된 문서를 표현하는 형식**이다.  
-DOM은 플랫폼/언어 중립적으로 구조화된 문서를 표현하는 W3C의 공식 표준이다(위키).  
-
+DOM은 플랫폼언어 중립적으로 구조화된 문서를 표현하는 W3C의 공식 표준이다(위키).  
 
 html 문서의 모든 내용은 노드로 이루어져 있다.  
 태그, 태그안의 content, 태그의 속성, 속성값, 주석 등등 모두 노드로 구성함.
@@ -41,6 +39,8 @@ Javascript를 사용해 모든 노드를 *접근, 수정, 추가, 삭제* 가능
 > 참고 :최상위(루트노드)는 document가 아닌 **html이다**. document는 모든 노드에 접근 가능노드로 루트노드라 할 수 없음.  
 document는 모든 노드에 접근 가능합으로 `document.documentElement`속성을 통해 `html노드`를 를 가져온다.  
 
+<br>
+
 ### Element와 Node의 차이점
 
 html문서는 노드로 구성된다 할 수 있지만 `Element`로 구성된다 할 수는 없다.  
@@ -50,6 +50,7 @@ html문서는 노드로 구성된다 할 수 있지만 `Element`로 구성된다
 또한 대부분의 DOM객체 메서드에서 `Element`와 `Node`의 배열형태인 `HTML Collection`과 `NodeList`를 반환하는데 `[]`인덱스 연산자로 특정 위치를 가리키는건 공통이지만  
 `push(), pop(), join()`등의 메서드는 `NodeList`만 사용 가능하다.  
 
+<br>
 
 
 ### 노드간, 요소간 이동
@@ -105,6 +106,8 @@ previousElementSibling
 ```
 사용하는 메서드의 반환값, 매개변수 타입이 `Node`인지 `Element`인지 필이 확인하자.  
 
+<br>
+
 ### 노드 관련 속성값
 
 해당 노드가 어떤 타입의 노드인지 **`nodeType`** 속성값을 통해 알 수 있다.  
@@ -155,6 +158,7 @@ previousElementSibling
 
 `innerText`속성을 쓰도록 하자.  
 
+<br>
 
 ### 노드 생성, 추가, 삭제
 
@@ -209,6 +213,7 @@ demo.insertBefore(beforeP, p3);
 
 > 주의할점은 Node단위로 삽입되기 때문에 기준노드의 before가 어디를 가리키는지 잘 확인해야함  
 
+<br>
 
 ### DOM의 여러 속성들
 
@@ -224,43 +229,107 @@ document.images
 document.links
 //html문서의 모든 a태그를 HTML Collection으로 반환
 
-document.write(); // 
-document.getElementById(id).onclick = function () { };
 document.cookie
 document.forms // 컬렉션 form태그들을 가지고 있는 집합
 document.script // <script>태그 객체를 가져옴
 document.documentElement // <html> 최상위 태그
 document.body // <body>객체를 가져옴
 document.head // <head>객체를 가져옴
-document.URL - 
-console.log(document.URL) // file:///C:/Class/WebClass/WebPro/WebContent/javascript/days08/ex04.html
-// console.log(document.doctype); //[object DocumentType]
-console.log(document.referrer);
-// 링크를 통해 현재 페이지로 이동 시킨, 전 페이지의 URI 정보를 반환.
+document.URL //현재 html 문서의 url을 반환
+document.referrer; // 링크를 통해 현재 페이지로 이동 시킨, 전 페이지의 URI 정보를 반환.
 ```
 
-// document.bgColor;
-
-
-var form = document.forms["form1"];
-alert(form.elements.length); //4
-
+<br>
 
 ### documentElement 속성을 사용한 progress Bar 구현
 
+스크롤을 내린만큼 progress bar가 진행되도록 css와 Js로 구현.  
+
+```css
+body {
+  margin: 0;
+  font-size: 28px;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  z-index: 1;
+  width: 100%;
+  background: #f1f1f1;
+}
+
+.header h2 {
+  text-align: center
+}
+
+.progress-container {
+  width: 100%;
+  height: 8px;
+  background: #ccc;
+}
+
+.progress-bar {
+  height: 8px;
+  background: red;
+  width: 0px;
+}
+
+.content {
+  padding: 100px 0;
+  margin: 50px auto 0 auto;
+  width: 80%;
+}
+
+.header {
+  padding: 10px 16px;
+  background: #555;
+  color: #f1f1f1;
+}
+
+#btnTop {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 30px;
+  z-index: 99;
+  border: none;
+  outline: none;
+  background: red;
+  color: white;
+  padding: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+#btnTop:hover {
+  background: #555;
+}
+```
+```html
+	<div class="header">
+		<h2>스크롤 표시하기</h2>
+		<div class="progress-container">
+			<div class="progress-bar" id="myBar"></div>
+		</div>
+	</div>
+	<div>
+    <!-- p*50>lorem10 -->
+		<p>Lorem ipsum dolor sit amet, consectetur adipisicing.</p>
+    ...
+    ...
+    (p태그 스크롤 생길만큼 여러개 생성)
+		<p>Nemo vero aspernatur quisquam sint sunt aperiam?</p>
+	</div>
+	<button id="btnTop" title="goToTop" onclick="onclick_btnTop()">Top</button>
+```
 ```js
   window.onscroll = function () {
-    // console.log("onscroll");
     var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-    // console.log(scrollTop);
-    //scrollTop: 스크롤위에 있는 내용의 높이값, 스크롤을 맨 위로 올리면 스크롤 위에 내용이 없음으로 0, 
-    //맨 아래로 내리면 화면에 표시되지 않은 모든 내용이 높이가된다.
 
     var scrollHeight = document.documentElement.scrollHeight;
     var clientHeight = document.documentElement.clientHeight;
     console.log(scrollHeight + " / " + clientHeight);
-    // scrollHeight: 문서 전체의 길이값.
-    // clientHeight: 클라이언트에게 뿌릴수 있는 내용의 길이값
 
     var hiddenHeight = scrollHeight - clientHeight;
     var widthPercent = (scrollTop / hiddenHeight) * 100;
@@ -282,6 +351,14 @@ alert(form.elements.length); //4
 
 ![js13]({{ "/assets/web/js/js13.png" | absolute_url }}){: .shadow}{: .align-right}
 
+`scrollTop`: 스크롤 내린길이, 스크롤 위 내용의 높이값, 스크롤을 맨 위로 올리면 0.  
+`scrollHeight`: **문서 전체**의 길이값.  
+`clientHeight`: 클라이언트에게 뿌릴수 있는 내용의 길이값.  
+
+`scrollTop`(내린길이)/`scrollHeight`(전체길이) 를 퍼센트로 사용해 Progress Bar를 진행시킨다.
+
+<br><br>
+
 ## BOM (Browser Object Model)
 
 DOM이 W3C가 표준으로 정한 HTML문서를 읽고 만들어지는 객체라면
@@ -296,6 +373,8 @@ BOM으로 만들어지는 객체는 다음과 같다.
 3. history   
 4. location   
 5. navigator  
+
+<br>
 
 ### BOM - window
 
@@ -366,6 +445,8 @@ html문서가 `onload`됨과 동시에 팝업창을 열고 3초후에 자동으�
 > 해당 윈도우가 한개 이상의 탭을 포함하고 있을 경우, 해당 윈도우나 탭의 크기를 조정할 수 없음.  
 
 
+<br>
+
 ### BOM - screen
 
 브라우저 보단 사용자 컴퓨터 환경 정보를 갖고있다.  
@@ -397,6 +478,8 @@ demo.innerHTML = output;
 24
 ```
 
+<br>
+
 ### BOM - location
 
 현재 페이지의 **`URL`** 주소에 대한 정보를 갖고 있는 객체
@@ -412,12 +495,14 @@ localhost
 /WebPro/javascript/days09/ex10.html
 http:
 ```
+
+`href`속성과 `assign()`메서드를 통해 페이지 이동가능하다.  
 ```js
 location.href = "http://naver.com";
 // location.assign("http://naver.com");
 ```
-`href`속성과 `assign()`메서드를 통해 페이지 이동가능하다.  
 
+<br>
 
 ### BOM - history
 
@@ -429,6 +514,8 @@ history.go(1); //forward와 같다..
 ```
 `go()` 메서드 안의 number를 통해 점프 가능하다.  
 보안상의 이유로 `url`은 제공하지 않음
+
+<br>
 
 ### BOM - navigator
 
