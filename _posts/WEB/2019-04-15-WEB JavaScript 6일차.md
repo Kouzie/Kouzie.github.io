@@ -22,7 +22,7 @@ toc: true
 
 
 다음과 같은 `form`태그가 있을때 `submit`버튼을 누르면 `onsubmit`이벤트가 발생하게된다.   
-이때 `form`태그 안의 모든 `input`태그에 데이터가 맞게 들어갔는지 확인하기 위한 `validateForm()` 함수를 호출한다.
+이때 `form`태그 안의 모든 `input`태그에 데이터가 공백이 아닌지 확인하기 위한 `validateForm()` 함수를 호출한다.
 
 ```html
 <form name="form1" action="ex01_ok.jsp" method="POST" onsubmit="return validateForm();"> <!-- submit시 onsubmit이벤트 발생 -->
@@ -32,7 +32,7 @@ toc: true
 </form>
 ```
 
-`validateForm()`함수 안에선 form태그 안의 input태그를 가져올 때 `getElementById`가 아닌 `document.forms`DOM객체를 통해 직관적으로 코딩할 수 있다.  
+`validateForm()`함수 안에선 form태그 안의 `input`태그를 가져올 때 `getElementById`가 아닌 `document.forms` DOM객체를 통해 직관적으로 코딩할 수 있다.  
 ```js
 function validateForm() {
     // var fname = document.getElementById("fname").value;
@@ -139,7 +139,7 @@ C
 ```
 `arguments` DOM객체를 사용하면 된다.  
 
-JavaScript는 함수에 정의된 파라미터 개수와 매개변수 개수를 꼭 맞출필요 없다.(에러는 나지 않음)
+JavaScript는 함수에 정의된 파라미터 개수와 매개변수 개수를 꼭 맞출필요 없다.(에러는 나지 않음)  
 단 입력되지 않은 매개변수는 `undifiend`로 초기화되기 때문에 예외처리를 해주어야함.  
 ```js
 function sum(x, y) {
@@ -174,7 +174,7 @@ var person = {
 console.log(person.print.call(person1));
 console.log(person.print.call(person2));
 ```
-
+person객체 안에는 어떠한 프로퍼티도 있지 않지만 `call`메서드를 통해 전달 받은 객체를 `this`키워드와 함께 사용 가능하다
 
 <br><br>
 
@@ -194,7 +194,7 @@ console.log(person.print.call(person2));
 **자바의 객체**는 특징(속성)과 기능(메서드)로 이루어졌는데 JavaScript역시 속성과 기능을 정의할 수 있다.  
 
 `var s1 = {name: "홍길동", age: 12}`  
-JavaScript에선 **필드 초기화**를 위해 `:`콜론을 사용한다.  
+JavaScript에선 **필드(프로퍼티) 초기화**를 위해 `:`콜론을 사용한다.  
 
 ```js
 var s1 = {
@@ -212,12 +212,13 @@ var s1 = {
 		console.log(s1.print()); //홍길동/21
 ```
 `print`이라는 이름의 함수를 정의,  
-사실 `print` 함수 정의보다는 `print`라는 함수 `Object`변수를 생성하고 기능을 넣었다는 것이 더 맞는 듯 하다.
+사실 `print` 함수 정의보다는 `print`라는 함수 `Object`변수를 생성하고 기능을 넣었다는 것이 더 맞는 듯 하다.  
 
-보다싶이 `Object`안의 프로퍼티(`Property`) 출력하는 방법은 2가지, `.`뒤에 바로 프로퍼티명을 붙여 쓰는 방법과 `[]`를 사용해서 출력하는 방법이 있다.  
+보다싶이 `Object`안의 프로퍼티(`Property`) 출력하는 방법은 2가지,  
+`.`뒤에 바로 프로퍼티명을 붙여 쓰는 방법과 `[]`를 사용해서 출력하는 방법이 있다.  
 
 
-> `for(.. in ..)`문을 통해 쉽게 객체의 프로퍼티명, 프로퍼티의 값을 출력할 수 있다.  
+> `for(.. in ..)`문을 통해 쉽게 객체의 프로퍼티명, 프로퍼티의 값을 출력할 수 있다.   
 ```js
 for ( var x in person) {
 			console.log(x + " = " + person[x]);

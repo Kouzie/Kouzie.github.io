@@ -66,16 +66,16 @@ this키워드를 사용하면 간단한 속성 변경의 경우 JavaScript를 �
 
 > https://ko.wikipedia.org/wiki/문서_객체_모델  
 
-문서 객체 모델(`Document Object Model`)은 객체 지향 모델로써 **구조화된 문서를 표현하는 형식**이다.(위키)  
-
-html또한 형식이 있다.  `html - head - body`로 이루어진 구조있는 형식이다.(XML또한 구조있는 형식)   
-**브라우저**는 html구조를 읽고 **DOM이라는 객체를 생성한다**.  
-
-JavaScript는 만들어진 DOM 객체에서 제공하는 각종 메서드와 객체를 사용해서 동적인 처리를 한다.    
-
-html, xml등 구조있는 문서들은 모두 객체화 될 수 있는데 `html DOM`, `XML DOM` 이라 한다.  
-
+문서 객체 모델(`Document Object Model`)은 객체 지향 모델로써 **구조화된 문서를 표현하는 형식**이다.  
 DOM은 플랫폼/언어 중립적으로 구조화된 문서를 표현하는 W3C의 공식 표준이다(위키). 
+
+`html`또한 형식이 있다.  `html - head - body`로 이루어진 구조있는 형식이다.(`XML`또한 구조있는 형식)   
+**브라우저**는 `html`구조를 읽고 **DOM이라는 객체를 생성한다**.  
+JavaScript는 만들어진 DOM 객체에서 제공하는 각종 메서드와 객체를 사용해서 동적인 처리를 한다.    
+`html`, `xml`등 구조있는 문서들은 모두 객체화 될 수 있는데 `html DOM`, `XML DOM`, `Core DOM`(모든파일표준) 등이 있다(W3C 정의).  
+
+브라우저는 응답받은 웹페이지를 로딩할때 DOM객체를 생성
+JavaScript를 사용해 모든 요소(DOM객체)에 접근해 변경 가능하다.  
 
 <br><br>
 
@@ -308,7 +308,7 @@ class명이 days로 설정된 개체중 첫 번째 객체를 가져온다.
 
 ## 윈도우 크기 - innerWidth, innerHeight
 
-문서, 브라우저 크기가 변경될때 역시 `resize`라는 이벤트가 발생하는데 최상위 DOM객체인 `window`에 `addEventListener`를 통해 이벤트 처리함수를 등록해주면 된다.  
+문서, 브라우저 크기가 변경될때 역시 `resize`라는 이벤트가 발생하는데 최상위 BOM객체인 `window`에 `addEventListener`를 통해 이벤트 처리함수를 등록해주면 된다.  
 
 ```html
 <p id="demo1"></p>
@@ -336,7 +336,7 @@ documnet.body.scrollHeight
 
 > `outerWidth`속성도 있는데 `innerWidth`가 문서의 넓이라면 `outerWidth`는 브라우저의 넓이.  
 
-
+>BOM객체는 나중에 알아보자.
 
 ### JavaScript 문자열
 

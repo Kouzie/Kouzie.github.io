@@ -20,7 +20,7 @@ toc: true
 
 ## JavaScript에서 참/거짓
 
-JavaScript에선 참/거짓을 판별하는 `Boolean()`메서드와 `Boolean`객체, `boolean`자료형이 있다.
+JavaScript에선 참/거짓을 판별하는 `Boolean()`메서드와 `Boolean`객체, `boolean`자료형이 있다.  
 
 ```js
 var b1 = new Boolean(false); //객체
