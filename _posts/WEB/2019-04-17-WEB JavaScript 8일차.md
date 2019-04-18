@@ -1,5 +1,5 @@
 ---
-title:  "Web - JavaScript 8일차 - DOM, BOM!"
+title:  "Web - JavaScript 8일차 - DOM, BOM, 쿠키!"
 
 read_time: false
 share: false
@@ -532,4 +532,81 @@ console.log(navigator.appVersion);
 
 console.log(navigator.javaEnabled()); //false - 자바 사용 여부
 console.log(navigator.platform); //Win32 - 운영체제
+```
+
+<br><br>
+
+## 쿠키
+
+웹에서 설정유지를 위해 사용하는 text형태의 파일.  
+
+브라우저가 만들고 관리한기 때문에 브라우저별로 저장위치가 다르다.  
+(chrome은 SQL ㅍ)
+
+사용 용도는 주로 다음 세 가지 목적을 위해 사용된다.  
+
+**세션 관리(Session management)**  
+서버에 저장해야 할 로그인, 장바구니, 게임 스코어 등의 정보 관리   
+
+**개인화(Personalization)**  
+사용자 선호, 테마 등의 세팅  
+
+**트래킹(Tracking)**   
+사용자 행동을 기록하고 분석하는 용도  
+
+> https://developer.mozilla.org/ko/docs/Web/HTTP/Cookies
+
+쿠키는 `키(ID)`, `값`, `만료일`, `도메인(경로)`로 구성된다.    
+
+사용할 수 있는 속성과 값들은 다음과 같다.  
+`name="nameValue"; expires="expireDate"; path="pathHolders"; domain="domainName"; secure `
+
+`name` -> `키`   
+`nameValue` -> `키`에해당하는 `값`  
+`expires` -> `만료시간` 설정 속성   
+`path` -> 서버의 `경로`, 경로에 해당하는 url에서 쿠키가 사용될 수 있다.  
+`domain` -> 서버의 `도메인`, 도메인에 해당하는 url에서 쿠키가 사용될 수 있다.   
+`secure` -> `HTTPS` 프로토콜일 경우에만 쿠키가 사용됨.  
+
+`expireDate`로 들어가는 날짜형식은 `new Date().toUTCString()` 문자형식(`Thu, 18 Apr 2019 08:38:14 GMT`)  
+
+> toGMTString()이 더이상 표준이 아님으로 위의 toUTCString() 사용을 권장한다.(물론 GMT사용해도 인식은 한다 아직까진...)
+
+쿠키는 `document.cookie`객체에 문자열을 삽입해 생성한다.  
+
+```js
+function setCookie(name, value, exdays) {
+	var now = new Date();
+	now.setDate(now.getDate() + exdays);
+	now.setTime(now.getTime() + 1000*10) //10초 유지 추가
+	//Thu, 18 Apr 2019 01:33:39 GMT
+	document.cookie = name + "=" + escape(value) + "; expires=" + now.toUTCString() + "; path=/;";
+	//localhost도메인에서 모두 사용하겠다고 하려면 path=/
+}
+
+function getCookie(name) {
+	var cookies = document.cookie;
+	var carr = cookies.split("; ");
+	var result = "";
+	for (let i = 0; i < carr.length; i++) {
+		var rarr = carr[i].split("=");
+		if (rarr[0] == name) {
+			return unescape( rarr[1] );
+		}
+	}
+	return null;
+}
+
+function deleteCokie(name) {
+	//쿠키 삭제 메서드는 따로 없음으로 만료시점을 과거로 만들어 삭제한다.  
+	// 고정 10일
+	if(getCookie(name))
+	{
+		return;
+	}
+	var now = new Date();
+	now.setDate(now.getDate() - 1); //과거로 설정
+	//Thu, 18 Apr 2019 01:33:39 GMT
+	document.cookie = name + "=" + "; expires=" + now.toUTCString();
+}
 ```
