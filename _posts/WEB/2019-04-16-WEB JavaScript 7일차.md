@@ -12,6 +12,7 @@ categories:
 tags:
   - web
   - html
+  - javascript
 
 toc: true
 
