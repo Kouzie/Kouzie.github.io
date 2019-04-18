@@ -1,5 +1,5 @@
 ---
-title:  "Web - JavaScript 8일차 - DOM, BOM, 쿠키!"
+title:  "Web - JavaScript 8일차 - Jquery!"
 
 read_time: false
 share: false
@@ -12,6 +12,7 @@ categories:
 tags:
   - web
   - html
+  - jquery
   - javascript
 
 toc: true
