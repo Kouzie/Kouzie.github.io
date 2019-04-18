@@ -1,5 +1,5 @@
 ---
-title:  "Web - JavaScript 7일차 - !"
+title:  "Web - JavaScript 8일차 - DOM, BOM!"
 
 read_time: false
 share: false
@@ -25,10 +25,10 @@ DOM은 플랫폼언어 중립적으로 구조화된 문서를 표현하는 W3C�
 html 문서의 모든 내용은 노드로 이루어져 있다.  
 태그, 태그안의 content, 태그의 속성, 속성값, 주석 등등 모두 노드로 구성함.
 
-html 문서의 요소(태그)는  **요소 노드**라 한다. 
-html 문서의 요소안의 내용(content)는  **텍스트 노드**라 한다. 
-html 문서의 요소의 속성(attribute)은  **속성 노드**라 한다. 
-html 문서의 주석은 **주석 노드**라 한다.
+html 문서의 요소(태그)는  **요소 노드**라 한다.   
+html 문서의 요소안의 내용(content)는  **텍스트 노드**라 한다.   
+html 문서의 요소의 속성(attribute)은  **속성 노드**라 한다.  
+html 문서의 주석은 **주석 노드**라 한다.  
 
 모든 내용을 노드로 구분하기 때문에 DOM객체를 사용해 HTML문서의 모든 내용을 구분할 수 있고 내용을 가져올수 있다.  
 
@@ -37,6 +37,7 @@ Javascript를 사용해 모든 노드를 *접근, 수정, 추가, 삭제* 가능
 모든 트리관계가 그렇듯 DOM트리에서도 노드간 상위 하위 관계가 있다.  
 
 > 참고 :최상위(루트노드)는 document가 아닌 **html이다**. document는 모든 노드에 접근 가능노드로 루트노드라 할 수 없음.  
+
 document는 모든 노드에 접근 가능합으로 `document.documentElement`속성을 통해 `html노드`를 를 가져온다.  
 
 <br>
@@ -64,14 +65,14 @@ lastChild
 nextSibling
 previousSibling
 ```
-Element와 다르게 노드는 매우 작은 범위로 이동한다.
+`Element`와 다르게 노드는 매우 작은 범위로 이동한다.
 ```html
 <table border="1" id="table" >
   <tbody id="tbody">
   </tbody>
 </table>
 ```
-위 테이블의 노드는 tbody 하나뿐이라 생각할 수 있는데 3개나 된다.  
+위 테이블의 노드는 `tbody` 하나뿐이라 생각할 수 있는데 3개나 된다.  
 
 ```
 NodeList(3) [text, tbody#tbody, text]
@@ -83,8 +84,8 @@ length: 3
 ```
 chrome 디버그 창에서 `console.log(document.getElementById("table").childNodes);` 출력한 결과이다.  
 
-`tbody`를 둘러싸고 있는 `text Node`는 **계행**이다.  
-태그안의 계행마저 `text Node`인식하기때문
+`tbody`를 둘러싸고 있는 `text Node`는 **개행**이다.  
+태그안의 개행마저 `text Node`인식하기때문
 
 
 ```html
@@ -349,7 +350,7 @@ body {
   }
 ```
 
-![js13]({{ "/assets/web/js/js13.png" | absolute_url }}){: .shadow}{: .align-right}
+![js13]({{ "/assets/web/js/js13.png" | absolute_url }}){: .shadow}
 
 `scrollTop`: 스크롤 내린길이, 스크롤 위 내용의 높이값, 스크롤을 맨 위로 올리면 0.  
 `scrollHeight`: **문서 전체**의 길이값.  

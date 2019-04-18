@@ -1,5 +1,5 @@
 ---
-title:  "Web - JavaScript 7일차 - !"
+title:  "Web - JavaScript 7일차 - 마우스 이벤트, querySelector!"
 
 read_time: false
 share: false
