@@ -252,7 +252,33 @@ function in_keydown() {
 ```
 `alt`, `ctrl`, `shift` 등과 같은 키는 다른키와 조합하여 같이 사용하는 경우가 많아 event객체에서 해당 키가 눌려있는지 아닌지 체크하는 **속성**이 있다.
 
+### getModifierState()
+
+`getModifierState()`메서드는 `CapsLock`이나 `NumLock`이 눌려져 있는지 체크해준다.  
+
+다음과 같이 이벤트가 발생할 때 마다 CapsLock버튼이 눌려있는지 아닌지 체크할 수 있다.   
+
+```js
+if (event.getModifierState("CapsLock"))
+  document.getElementId("demo").style.display = "block";
+else
+  document.getElementId("demo").style.display = "none";
+```
+
+매개변수로는 아래 문자열이 들어갈 수 있다.  
+```
+"Alt"
+"AltGraph"
+"CapsLock"
+"Control"
+"Meta"
+"NumLocK"
+"ScrollLock"
+"Shift"
+```
+
 <br><br>
+
 
 ## JavaScript 전역변수
 

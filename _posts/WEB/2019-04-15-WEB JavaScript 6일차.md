@@ -526,3 +526,9 @@ function progressBar(myBar) {
 }
 ```
 ![js11]({{ "/assets/web/js/js11.png" | absolute_url }}){: .shadow}{: .align-right}
+
+## 프로토타입 ( Prototype )
+
+
+> https://medium.com/@bluesh55/javascript-prototype-이해하기-f8e67c286b67
+
