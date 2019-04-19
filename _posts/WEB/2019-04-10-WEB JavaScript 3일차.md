@@ -343,7 +343,7 @@ function checkDuplicate(arr, num) {
 ## arguments
 
 자바스크립트에선 함수호출시 받을 매개변수를 지정하지 않아도 된다.  
-`arguments`객체(컬렉션)에 함수 호출 때 사용한 매개변수가 담겨서 전달된다.  
+`Function`객체의 맴버 `arguments`(컬렉션)에 함수 호출 때 사용한 매개변수가 담겨서 전달된다.  
 
 ```js
 function sum(n, m) {
@@ -370,6 +370,41 @@ console.log(sumAll(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)); //55
 ```
 
 매개변수 개수가 정확히 정할 수 없을 경우 `arguments.length` 속성을 사용해서 동적으로 처리 가능하다.  
+
+복잡한 가변인자 개념 없이 `arguments` 객체 하나로 반복 처리가 가능하다.  
+
+
+### arguments.callee
+
+`arguments.callee`객체는 함수 자기자신 자체를 뜻한다.  
+
+
+```js
+var fn1 = function calleeTest1(numb) {
+  document.write('A');
+};
+document.write(fn1);
+```
+출력값  
+`function calleeTest(numb) { document.write('A'); }`  
+
+`fn1`이 함수 `calleeTest1` 자체를 나타내기 때문에 아래와 같이 출력된다.  
+`fn1` 변수가 함수자체를 가리키기 때문에 `fn1();` 형식으로 괄호를 붙여 호출 가능하다.  
+
+`arguments.callee`는 위처럼 함수(자신) 자체를 가리키는 객체
+
+```js
+var fn2 = function calleeTest2(numb) { 
+  document.write('A');
+  return arguments.callee;
+}
+fn2()()()()()();
+```
+출력값  
+`AAAAAA`  
+
+`calleeTest2`가 종료되면서 계속 자기자신을 반환하기 때문에 `()` 호출 연산자를 연속으로 붙여 사용할 수 있다.  
+
 
 <br>
 <br>

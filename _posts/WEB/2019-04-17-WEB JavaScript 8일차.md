@@ -57,7 +57,7 @@ html문서는 노드로 구성된다 할 수 있지만 `Element`로 구성된다
 
 ### 노드간, 요소간 이동
 
-노드간 이동은 다음 메서드를 통해 할 수 있다.  
+**노드간 이동**은 다음 메서드를 통해 할 수 있다.    
 ```js
 parentNode
 childNodes[n]
@@ -66,7 +66,8 @@ lastChild
 nextSibling
 previousSibling
 ```
-`Element`와 다르게 노드는 매우 작은 범위로 이동한다.
+`Element`와 다르게 노드는 매우 작은 범위로 이동한다. 때문에 노드간 이동에서 예상과 다른 결과를 얻을 수 있는데
+다음 `table`태그안의 노드 개수를 확인해 보면 노드가 얼마나 작으 단위인지 알 수 있다.  
 ```html
 <table border="1" id="table" >
   <tbody id="tbody">
@@ -85,8 +86,9 @@ length: 3
 ```
 chrome 디버그 창에서 `console.log(document.getElementById("table").childNodes);` 출력한 결과이다.  
 
-`tbody`를 둘러싸고 있는 `text Node`는 **개행**이다.  
-태그안의 개행마저 `text Node`인식하기때문
+`tbody`를 둘러싸고 있는 `text Node`는 **개행**이다.   
+태그안의 개행마저 `text Node`인식하기때문  
+따라서 `nextSibling`, `previousSibling`로 이동하다 보면 이런 공백으로 다른 값을 참조할 가능성이 많다.  
 
 
 ```html
@@ -94,10 +96,9 @@ chrome 디버그 창에서 `console.log(document.getElementById("table").childNo
 ```
 위와같이 공백을 없애면 `text Node`가 생기지 않는다.  
 
+노드 말고 `Element`간 이동을 할 수 있다면 위와 같은 상황을 방지할 수 있는데  
+물론 요소간 이동할 수 있는 메서드도 DOM객체가 지원한다.  
 
-하지만 예상외로 생기는 `text Node`때문에 코드 공백을 모두 없애버릴 순 없기애 `Node`단위가 아닌 `Element`단위로 이동할 필요가 있다.  
-
-당연히 DOM객체 속성으로 모두 지원해준다.  
 ```js
 parentElement
 children
