@@ -1,5 +1,5 @@
 ---
-title:  "Web - JavaScript 6일차 - Obejct, setTimeout, 클로저!"
+title:  "Web - JavaScript 6일차 - Obejct, setTimeout, 클로저, prototype!"
 
 read_time: false
 share: false
@@ -62,7 +62,7 @@ function validateForm() {
 JavaScript에선 `function` 정의와 호출방법이 몇가지 더 있다.
 
 ### new Function()  
-function또한 Obejct의 일종으로 다음과 같이 생성이 가능하다.   
+`function`또한 `Obejct`의 일종으로 다음과 같이 생성이 가능하다.   
 `new Function ([arg1[, arg2[, ...argN]],] functionBody)`   
 
 ```js
@@ -85,7 +85,7 @@ func2(); //display
 
 ### 표현식 사용 함수  
 
-지금까지 무명 메서드를 정의하고, 이를 함수를 저장하는 변수에 담아 호출했다.
+지금까지 무명 메서드를 정의하고, 이를 함수를 저장하는 변수에 담아 호출했다.  
 이런 방법은 **표현식 사용 함수**정의라 한다.  
 ```js
 var sum = function(a, b) {
@@ -225,15 +225,16 @@ for ( var x in person) {
 			console.log(x + " = " + person[x]);
 		}
 ```
+
 ~~Object가 배열과 약간 비슷한 면이 있다...~~
 
 
 
-### 객체를 생성하는 방법 1. new Obejct()
+### 객체를 생성하는 방법 1. new Obejct() 함수
 
-객체를 생성하는 방법은 `var obj = {};`방식 외에도 여러가지 있다.  
+객체를 생성하는 방법은 `var obj = {};`방식(리터럴) 외에도 여러가지 있다.  
 
-`new Obejct()`를 통해 빈 Object변수를 생성하고 프로퍼티를 추가해 나간다.  
+`new Obejct()`를 통해 빈 객체을 만들고(`new`) `Obejct()` 함수를 호출한다. 그리고 객체에 프로퍼티를 추가해 나간다.  
 ```js
 var person = new Object();
 person.firstName = "Hong";
@@ -248,13 +249,17 @@ person.print = function() {
 프로퍼티를 삭제하고 싶다면 `delete`키워드를 사용한다.  
 `delete person.age;`  
 
+> 사실 `var obj = {};`과 `var obj = new Object();`은 똑같은 방법, 모든 객체를 만들때에는 JavaScript에 이미 정의되어 있는 함수를 통해 만들어진다.
+
 
 <br>
 
 ### 객체를 생성하는 방법 2. 생성자 메서드
 
 메서드를 호출할 때 마다 객체를 반환하는 생성자 역할을 하는 생성자 메서드를 정의한다.  
-`this`키워드를 사용해 객체를 생성하고 프로퍼티를 정의한다.  
+`this`키워드를 사용해  생성된 객체에 프로퍼티를 정의하고 초기화한다.  
+
+> 생성자 함수에선 맨 앞의 문자를 대문자로 쓸 것 을 권장한다.  
 ```js
 function Person(name, age, color) {
   this.name = name;
@@ -269,8 +274,13 @@ function Person(name, age, color) {
 var father = new Person("Hong", 30, "blue");
 var son = new Person("Kim", 10, "red");
 ```
+생성자 함수도 일반 함수이기 때문에 `this.name`은 `window`객체의 `name`이라는 전역변수를 정의하고 초기화 하는 문법이 되어버린다.  
+
+때문에 함수앞에 `new`키워드 를 붙여 객체를 생성하고 `this`키워드는 해당 객체의 공간을 나타낸다.  
 
 생성자 메서드로 인해 만들어진 객체들은 JavaScript의 다른 객체들처럼 프로퍼티를 삭제하거나, 추가, 재정의 할 수 있다.  
+
+함수앞에 `new`키워드를 붙이는개 생소하지만 문법으로 받아들이자.  
 
 <br><br>
 
@@ -353,9 +363,8 @@ function timer_clearInterval() {
 함수안의 지역변수를 만들고 **함수가 끝나더라도 지역변수를 유지**시키기 위해 함수안에 해당 지역변수를 참조하는 함수를 만드는데  
 간단히 말하면 함수안에 선언된 이 함수를 클로저라 한다.  
 
-
-
 JavaScript외에 다른 언어에서도 클로저의 개념은 쓰이는데 함수가 끝남에도 지역변수가 계속 유지된다는 것이 특이하다.  
+
 클로저 함수가 지역변수를 참조하고 전역변수가 이 클로저함수를 참조하고 있다면 지역변수는 계속 유지된다.  
 
 
@@ -417,7 +426,7 @@ counter.decrement();
 console.log(counter.value()); // logs 1
 ```
 
-설계를 보면 알겠지만 counter가 반환받은 객체의 함수를 통해서만 지역변수인 `privateCounter`에 접근 가능하다.   
+설계를 보면 알겠지만 `counter`가 반환받은 객체의 함수를 통해서만 지역변수인 `privateCounter`에 접근 가능하다.   
 (지역변수인 `privateCounter`심볼을 메모리에서 해재되지 않을까?)  
 
 > 출처: https://developer.mozilla.org/ko/docs/Web/JavaScript/Guide/Closures#클로저를_이용해서_프라이빗_메소드_(private_method)_흉내내기
@@ -454,6 +463,9 @@ counter1.decrement();
 alert(counter1.value()); /* 1 */
 alert(counter2.value()); /* 0 */
 ```
+
+클로저 함수를 사용함으로 바로 객체의 변수에 접근하지 못하도록 하고 접근용 함수에서 유효성 체크를 할 수 있다.  
+
 
 ### 클로저 - Progress Bar
 
@@ -532,3 +544,89 @@ function progressBar(myBar) {
 
 > https://medium.com/@bluesh55/javascript-prototype-이해하기-f8e67c286b67
 
+Javascript도 객체지향 언어라고 하는데 class개념, 상속 개념이 없다.  
+`Prototype`을 통해 상속과 같은 개념을 흉내낼 수 있다.  
+위의 생성자 함수를 통해 클래스 비슷하게 흉내내었었다.  
+
+`Porototpye`을 사용하면 이에 더불어 `static` 변수와 같은 공용 변수를 정의할 수 있다.  
+```js
+function Person(name, age, color) {
+  this.name = name;
+  this.age = age;
+  this.color = color;
+}
+Person.prototype.print = function() {
+  return this.name +" / "+ this.age +" / "+ this.color;
+
+var hong = new Person("hong", 25, "red");
+hong.print();
+```
+
+위에서 정의했던 `Person`의 `print`메서드를 모든 객체가 공유하는 하는 함수로 정의, 효율적인 메모리 관리도 가능하다.  
+
+이런 설계가 가능한 이유는 `Person()`이라는 생성자 함수자체에 `prototype`객체가 생성되기 때문  
+
+> 함수또한 객체이기때문에 `Prototype`이라는 멤버를 가지고 있는게 이상하진 않다.  
+
+`prototype`객체는 멤버로 `constructor`, `__proto__` 객체를 가지고 있다.  
+
+`constructor`는 함수를 가리키는 멤버변수,  
+`__proto__`는 `Prototype Link`라는 녀석이다.   
+
+`__proto__`를 통해 만들어진 객체 또한 생성자 함수의 멤버 `prototype`객체에 접근 가능하다.  
+
+![js-14]({{ "/assets/web/js/js-14.png" | absolute_url }}){: .shadow}  
+
+
+### Prototype Link
+
+`hong`이라는 객체가 생성자 함수 멤버  `prototype`객체의 멤버함수인 `print`에 접근하기 위해선 `Prototype Link`인 `__proto__`가 있어야 한다.  
+
+
+`Prototype Link`인 `__proto__`가 생성자 함수의 `prototype`객체에 접근하도록 해주는 열쇠같은 녀석이다.  
+
+생성자 함수로 생성되던, 리터럴로 생성되던 모든 `Object`는 `__proto__`객체를 멤버로 가지고 있다.  
+
+`__proto__`은 생성자 함수의 `prototype`객체를 가리킨다.
+```js
+var hong = new Person("Hong", 30, "blue");
+console.log(hong.__proto__)
+
+var kim = {
+  name: "kim",
+  age: 25,
+  color: "red"
+}
+console.log(kim.__proto__);
+```
+![js-15]({{ "/assets/web/js/js-15.png" | absolute_url }}){: .shadow}  
+
+리터럴로 생성된 `kim`객체또한 `Object()`함수를 통해 만들어진 것이기 때문에 `__proto__`는 Object의 `prototype`을 가리킨다.  
+
+아무대로 `Object()`멤버의 `prototype`객체에 정의된 함수, 변수가 우리가 정의한 `Person()`보단 많다.  
+
+어쨋건 `hong.print()` 형식으로 메서드를 호출할 수 있는 이유는 먼저 `print`메서드가 자신에게 있는지 탐색하고 없다면 `__proto__`에 연결된 생성자 함수의 `prototype`객체에 `print`가 정의되어 있는지 탐색하기 때문  
+
+### 프로토타입 체인
+
+위에서 말했던 `new Function()`이 기억 나는가?  
+> https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Function  
+사실 `function test(){...}`은 위의 `var test = new Function(...)`과 같다고 하였다.(완벽히 같지는 않음)  
+즉 `test()`는 `Function()`생성자 함수로 만들어진 `Function`객체이다.  
+
+`__proto__`객체는 모든 객체가 가지고 있기때문에 `Function`또한 가지고 있다.  
+```js
+function test() {};
+console.log(test.__proto__);
+console.log(test.prototype.__proto__);
+```
+
+`test`의 `__proto__`가 가리키는 것은 `Function`의 `prototype`객체.   
+
+`test`의 `prototype`객체의 `__proto__`가 가리키는 것은 `Object`의 `prototype`객체. (`prototype`또한 `new Object()`로 만들어졌기 때문)  
+
+`Function`객체 또한 `new`로 인해 만들어진 Object의 일종이기 때문에 `test.__proto__.__proto__`는 `Object`의 `prototype`객체를 가리킨다.  
+
+> https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/new
+
+생성자 함수로 만들어진 객체이건, 리터럴로 만들어진 객체이건 `Prototype`을 통해 위로 올라가면 `Object`객체가 나온다. 
