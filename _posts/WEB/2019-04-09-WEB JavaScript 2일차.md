@@ -247,6 +247,22 @@ out `div`가 자식으로 in `div`를 가지고 있다. 그리고 두 개의 `di
 `Bubbling`은 아래에서 공기방울이 올라오듯이 자식태그의 이벤트처리 함수를 먼저 호출하고 부모의 이벤트 처리를 이어 한다.  
 `Capturing`은 반대로 큰 순서대로 부모의 이벤트 처리후 자식의 이벤트를 처리한다.  
 
+
+### event.target
+
+`event`**발생 진원지**를 찾고 싶을때 사용하는 속성이다. 이벤트가 발생한 DOM객체를 반환한다.  
+위의 `in`, `out` 2개의 `div`태그중 클릭한 div태그에 대해서만 이벤트 핸들러를 호출하고 싶다면 이벤트 발생 진원지를 알 필요가 있다.   
+`event`가 발생하는 가장 큰 범위 `body`에 `onclick`이벤트 처리 핸들러를 걸어두고 진원지에 따라 처리되도록 조건문을 작성하면 된다.  
+```js
+document.body.onclick = function () {
+  if(event.target.id == "in")
+    alert("in div 클릭...")
+  else if(event.target.id == "out")
+    alert("out div 클릭...")
+}
+```
+
+> `event.currentTarget`라는 비슷한 event객체의 비슷한 속성이 있는데 이벤트가 발생한 DOM객체를 반환하지 않고 이벤트가 바인딩된 요소 `body`를 반환한다.  
 <br><br>
 
 ## Element - className
@@ -513,7 +529,8 @@ console.log(3 !== '3') // true
 console.log(4 !== 3) // true
 ```
 
-## String.prototype 문자열 함수  
+## String 문자열 함수  
+
 ### indexOf 메서드
 
 못찾으면 -1, 찾으면 찾은 위치값을 돌리는 함수,  
