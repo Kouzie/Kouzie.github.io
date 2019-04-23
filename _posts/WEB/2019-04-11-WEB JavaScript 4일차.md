@@ -418,9 +418,10 @@ for (let i = 0; i < colls.length; i++) {
 
 > `nextElementSibling`은 자기자신 바로 다음 요소를 가져올 때 사용하는 `DOM Property`
 
-![js9]({{ "/assets/web/js/js9.png" | absolute_url }}){: .shadow}{: .align-right}
+![js9]({{ "/assets/web/js/js9.png" | absolute_url }}){: .shadow}
 
 전체코드
+
 ```html
 <!DOCTYPE html>
 <html lang="en">

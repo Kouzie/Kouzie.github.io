@@ -263,6 +263,22 @@ document.body.onclick = function () {
 ```
 
 > `event.currentTarget`라는 비슷한 event객체의 비슷한 속성이 있는데 이벤트가 발생한 DOM객체를 반환하지 않고 이벤트가 바인딩된 요소 `body`를 반환한다.  
+
+### event.preventDefault()
+
+`preventDefault()`메서드는 기존 `event`수행을 막는 역할을 한다.  
+
+```html
+<a href="https://naver.com" id="naver">네이버</a>
+<script>
+  document.getElementById("naver").onclick = function () {
+    event.preventDefault();
+    console.log("네이버로 가는것을 막음");
+  }
+</script>
+```
+`a`태그의 기본 역할인 link로 이동하는 이벤트를 막고 `console.log`를 수행한다.  
+
 <br><br>
 
 ## Element - className
