@@ -402,6 +402,34 @@ BODY > div, DIV > strong, STRONG > span, STRONG > em, EM > b, DIV > b
 
 ## jQuery - $.map()
 
+배열의 각 아이템, 혹은 객체의 각 속성에 특정 작업을 한 후 **배열**로 반환한다.  
+```js
+var obj = {
+  name: "Honggildong",
+  age: 23,
+  job: "student"
+};
+
+obj = $.map(obj, function(value, index){
+  return value + " 입니다.";
+});
+$.each(obj, function(index, value){
+  console.log(index + ": " + value);
+});
+```
+출력값
+```
+0: Honggildong입니다.
+1: 23입니다.
+2: student입니다.
+```
+`each`에는 첫번째 매개변수에 첨자값을 넣었지만  
+`map`에선 두번째 매개변수에 첨자값을 넣는다.  
+
+또한 객체를 넣든 배열을 넣든 반환값은 무조건 배열이다.  
+
+<br><br>
+
 ## jQuery - css()
 
 Jquery에서 `style`설정하려면 `css()`메서드를 사용한다.  
@@ -1106,6 +1134,50 @@ var $q = jQuery.noConflict();
 $q( "div" ).hide();
 ```
 
-## jQuery - extend()
+## jQuery - $.extend()
 
-두개 이상 객체를 합치는 메서드.  
+`$.extend()`메서드는 객체 확장 메서드로 객체에 추가 속성을 주고 싶을때 일일이 `객체명.속성명 = 속성값` 형식을 사용하면 지저분하다.  
+```js
+var obj = {};
+obj.name = "Hong";
+obj.age = 23;
+obj.job = "student";
+```
+위 코드를 extend()메서드를 사용해 다음과 같이 바꿀 수 있다.
+```js
+var obj = {fisrtName: "Hong"};
+$.extend(obj{
+  middleName: "gildong",
+  age: 23,
+  job: "student"
+});
+```
+
+`extend()`를 사용해 여러개의 객체를 결합할 수 있다.    
+`$.extend(객체1, 객체2, 객체3, ... 객체N)`  
+
+```js
+var obj = {
+  name: "Honggildong",
+  age: 23,
+  job: "student"
+};
+var stdinfo = {
+  kor: 100,
+  mat: 95,
+  eng: 89
+};
+var studentObj = $.extend(obj, stdinfo);
+$.each(studentObj, function(index, value){
+  console.log(index + ": " + value);
+});
+```
+출력값
+```
+name: Honggildong
+age: 23
+job: student
+kor: 100
+mat: 95
+eng: 89
+```
