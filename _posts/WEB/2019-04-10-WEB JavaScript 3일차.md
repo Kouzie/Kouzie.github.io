@@ -242,7 +242,7 @@ console.log(Math.min.apply(null, m)); //1
 비교 함수를 `apply()` 메서드의 첫번째 매개변수로 넣을 수 있다. 문자열, 숫자는 알아서 가장 큰 값을 가져오지만 객체같은 경우 비교함수를 지정해야 큰지 작은지 비교 가능하다.  
 
 
-## forEach, filter, map
+## forEach, filter, map, some
 
 `forEach, filter, map` 세 함수를 사용하면 반복문을 사용하지 않아도 반복문 처리를 할 수 있는 직관적인 코드 작성이 가능하다.  
 
@@ -339,6 +339,20 @@ function checkDuplicate(arr, num) {
 ```
 배열의 모든 요소가 `num`과 불일치 하는지 검사하고 일치하는게 하나라도 있다면 `false`를 반환한다.
 
+### some
+
+적어도 하나의 요소 이상이 조건에 부합하는 지 검사, 
+위의 중복체크 메서드를 다음과 같이 변경할 수 있다. 만약 true가 나오면 중복되는 요소가 있다는 뜻.
+```js
+function checkDuplicate(arr, num) {
+    return arr.some(function (value, index, array) {
+        return value == num;
+    })
+}
+```
+
+## reduce(), reduceRight()
+
 
 ## arguments
 
@@ -405,9 +419,7 @@ fn2()()()()()();
 
 `calleeTest2`가 종료되면서 계속 자기자신을 반환하기 때문에 `()` 호출 연산자를 연속으로 붙여 사용할 수 있다.  
 
-
-<br>
-<br>
+<br><br>
 
 ## select, option
 
@@ -425,10 +437,11 @@ fn2()()()()()();
 
 select태그에 JavaScript를 사용해 동적으로 옵션을 **추가**하고 싶거나 **삭제**하고 싶을때 `Option`개체를 사용한다.  
 
-`new Option([text[,value[,defaultSelected[,selected]]]])`
-`Option`객체 생성자에 여러가지 파라미터가 들어갈 수 있다.
+`new Option([text[,value[,defaultSelected[,selected]]]])`  
+`Option`객체 생성자에 여러가지 파라미터가 들어갈 수 있다.  
 
-초기값으로의 선택은 인수 `defaultSelected`값을 true로 , 복수 선택을 위해선 `selected`값을 true로 설정한다.(복수 선택하기 위해선 select 태그가 다음과 같이 설정되어 있어야함 `<select multiple='multiple'>`)   
+초기값으로의 선택은 인수 `defaultSelected`값을 `true`로 , 복수 선택을 위해선 `selected`값을 `true`로 설정한다.  
+(복수 선택하기 위해선 `select` 태그가 다음과 같이 설정되어 있어야함 `<select multiple='multiple'>`)   
 
 
 
@@ -458,7 +471,7 @@ for (var i = 0; i < optionlist.length; i++) {
 var idx = bgcolor.selectedIndex;
 var value = bgcolor.options[idx].value;
 ```
-선택한 option의 값을 가져오고 싶다면 `select`객체의 `selectedIndex`속성으로 선택한 index값을 가져온 후 배열 첨자값으로 사용하면 된다.  
+선택한 `option`의 값을 가져오고 싶다면 `select`객체의 `selectedIndex`속성으로 선택한 index값을 가져온 후 배열 첨자값으로 사용하면 된다.  
 
 
 ## Date
@@ -502,7 +515,7 @@ console.log(d6); //Sun Dec 21 1919 00:00:00 GMT+0900 (한국 표준시)
 년도에 2글자 적용시 이전세기(100년전)로 적용된다. `99`, `19` 모두 `1900`년도로 설정됨.
 
 
-문자열을 사용해서 Date객체 생성또한 가능하다.  
+문자열을 사용해서 `Date`객체 생성또한 가능하다.  
 `ISO Date "2015-03-05"`  
 `Short Date "03/05/2015"`  
 `Long Date "May 05 2015"`  

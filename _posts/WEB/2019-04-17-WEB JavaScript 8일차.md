@@ -542,8 +542,8 @@ console.log(navigator.platform); //Win32 - 운영체제
 
 웹에서 설정유지를 위해 사용하는 text형태의 파일.  
 
-브라우저가 만들고 관리한기 때문에 브라우저별로 저장위치가 다르다.  
-(chrome은 SQL ㅍ)
+브라우저가 만들고 관리한기 때문에 브라우저별로 저장위치가 다르다.   
+(그리고 chrome은 DB형식으로 저장하기 때문에 SQL뷰어같은게 필요함)  
 
 사용 용도는 주로 다음 세 가지 목적을 위해 사용된다.  
 
@@ -563,19 +563,24 @@ console.log(navigator.platform); //Win32 - 운영체제
 사용할 수 있는 속성과 값들은 다음과 같다.  
 `name="nameValue"; expires="expireDate"; path="pathHolders"; domain="domainName"; secure `
 
-`name` -> `키`   
-`nameValue` -> `키`에해당하는 `값`  
-`expires` -> `만료시간` 설정 속성   
-`path` -> 서버의 `경로`, 경로에 해당하는 url에서 쿠키가 사용될 수 있다.  
-`domain` -> 서버의 `도메인`, 도메인에 해당하는 url에서 쿠키가 사용될 수 있다.   
-`secure` -> `HTTPS` 프로토콜일 경우에만 쿠키가 사용됨.  
+**속성명**|**설명**
+:-----:|:-----
+`name`| `키` 이름
+`nameValue`| `키`에해당하는 `값`  
+`expires`| `만료시간` 설정 속성   
+`path`| 서버의 `경로`, 경로에 해당하는 url에서 쿠키가 사용될 수 있다.  
+`domain`| 서버의 `도메인`, 도메인에 해당하는 url에서 쿠키가 사용될 수 있다.   
+`secure`| `HTTPS` 프로토콜일 경우에만 쿠키가 사용됨.  
 
-`expireDate`로 들어가는 날짜형식은 `new Date().toUTCString()` 문자형식(`Thu, 18 Apr 2019 08:38:14 GMT`)  
 
-> toGMTString()이 더이상 표준이 아님으로 위의 toUTCString() 사용을 권장한다.(물론 GMT사용해도 인식은 한다 아직까진...)
+`expireDate`속성에 들어가는 날짜형식은 `new Date().toUTCString()` 문자형식(`Thu, 18 Apr 2019 08:38:14 GMT`) 이 들어간다.  
+
+> `toGMTString()`이 더이상 표준이 아님으로 위의 `toUTCString()` 사용을 권장한다.(브라우저에서 아지까진 지원한다)
 
 쿠키는 `document.cookie`객체에 문자열을 삽입해 생성한다.  
 
+
+쿠키를 만들고 가져오고 지우는 메서드 생성
 ```js
 function setCookie(name, value, exdays) {
 	var now = new Date();
@@ -612,3 +617,21 @@ function deleteCokie(name) {
 	document.cookie = name + "=" + "; expires=" + now.toUTCString();
 }
 ```
+
+
+
+### 인코딩과 디코딩
+
+쿠키를 저장하고 다시 가져오는 과정에서 `escape`, `unescape` 사용하였는데 인코딩, 디코딩 하는 메서드이다.  
+
+다음을 제외한 모든 문자열을 변환한다.
+```
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+abcdefghijklmnopqrstuvwxyz
+1234567890
+@*-_+./
+```
+한글같은 경우는 16진수로 변환되어 저장된다.  
+
+이외에도 `encodeURI()`, `encodeURIIComponent()` 메서드가 있는데 인코딩 하는 문자열의 범위가 각각 다르다.  
+
