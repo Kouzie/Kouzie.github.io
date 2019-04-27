@@ -443,8 +443,6 @@ select태그에 JavaScript를 사용해 동적으로 옵션을 **추가**하고 
 초기값으로의 선택은 인수 `defaultSelected`값을 `true`로 , 복수 선택을 위해선 `selected`값을 `true`로 설정한다.  
 (복수 선택하기 위해선 `select` 태그가 다음과 같이 설정되어 있어야함 `<select multiple='multiple'>`)   
 
-
-
 ```js
 var bgcolor = document.getElementById("bgcolor");
 var optionObj = new Option("red", "red");
@@ -473,6 +471,33 @@ var value = bgcolor.options[idx].value;
 ```
 선택한 `option`의 값을 가져오고 싶다면 `select`객체의 `selectedIndex`속성으로 선택한 index값을 가져온 후 배열 첨자값으로 사용하면 된다.  
 
+<br>
+
+### select의 onclick, onchange 이벤트
+
+`select box`에서 값이 바뀌면 이벤트를 발생시키고 싶을때 `onchange`이벤트 핸들러를 사용하면 된다.  
+하지만 `onchange`의 단점은 이미 선택되어 있는 `option`태그를 사용하면 바뀌지 않는다는 것인데  
+select태그 특성상 항상 맨 위의 `option`태그가 항상 선택되어 있기 때문에 맨위의 `option`태그를 선택해 `onchange`이벤트를 발생시킬 수 없다.  
+
+이를 해결할 가장 간단한 방법은 `<option value="">선택하세요</option>` 같은 의미없는 `option`태그를 맨 위에 놓으면 된다.  
+
+의미없는 `option`태그를 넣기 싫다면 다음과 같이 `boolbean`타입 `flag`변수와 `onclick`메서드를 사용하자  
+`onclick`메서드는 `option`리스트를 열때, `option`을 선택할때 일어나기 때문에 첫번째 `event`는 무시해야 할 필요가 있어 `flag`변수를 사용했다.
+```js
+var flag = true;
+$("select").on("click", function() {
+	if(flag)
+	{
+		flag = false;
+		return;
+	}
+	var value = $(this).val();
+  console.log(value);
+	flag = true;
+});
+```
+
+<br><br>
 
 ## Date
 
