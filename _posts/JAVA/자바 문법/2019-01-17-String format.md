@@ -15,14 +15,14 @@ tags:
 
 ### String format
 
-java.util패키지의 Class Formatter클래스의 string관련 내용에서 관련 내용을 찾을 수 있다.  
+`java.util`패키지의 `Class Formatter`클래스의 `string`관련 내용에서 관련 내용을 찾을 수 있다.  
 
 ```%[argument_index$][flags][width][.precision]conversion```  
 
-[ ]는 다 생략 가능한것들 생략하고 나면 %conversion 하나 남는다  
-%s, %d처럼 s와 d가 conversion라 볼수 있다.  
+`[ ]`는 다 생략 가능한것들 생략하고 나면 `%conversion` 하나 남는다  
+`%s`, `%d`와 같은 형식을 `conversion`라 볼수 있다.   
 
-[width] 옵션을 사용해보자  
+`[width]` 옵션을 사용해보자  
 ---
 ```java
 int age=20;
@@ -38,7 +38,7 @@ System.out.printf("[%10s], [%10d]\n",name, age);
 ```
 ---
 
-[flag]옵션을 사용해 보자 
+`[flag]`옵션을 사용해 보자 
 
 ```java
 System.out.println("[flags]도 붙여보자");
@@ -63,7 +63,7 @@ System.out.printf("[%10s], [%010d]\n",name, age); //width만큼 0표시
 
 ---
 
-[argument_index$]옵션을 사용해 보자  
+`[argument_index$]`옵션을 사용해 보자  
 ```java
 System.out.println("[argument_index$]도 붙여보자");
 System.out.printf("[%1$10s], [%2$#10o], [%2$#10o]\n",name, age);
