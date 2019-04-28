@@ -270,7 +270,7 @@ public class DBCPInit extends HttpServlet{
 ```
 
 파라미터 외에도 `request`객체는 클라이언트(브라우저)요청에 관한 여러 정보를 가져온다.    
-```jsp
+```js
 <%= request.getRemoteAddr() %>
 <!-- 0:0:0:0:0:0:0:1 클라이언트의 IP주소를 가져온다. (ipv6)  -->
 
