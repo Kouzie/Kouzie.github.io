@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+        <title>Jquery</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+        <link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
+        <style>
+.task-list-item { list-style-type: none; } .task-list-item-checkbox { margin-left: -20px; vertical-align: middle; }
+</style>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        
+        <script src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
+    </head>
+    <body>
+        <hr>
+<p>title:  &quot;Web - JavaScript 8일차 - Jquery!&quot;</p>
+<p>read_time: false
+share: false
+author_profile: false
+classes: wide</p>
+<p>categories:</p>
+<ul>
+<li>HTML</li>
+</ul>
+<p>tags:</p>
+<ul>
+<li>web</li>
+<li>html</li>
+<li>jquery</li>
+<li>javascript</li>
+</ul>
+<p>toc: true</p>
+<hr>
+<h2 id="jquery">Jquery</h2>
+<p>jQuery는 빠르고 작으며 기능이 풍부한 <strong>JavaScript 라이브러리</strong>이다.</p>
+<p>다양한 브라우저에서 작동하는 사용하기 쉬운 API를 사용하면
+HTML 문서 탐색 및 조작, 이벤트 처리, 애니메이션 및 Ajax를 훨씬 간단하게 만들 수 있다.<br>
+다양성과 확장 성을 결합한 jQuery는 수백만 명이 JavaScript를 작성하는 방식을 변경했다.</p>
+<blockquote>
+<p><a href="http://jquery.com/">http://jquery.com/</a></p>
+</blockquote>
+<h3 id="jquery-%EC%82%AC%EC%9A%A9%ED%95%98%EB%8A%94%EB%B2%95">Jquery 사용하는법</h3>
+<blockquote>
+<p><a href="https://jquery.com/download/">https://jquery.com/download/</a></p>
+</blockquote>
+<p>위 사이트 Donwload에서 <code>.js</code>파일을 다운받아 <code>script</code>태그로 연결하거나<br>
+CDN에서 호스팅 받으면 된다.</p>
+<p><code>.min</code>이라는 문자열이 붙은 버전이 있는데 압축버전을 뜻한다.</p>
+<p>디버깅이나 Jquery코딩을 보고싶다면 <code>.min</code>이 붙지않은 파일을 사용하면 된다.</p>
+<h3 id="cdn-%EC%82%AC%EC%9D%B4%ED%8A%B8">CDN 사이트</h3>
+<p><a href="https://developers.google.com/speed/libraries/#jquery">https://developers.google.com/speed/libraries/#jquery</a></p>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+</div></code></pre>
+<p><br><br></p>
+<h2 id="jquery-%EC%9A%94%EC%86%8C-%EC%84%A0%ED%83%9D">Jquery 요소 선택</h2>
+<p>Javascript에서 요소선택할 때 다양한 <code>DOM</code>객체 메서드로 요소의 객체를 가져왔다. (<code>getElement...</code>, <code>querySelector...</code> 등)</p>
+<p>Jquery는 <code>$( )</code> 연산을 통해 선택자를 매개변수로 넣고 객체를 가져올 수 있다.</p>
+<p><code>$(&quot;선택자&quot;).함수명()</code>
+css에서 사용하는 선택자를 집어넣는다. id는 <code>#</code>을 붙인다, class는 <code>.</code>, 태그명 등</p>
+<blockquote>
+<p><a href="https://kouzie.github.io/html/HTML-CSS-%EA%B0%80%EC%83%81%EC%9A%94%EC%86%8C,-%EA%B2%B0%ED%95%A9%EC%9E%90,-%EC%86%8D%EC%84%B1%EC%84%A0%ED%83%9D%EC%9E%90,-%EC%A0%84%EC%97%AD%EB%B3%80%EC%88%98/#">https://kouzie.github.io/html/HTML-CSS-가상요소,-결합자,-속성선택자,-전역변수/#</a></p>
+</blockquote>
+<p>html요소가 전부 로딩된후인 <body> 닫기바로 위에 script를 추가하였다.
+body닫기 바로 위가 싫다면 window.onload 의 이벤트 헨들러 함수안에서 해야함
+jquery로는 <code>$(document).ready( function(){ } )</code></p>
+<p><br><br></p>
+<h2 id="jquery-%EA%B0%9D%EC%B2%B4">Jquery 객체</h2>
+<p>항상 <code>HTML DOM</code>객체인 <code>document</code>객체를 통해 요소를 선택에 객체로 가져왔다.</p>
+<p>Jquery에서 <code>$( )</code>연산을 통해 가져오는 객체는 <code>DOM</code>객체가 아닌 <code>Jquery</code>객체이다.</p>
+<pre><code class="language-js"><div><span class="hljs-keyword">var</span> a = {
+  <span class="hljs-attr">name</span>: <span class="hljs-string">"hong"</span>,
+  <span class="hljs-attr">age</span>: <span class="hljs-number">20</span>
+};
+<span class="hljs-keyword">var</span> b = $(<span class="hljs-string">"body"</span>);
+
+
+alert(a.jquery); <span class="hljs-comment">//undefined</span>
+alert(b.jquery); <span class="hljs-comment">//3.3.1</span>
+</div></code></pre>
+<p><code>a</code>객체는 javascript도 만든 <code>Object</code>이고 <code>b</code>객체는 <code>$( )</code>메서드를 사용한 <code>jquery객체</code>이다.</p>
+<p>해당 객체가 <code>jquery</code>객체인지 아닌지 판단하려면 객체안에 멤버로 <code>jquery</code>변수가 있는지 확인하면 된다.</p>
+<h3 id="jquery-%EB%A9%94%EC%84%9C%EB%93%9C">$, jQuery() 메서드</h3>
+<p><code>$( )</code> 굉장히 수상스럽게 생겼다.</p>
+<p>사실 위 연산자는 다음 연산자와 같은 역할을 한다.
+<code>jQuery( )</code></p>
+<p><code>jQuery()</code> 함수는 매개변수로 <code>element</code>, <code>elementArray</code>, <code>object</code> 등의 <code>DOM</code>객체를 넣으면  Jquery객체로 포장하여 반환한다.<br>
+css에서 사용했던 선택자 문자열로 넣어도 Jquery 객체로 반환한다.</p>
+<p>Jquery객체로 변경됨으로 Jquery에서 제공하는 많은 메서드를 편리하게 사용할 수 있다.</p>
+<p>보면 알겠지만 <code>$</code>는 <code>jQuery</code>의 <strong>약자</strong>이다.</p>
+<p><code>jQuery</code> 역시 함수를 가리키는 변수명으로 <code>jquery-3.4.0.js</code>파일 안에 다음과 같이 코딩되어 있다.</p>
+<pre><code class="language-js"><div>jQuery = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> selector, context </span>) </span>{
+  <span class="hljs-comment">// The jQuery object is actually just the init constructor 'enhanced'</span>
+  <span class="hljs-comment">// Need init if jQuery is called (just allow error to be thrown if not included)</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> jQuery.fn.init( selector, context );
+},
+</div></code></pre>
+<pre><code class="language-js"><div>jQuery.fn.init = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> selector, context, root </span>) </span>{
+  ...
+  ...
+}
+</div></code></pre>
+<p>이런식으로 되어있다.</p>
+<blockquote>
+<p><code>$</code>기호는 다른 라이브러리에서도 많이 쓰이기때문에 <code>Jquery</code>객체를 못가져오는데 그 때 <code>jQuery()</code> 함수를 사용해야 한다. 혹은 약어를 <code>$</code>말고 다른 기호로 바꾸던가 해야함.</p>
+</blockquote>
+<h2 id="jquery-%EA%B0%9D%EC%B2%B4-%EC%83%9D%EC%84%B1">Jquery 객체 생성</h2>
+<p><code>$( )</code> 메서드를 사용해 객체를 생성할 수 있다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"&lt;div&gt;test&lt;/div&gt;"</span>);
+$(<span class="hljs-string">"&lt;div&gt;"</span>);
+
+$(<span class="hljs-string">"p"</span>).html(<span class="hljs-string">"&lt;span style='color:red'&gt;span tag&lt;/span&gt;"</span>);
+</div></code></pre>
+<p><code>html()</code>메서드는 <code>DOM</code>객체의 <code>innerHTML</code>속성 역할을 하는 함수.</p>
+<blockquote>
+<p>innerText속성 역학을 하는 text() 메서드도 있다.</p>
+</blockquote>
+<h3 id="jquery---prepend-append-prependto-appendto">jQuery - prepend, append, prependTo, appendTo</h3>
+<p><code>prepend()</code>와 <code>append()</code>는 자신의 자식 객체로 괄호안의 태그를 삽입한다.<br>
+<code>parentTag.prepend(childTag)</code>형식으로 사용하면 된다.</p>
+<p><code>prepend()</code>가 첫번째 자식으로 추가, <code>append()</code>가 마지막 자식으로 추가하겠단 뜻이다.</p>
+<p>다음과같은 div태그와 p태그가 있을 때 첫번째, 마지막번째에 새로운 p태그를 추가해보자.</p>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"demo"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"p1"</span>&gt;</span>p1<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"p2"</span>&gt;</span>p2<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"p3"</span>&gt;</span>p3<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</div></code></pre>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"#demo"</span>).prepend(<span class="hljs-string">"&lt;p id='p0'&gt;p0&lt;/p&gt;"</span>).append(<span class="hljs-string">"&lt;p id='p4'&gt;p4&lt;/p&gt;"</span>);
+</div></code></pre>
+<p>출력값</p>
+<pre><code><div>p0
+p1
+p2
+p3
+p4
+</div></code></pre>
+<p><code>prependTo()</code>, <code>appendTo()</code>는 괄호 안에 부모태그가 들어간다.<br>
+위의 코딩을 아래와 같이 바꿀수 있다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"&lt;p id='p0'&gt;p0&lt;/p&gt;"</span>).prependTo(<span class="hljs-string">"#demo"</span>);
+$(<span class="hljs-string">"&lt;p id='p4'&gt;p4&lt;/p&gt;"</span>).appendTo(<span class="hljs-string">"#demo"</span>);
+</div></code></pre>
+<p>즉 <code>자식.appentTo(부모)</code> 형식으로 쓰인다.</p>
+<h3 id="jquery---before-after-insertbefore-insertafterppendto">jQuery - before, after, insertBefore, insertAfterppendTo</h3>
+<p><code>before()</code>, <code>after()</code>메서드는 형제레벨에서 해당 객체 앞, 뒤에 객체를 추가시킨다.</p>
+<p>다음과 같은 태그에서 <code>p1</code>앞에 <code>p0</code>을, <code>p3</code>뒤에 <code>p4</code>를 추가해보자.</p>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"demo"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"p1"</span>&gt;</span>p1<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"p2"</span>&gt;</span>p2<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"p3"</span>&gt;</span>p3<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</div></code></pre>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"#p1"</span>).before(<span class="hljs-string">"&lt;p id='p0'&gt;p0&lt;/p&gt;"</span>);
+$(<span class="hljs-string">"#p3"</span>).after(<span class="hljs-string">"&lt;p id='p4'&gt;p4&lt;/p&gt;"</span>);
+</div></code></pre>
+<p><code>insertBefore()</code>, <code>insertAfterppendTo()</code>는 반대로 생각하면 된다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"&lt;p id='p0'&gt;p0&lt;/p&gt;"</span>).insertBefore(<span class="hljs-string">"#p1"</span>);
+$(<span class="hljs-string">"&lt;p id='p4'&gt;p4&lt;/p&gt;"</span>).insertAfter(<span class="hljs-string">"#p3"</span>);
+</div></code></pre>
+<p><br><br></p>
+<h2 id="jquery-%EC%9D%B4%EB%B2%A4%ED%8A%B8-%ED%95%B8%EB%93%A4%EB%9F%AC">Jquery 이벤트 핸들러</h2>
+<p><code>on()</code>메서드 사용하거나 <code>이벤트명()</code>메서드를 사용하는 방법이 있다.</p>
+<p><code>$(&quot;button&quot;).click( function(){ ... } )</code><br>
+<code>$(&quot;button&quot;).on( &quot;click&quot;, function (){ ... } )</code></p>
+<p>jquery, ajax 이벤트 등록 on메서드를 사용해야 함으로 기억해두자....</p>
+<h3 id="one">one()</h3>
+<p>딱 한번만 호출해야 하는 이벤트라면 <code>one</code>메서드로 이벤트를 등록하자.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"button"</span>).one(<span class="hljs-string">"click"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  alert();
+}) <span class="hljs-comment">//딱 한번만 이벤트 호출</span>
+</div></code></pre>
+<h3 id="off">off()</h3>
+<p>이벤트를 제거애햐 한다면 <code>off()</code>메서드</p>
+<p><code>$( &quot;p&quot; ).off();</code><br>
+p태그의 모든 이벤트 핸들러를 삭제</p>
+<p><code>$( &quot;body&quot; ).off( &quot;click&quot;, &quot;p&quot;, foo );</code><br>
+<code>p</code>태그중 <code>click</code> 이벤트 발생시 호출하는 <code>foo</code>이벤트 핸들러 삭제</p>
+<h3 id="trigger">trigger()</h3>
+<p>특정 요소의 이벤트를 강제로 호출하려면 해당 객체를 <code>jQuery()</code>로 가져와 <code>trigger()</code>메서드를 호출하면 된다.</p>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"btn1"</span>&gt;</span>btn1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"btn2"</span>&gt;</span>btn2<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+</div></code></pre>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"#btn1"</span>).on(<span class="hljs-string">"click"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  $(<span class="hljs-string">"#btn2"</span>).trigger(<span class="hljs-string">"click"</span>);
+  <span class="hljs-comment">// $("button:last").click(); //이렇게  click() 메서드를직접 호출해도됨</span>
+})
+$(<span class="hljs-string">"#btn2"</span>).on(<span class="hljs-string">"click"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  alert(<span class="hljs-string">"btn2 에서 이벤트가 발생!"</span>);
+})
+</div></code></pre>
+<p><code>btn1</code>을 클릭하면 <code>btn2</code>를 <code>trigger()</code>를 통해 강제 호출</p>
+<h2 id="jquery---remove-empty-filter">jQuery - remove(), empty(), filter()</h2>
+<h3 id="remove">remove()</h3>
+<p><code>remove()</code>메서드는 자주 사용되다 보니 매개변수로 여러가지 종류가 들어간다.</p>
+<p><code>$(&quot;p&quot;).remove();</code> - 모든 p 태그 삭제<br>
+<code>$(&quot;p&quot;).remove(&quot;:contains('hello')&quot;);</code> - content에 <code>hello</code>문자열이 포함되는 것만 삭제</p>
+<p><code>$(&quot;p&quot;).remove(&quot;.hello&quot;);</code> - p태그중 <code>class명</code>이 <code>hello</code>인것 제거<br>
+<code>$(&quot;p.hello&quot;).remove();</code> - p태그중 <code>class명</code>이 <code>hello</code>인것 제거</p>
+<p>HTML 요소 자체를 삭제해 버린다.</p>
+<h3 id="empty">empty()</h3>
+<p>요소 자체는 삭제하지 않고 요소안의 자식 노드들을 모두 삭제하고 싶을 때 <code>empty()</code>메서드를 사용한다.</p>
+<p><code>$(&quot;p.hello&quot;).empty();</code><br>
+p태그중 클래스가 hello인것의 자식노드를 제거</p>
+<p><br><br></p>
+<h2 id="jquery---wrap-unwrap">jQuery - wrap(), unwrap()</h2>
+<p>메서드명처럼 태그를 감싸는 태그를 추가하거나 제거하는 메서드.</p>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">button</span>&gt;</span>wrap/unwrap<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Hello<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>cruel<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>World<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+</div></code></pre>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"button"</span>).click(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">if</span> ($( <span class="hljs-string">"p"</span> ).parent().is(<span class="hljs-string">"div"</span>)) {
+    $( <span class="hljs-string">"p"</span> ).unwrap();
+  } <span class="hljs-keyword">else</span> {
+    $( <span class="hljs-string">"p"</span> ).wrap(<span class="hljs-string">"&lt;div class='wrap'&gt;&lt;/div&gt;"</span>);
+  }
+});
+</div></code></pre>
+<p>div태그로 감싸여져 있다면 제거(<code>unwrap</code>)하고 그렇지 않다면 div태그로 감싼다(<code>wrap</code>).</p>
+<p><br><br></p>
+<h2 id="jquery---each">jQuery - $.each()</h2>
+<p>javascript의 <code>each</code>처럼 Jquery의 <code>each</code>역시 각 배열의 모든 요소를 돌며 특정 행동을 한다.</p>
+<p>Jquery의 <code>each</code>는 첫번째 매개변수로 <strong>배열 뿐 아니라 객체또한 넘길 수 있다.</strong><br>
+객채의 각 속성을 돌며 속성명과 속성값을 가져올 수 있다.</p>
+<p>여기서 <code>$.</code>은 <code>jQuery</code>객체의 멤버라 전역변수(함수)처럼 사용할 수 있다는 뜻.</p>
+<pre><code class="language-js"><div><span class="hljs-keyword">var</span> arr = [<span class="hljs-string">"one"</span>, <span class="hljs-string">"two"</span>, <span class="hljs-string">"three"</span>, <span class="hljs-string">"four"</span>, <span class="hljs-string">"five"</span>];
+<span class="hljs-keyword">var</span> obj = { <span class="hljs-attr">one</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">two</span>: <span class="hljs-number">2</span>, <span class="hljs-attr">three</span>: <span class="hljs-number">3</span>, <span class="hljs-attr">four</span>: <span class="hljs-number">4</span>, <span class="hljs-attr">five</span>: <span class="hljs-number">5</span> };
+    
+$.each(arr, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">index, value</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(index + <span class="hljs-string">": "</span> + value)
+  <span class="hljs-comment">// 0: one</span>
+  <span class="hljs-comment">// 1: two</span>
+  <span class="hljs-comment">// 2: three</span>
+  <span class="hljs-comment">// 3: four</span>
+  <span class="hljs-comment">// 4: five</span>
+});
+
+$.each(obj, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">prop, value</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(prop + <span class="hljs-string">": "</span> + value)
+  <span class="hljs-comment">// one: 1</span>
+  <span class="hljs-comment">// two: 2</span>
+  <span class="hljs-comment">// three: 3</span>
+  <span class="hljs-comment">// four: 4</span>
+  <span class="hljs-comment">// five: 5</span>
+});
+</div></code></pre>
+<p>전역함수처럼 사용할 때 첫번째 매개변수로 배열, 두번째 매개변수로 처리할 함수를 넣는다.</p>
+<p><code>each()</code>메서드를 도중에 중단 시키고 싶다면 조건문으로 <code>false</code>를 반환한다.</p>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>item1<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>item2<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>item3<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>item4<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>item5<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+</div></code></pre>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"ul&gt;li"</span>).each(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">index</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(index+<span class="hljs-string">": "</span>+ $(<span class="hljs-keyword">this</span>).html());
+  <span class="hljs-keyword">return</span> index != <span class="hljs-number">2</span>;
+})
+</div></code></pre>
+<p>출력값</p>
+<pre><code><div>0: item1
+1: item2
+2: item3
+</div></code></pre>
+<p><code>each</code>메서드의 매개변수로 들어가는 함수의 인자로 <code>index</code>와 <code>element</code>를 사용 가능하다.<br>
+HTML DOM객체에서만 사용가능한 속성을 써야 할 때에 <code>element</code>인자를 사용하면 편하다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"*"</span>, <span class="hljs-built_in">document</span>.body).each(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">index, elem</span>) </span>{ 
+  <span class="hljs-keyword">var</span> parentTag = $(<span class="hljs-keyword">this</span>).parent().get(<span class="hljs-number">0</span>).tagName; <span class="hljs-comment">//get()메서드는 DOM객체를 반환</span>
+  <span class="hljs-keyword">var</span> parentTag = elem.parentElement.tagName; <span class="hljs-comment">//윗줄과 같은 코딩</span>
+  $(<span class="hljs-keyword">this</span>).prepend(<span class="hljs-built_in">document</span>.createTextNode(parentTag + <span class="hljs-string">" &gt; "</span>));
+});
+</div></code></pre>
+<p>body에 속하는 모든 태그를 가져와서 자기 자신 앞에 <code>부모태그명 &gt;</code>을 붙여 넣는다.</p>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>div,
+  <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>span, <span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">b</span>&gt;</span>b <span class="hljs-tag">&lt;/<span class="hljs-name">b</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>p,
+  <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>span,
+    <span class="hljs-tag">&lt;<span class="hljs-name">em</span>&gt;</span>em <span class="hljs-tag">&lt;/<span class="hljs-name">em</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>div,
+  <span class="hljs-tag">&lt;<span class="hljs-name">strong</span>&gt;</span>strong,
+    <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>span, <span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">em</span>&gt;</span>em,
+      <span class="hljs-tag">&lt;<span class="hljs-name">b</span>&gt;</span>b, <span class="hljs-tag">&lt;/<span class="hljs-name">b</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">em</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">strong</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">b</span>&gt;</span>b <span class="hljs-tag">&lt;/<span class="hljs-name">b</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</div></code></pre>
+<p>출력값</p>
+<pre><code><div>BODY &gt; div, DIV &gt; span, DIV &gt; b
+BODY &gt; p, P &gt; span, SPAN &gt; em
+
+BODY &gt; div, DIV &gt; strong, STRONG &gt; span, STRONG &gt; em, EM &gt; b, DIV &gt; b
+</div></code></pre>
+<p><br><br></p>
+<h2 id="jquery---map">jQuery - $.map()</h2>
+<p>배열의 각 아이템, 혹은 객체의 각 속성에 특정 작업을 한 후 <strong>배열</strong>로 반환한다.</p>
+<pre><code class="language-js"><div><span class="hljs-keyword">var</span> obj = {
+  <span class="hljs-attr">name</span>: <span class="hljs-string">"Honggildong"</span>,
+  <span class="hljs-attr">age</span>: <span class="hljs-number">23</span>,
+  <span class="hljs-attr">job</span>: <span class="hljs-string">"student"</span>
+};
+
+obj = $.map(obj, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">value, index</span>)</span>{
+  <span class="hljs-keyword">return</span> value + <span class="hljs-string">" 입니다."</span>;
+});
+$.each(obj, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">index, value</span>)</span>{
+  <span class="hljs-built_in">console</span>.log(index + <span class="hljs-string">": "</span> + value);
+});
+</div></code></pre>
+<p>출력값</p>
+<pre><code><div>0: Honggildong입니다.
+1: 23입니다.
+2: student입니다.
+</div></code></pre>
+<p><code>each</code>에는 첫번째 매개변수에 첨자값을 넣었지만<br>
+<code>map</code>에선 두번째 매개변수에 첨자값을 넣는다.</p>
+<p>또한 객체를 넣든 배열을 넣든 반환값은 무조건 배열이다.</p>
+<p><br><br></p>
+<h2 id="jquery---css">jQuery - css()</h2>
+<p>Jquery에서 <code>style</code>설정하려면 <code>css()</code>메서드를 사용한다.</p>
+<p><code>css()</code>메서드를 통해 설정할 수 도, 설정을 가져올 수 도 있다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"p"</span>).css(<span class="hljs-string">"width"</span>, <span class="hljs-string">"400px"</span>);
+
+$(<span class="hljs-string">"p"</span>).css({
+  <span class="hljs-string">"height"</span>: <span class="hljs-string">"400px"</span>,
+  <span class="hljs-attr">border</span>: <span class="hljs-string">"solid 1px gray"</span>,
+  <span class="hljs-attr">backgroundColor</span>: <span class="hljs-string">"yellow"</span>,
+  <span class="hljs-string">"background-color"</span>: <span class="hljs-string">"#ccc"</span>
+});
+</div></code></pre>
+<p>설정 하나만 설정하려면 문자열로 속성과 속성값을 넘기면 된다.</p>
+<p>설정 여러개를 설정하고 싶다면 속성명과 속성값을 매치한 객체를 넘기면 된다.</p>
+<p>기존 css에서 사용하는 <code>-</code>하이폰이 들어가는 속성명을 사용하고 싶다면 쌍따옴표로 묶어야 한다.<br>
+Javascript에서 사용하는 속성명은 쌍따옴표를 줘도되고 안줘도 된다.</p>
+<p><code>css()</code>메서드의 매개변수로 속성명을 전달하면 속성명에 해당하는 속성값을 반환한다.</p>
+<pre><code class="language-js"><div><span class="hljs-keyword">var</span> color = $(<span class="hljs-keyword">this</span>).css(<span class="hljs-string">"background-color"</span>);
+$(<span class="hljs-string">"#result"</span>).html(<span class="hljs-string">"That div is &lt;span style='color:"</span> + color + <span class="hljs-string">";'&gt;"</span> + color + <span class="hljs-string">"&lt;/span&gt;."</span>);
+</div></code></pre>
+<p>스타일의 속성을 한꺼번에 여러개 알고 싶다면 속성명을 배열로 전달하면 된다.</p>
+<pre><code class="language-js"><div><span class="hljs-keyword">var</span> styleProps = $(<span class="hljs-keyword">this</span>).css([
+  <span class="hljs-string">"width"</span>, <span class="hljs-string">"height"</span>, <span class="hljs-string">"color"</span>, <span class="hljs-string">"background-color"</span>
+]);
+$.each(styleProps, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">prop, value</span>) </span>{ 
+  html.push(prop + <span class="hljs-string">": "</span> + value);
+});
+</div></code></pre>
+<p>알고자 하는 속성을 배열로 전달하면 해당 속성의 값이 들은 <code>Object</code>를 반환한다.<br>
+출력값</p>
+<pre><code><div>width: 80px
+height: 50px
+color: rgb(255, 255, 255)
+background-color: rgb(15, 99, 30)
+</div></code></pre>
+<p><br><br></p>
+<h2 id="jquery---addclass-removeclass">jQuery - addClass(), removeClass()</h2>
+<p>Jquery객체에 클래스명을 부여하려면 <code>addClass</code>, <code>removeClass</code> 메서드를 사용해야 한다.</p>
+<p>Javascript에선 <code>className</code>속성을 사용하거나 <code>classList</code>속성의 <code>add()</code>, <code>remove()</code>를 사용했었다.<br>
+<code>dot.className = &quot;active&quot;;</code><br>
+<code>classList.add()</code>, <code>classList.remove()</code></p>
+<p>Jquery객체에는 쓸 수 없음으로 <code>addClass()</code>, <code>removeClass()</code> 메서드를 사용.</p>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Hello<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>and<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Goodbye<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+</div></code></pre>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"p"</span>).addClass(<span class="hljs-string">"selected"</span>); <span class="hljs-comment">//모든 p태그에 selected클래스 부여</span>
+$( <span class="hljs-string">"p:last"</span> ).removeClass( <span class="hljs-string">"selected"</span> );
+</div></code></pre>
+<p><code>last</code>는 jquery선택자로 css에는 <code>last-child</code>가 있음</p>
+<p><code>addClass()</code>매개변수로 함수를 전달할 수 있는데 컬렉션중 조건에 부합하는 객체에 클래스를 부여하거나 제거할 수 있다.</p>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Lorem ipsum dolor sit amet.<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"red"</span>&gt;</span>Neque libero est iusto architecto?<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Dolores provident sapiente voluptatibus fugit?<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</div></code></pre>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"div"</span>).addClass(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">index, currendClassName</span>) </span>{
+  <span class="hljs-keyword">var</span> addedClass;
+  <span class="hljs-keyword">if</span> (currendClassName === <span class="hljs-string">"red"</span>) {
+    addedClass = <span class="hljs-string">"green"</span>;
+    $(<span class="hljs-string">"p"</span>).text(<span class="hljs-string">"There is one green div"</span>);
+  }
+  <span class="hljs-keyword">return</span> addedClass;
+})
+</div></code></pre>
+<p>무명 메서드 안의 2번째 매개변수는 각 <code>div</code>태그의 <code>class</code>명을 가져온다.<br>
+만약 <code>class</code>명이 <code>&quot;red&quot;</code>인 객체는 <code>addedClass</code>변수에 <code>&quot;green&quot;</code>을 할당하고 반환한다.</p>
+<h3 id="toggleclass">toggleClass()</h3>
+<p><code>classList.toggle</code>메서드와 같은 기능을 하는 메서드<br>
+<code>class</code>명을 부여했다 뺏는것을 한번씩 반복한다.</p>
+<h2 id="jquery---prop-attr">jQuery - prop(), attr()</h2>
+<p>둘다 요소(객체)의 속성을 가져오거나 설정하는 메서드이다.<br>
+<code>attr</code>이 1.6버전 이전에 쓰였고<br>
+<code>prop</code>가 1.6버전 이후에 만들어 졌다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"thead :checkbox"</span>).click(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log($(<span class="hljs-keyword">this</span>).prop(<span class="hljs-string">"checked"</span>)); <span class="hljs-comment">//true</span>
+  $(<span class="hljs-string">"tbody :checkbox"</span>).prop(<span class="hljs-string">"checked"</span>, $(<span class="hljs-keyword">this</span>).prop(<span class="hljs-string">"checked"</span>));
+});
+</div></code></pre>
+<p><code>thead</code>안의 <code>checkbox</code>에 checked속성을 가져와서 tbody의 <code>chekced</code>속성에 대입한다.</p>
+<p>원래 <code>checkbox</code>에서 체크 속성을 주려면 다음과 같이 태그안 속성을 설정한다.<br>
+<code>&lt;input type=&quot;checkbox&quot; checked=&quot;checked&quot;&gt;</code></p>
+<p><br><br></p>
+<h2 id="jquery---show-hide-toggle">jQuery - show(), hide(), toggle()</h2>
+<p>기존에 HTML 요소를 보이지 않게 설정하려면 <code>display</code>속성에 속성값으로 <code>&quot;none&quot;</code>을 줘야 했다.   '
+반대로 다시 보이게 설정하려면 <code>&quot;block&quot;</code>속성값을 줘야 했다.</p>
+<p>Jquery에선 <code>show()</code>, <code>hide()</code>메서드를 통해 쉽게 숨기기, 표시하기 할 수 있다.(물론 내부적으론 display속성값을 건들인다.)</p>
+<h3 id="show-hide">show(), hide()</h3>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">button</span>&gt;</span>hide<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>test<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+</div></code></pre>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"button"</span>).on(<span class="hljs-string">"click"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">if</span> ($(<span class="hljs-keyword">this</span>).html() == <span class="hljs-string">"hide"</span>) {
+    $(<span class="hljs-string">"p"</span>).hide();
+    $(<span class="hljs-keyword">this</span>).html(<span class="hljs-string">"show"</span>);
+  }
+  <span class="hljs-keyword">else</span> {
+    $(<span class="hljs-string">"p"</span>).show();
+    $(<span class="hljs-keyword">this</span>).html(<span class="hljs-string">"hide"</span>);
+  }
+});
+</div></code></pre>
+<p>버튼을 클릭하면 숨기고, 다시 클릭하면 보여주는 이벤트 핸들러,</p>
+<p><code>hide()</code>와 <code>show()</code> 메서드 매개변수로 사라지게하는 속도, 사라지고 호출되는 callback함수를 등록할 수 있다. 아무것도 등록하지 않으면 바로 사라졌다 바로 나타난다.</p>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"hider"</span>&gt;</span>Hide<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"shower"</span>&gt;</span>Show<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>Once<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span> <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>upon<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span> <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>a<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>time<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span> <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>there<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span> <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>were<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>three<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span> <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>programmers...<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</div></code></pre>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"#hider"</span>).click(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  $(<span class="hljs-string">"span:last-child"</span>).hide(<span class="hljs-string">"fast"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    $(<span class="hljs-keyword">this</span>).prev().hide(<span class="hljs-string">"slow"</span>, <span class="hljs-built_in">arguments</span>.callee);
+  });
+});
+$(<span class="hljs-string">"#shower"</span>).click(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  $(<span class="hljs-string">"span"</span>).show(<span class="hljs-number">2000</span>);
+});
+</div></code></pre>
+<p><code>fast</code>는  <code>200ms</code>, <code>slow</code>는 <code>600ms</code>속도이다.<br>
+정수로 넘겨줘도 상관 없다.</p>
+<h3 id="toggle">toggle()</h3>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"button"</span>).on(<span class="hljs-string">"click"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">/* if ($(this).html() == "hide") {
+    $("p").hide();
+    $(this).html("show");
+  }
+  else {
+    $("p").show();
+    $(this).html("hide");
+  } */</span>
+  $(<span class="hljs-string">"p"</span>).toggle()
+});
+</div></code></pre>
+<p>그냥 사라졌다 나타나게 하려면 <code>if..else</code>문 줄 필요없이 <code>toggle()</code>메서드를 사용하면 편하다.<br>
+내부적으로 번갈아 가면서 <code>hide()</code>, <code>show()</code>메서드를 호출한다.</p>
+<p><br><br></p>
+<h2 id="jquery---fadein-fadeout-fadetoggle">jQuery - fadeIn(), fadeOut(), fadeToggle()</h2>
+<p><code>show()</code>, <code>hide()</code>, <code>toggle()</code> 메서드와 비슷한 역할을 하는 함수이다.</p>
+<p>차이점은 <code>show</code>와 <code>hide</code>는 <code>width</code>, <code>height</code>를 0으로 만드는 애니메이션이라면<br>
+<code>fadeIn</code>과 <code>fadeOut</code>는 <code>Opacity</code> 투명도를 0으로 만드는 애니메이션이다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"#div1"</span>).fadeIn(<span class="hljs-string">"fast"</span>);
+$(<span class="hljs-string">"#div2"</span>).fadeIn(<span class="hljs-string">"slow"</span>);
+$(<span class="hljs-string">"#div3"</span>).fadeIn(<span class="hljs-number">3000</span>);
+</div></code></pre>
+<p>속성값으로 애니메이션 진행속도를 결정하는 키워드 문자열, ms 정수값을 넣을 수 있다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"#div3"</span>).fadeToggle(<span class="hljs-string">"fast"</span>,<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  alert(<span class="hljs-string">"test"</span>)
+});
+</div></code></pre>
+<p>당연히 단순 지웠다 표시할 생각이라면 <code>fadeToggle</code>메서드를 사용하는 것이 효율적이고 각 메서드의 두 번째 매개변수로 <code>callback</code>메서드 등록이 가능하다.</p>
+<h2 id="jquery---slideup-slidedown-slidetoggle">jQuery - slideUp(), slideDown(), slideToggle()</h2>
+<p>위의 <code>show</code>, <code>hide</code>, <code>fade</code> 메서드와 더불어 객체를 보이게하고 보이지 않게 하는 애니메이션 메서드.</p>
+<p><code>slide</code>이름 답게 <code>accordion</code> 애니메이션 기능을 한다.<br>
+<code>class</code>명<code>flip</code> <code>div</code>태그를 클릭하면 <code>panel</code> <code>div</code>태그가 <code>slideUp</code>, <code>slideDown</code>되도록 설정.</p>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flip"</span>&gt;</span>slide 01<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"panel"</span>&gt;</span>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Veniam, voluptatum.<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flip"</span>&gt;</span>slide 02<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"panel"</span>&gt;</span>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Veniam, voluptatum.<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flip"</span>&gt;</span>slide 03<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"panel"</span>&gt;</span>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Veniam, voluptatum.<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flip"</span>&gt;</span>slide 04<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"panel"</span>&gt;</span>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Veniam, voluptatum.<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</div></code></pre>
+<pre><code class="language-js"><div>$(<span class="hljs-built_in">document</span>).ready(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  $(<span class="hljs-string">".flip"</span>).click(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    $(<span class="hljs-string">".panel"</span>).slideUp();
+    <span class="hljs-keyword">if</span>($(<span class="hljs-keyword">this</span>).next().css(<span class="hljs-string">"display"</span>) == <span class="hljs-string">"block"</span>)
+      <span class="hljs-keyword">return</span>;
+    $(<span class="hljs-keyword">this</span>).next().slideToggle();
+  })
+})
+</div></code></pre>
+<p>그냥 <code>$(this).next().slideToggle();</code>를 사용해도 되지만 하나의 <code>panel</code> <code>div</code>태그만 열고싶다면 모든 panel을 <code>slideUp</code>시키고 선택한 <code>panel</code>만 <code>slideToggle()</code> 되도록 설정,</p>
+<p><br><br></p>
+<h2 id="jquery---animate">jQuery - animate()</h2>
+<p>위에서 설명한 에니메이션 효과들은 효율적이고 좋지만 애니메이션을 직접 구현해야 할 때 가 있다.<br>
+<code>animate()</code>는 각종 <code>properties</code>를 사용해 다양한 애니메이션을 제공한다.</p>
+<p>아래처럼 버튼과 <code>div</code>태그가 있을 때 버튼을 누르면 <code>div</code>태그가 오른쪽으로 50px만큼 이동하도록 애니메이션을 만들어보자.</p>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span><span class="css">
+<span class="hljs-selector-tag">div</span> {
+  <span class="hljs-attribute">background-color</span>: green;
+  <span class="hljs-attribute">position</span>: absolute;
+  <span class="hljs-attribute">height</span>: <span class="hljs-number">100px</span>;
+  <span class="hljs-attribute">width</span>: <span class="hljs-number">100px</span>;
+}
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
+...
+...
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span>&gt;</span>run<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</div></code></pre>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"button"</span>).click(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  $(<span class="hljs-string">"div"</span>).animate(
+    {
+      <span class="hljs-attr">left</span>: <span class="hljs-string">"+=50px"</span>,
+      <span class="hljs-attr">opacity</span>: <span class="hljs-string">"0.5"</span>,
+      <span class="hljs-attr">height</span>: <span class="hljs-string">"150px"</span>,
+      <span class="hljs-attr">width</span>: <span class="hljs-string">"150px"</span>
+    });
+})
+</div></code></pre>
+<p>가장 기본적 처번째 매개변수로 애니메이션 속성을 나타내는 <code>insertAfter</code>객체를 전달한다.</p>
+<p><code>animate()</code>메서드 사용 양식은 2가지이다.</p>
+<ol>
+<li><code>animate( properties [, duration ] [, easing ] [, complete ] )</code></li>
+<li><code>animate( properties, options )</code></li>
+</ol>
+<p>첫번째 양식은 <code>properties</code>객체와 <code>지속시간</code>, <code>timing</code>, <code>콜백함수</code>를 등록할 수 있는 가장 기본적인 양식이다.<br>
+간단히 사용하려면 첫번째 양식을 사용하면 된다.</p>
+<p>추가로 <code>width</code>, <code>height</code>, <code>opacity</code>이 세 속성에 대해서는 속성값으로 <code>show</code>, <code>hide</code>, <code>toggle</code> 사용할 수 있다.</p>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"clickme"</span>&gt;</span>
+  Click here
+<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"book"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"https://via.placeholder.com/100x123"</span> <span class="hljs-attr">alt</span>=<span class="hljs-string">""</span> <span class="hljs-attr">width</span>=<span class="hljs-string">"100"</span> <span class="hljs-attr">height</span>=<span class="hljs-string">"123"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"position: relative; left: 10px;"</span>&gt;</span>
+</div></code></pre>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"#clickme"</span>).click(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  $(<span class="hljs-string">"#book"</span>).animate({
+    <span class="hljs-attr">width</span>: <span class="hljs-string">"toggle"</span>,
+    <span class="hljs-attr">height</span>: <span class="hljs-string">"toggle"</span>,
+    <span class="hljs-attr">opacity</span>: <span class="hljs-string">"toggle"</span>
+  }, <span class="hljs-number">5000</span>, <span class="hljs-string">"linear"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    $(<span class="hljs-keyword">this</span>).after(<span class="hljs-string">"&lt;div&gt;Animation complete.&lt;/div&gt;"</span>);
+  });
+});
+</div></code></pre>
+<p>뒤의 코드는 <code>width</code>, <code>height</code>가 줄어들면서 투명도 또한 줄어든다. 그리고 콜백함수가 호출된다.<br>
+그리고 <code>toggle</code>속성값이기 때문에 다시 클릭하면 <code>width</code>, <code>height</code>, <code>opacity</code>가 원상복구되고 콜백함수가 호출된다.</p>
+<p><code>width</code>에만 <code>toggle</code> 속성을 주면 가로방향으로 <code>slide</code> 되는 효과를 줄 수 있다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-built_in">document</span>).ready(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  $(<span class="hljs-string">"button"</span>).click(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    $(<span class="hljs-string">"div"</span>).animate({ <span class="hljs-attr">width</span>: <span class="hljs-string">'toggle'</span> }, <span class="hljs-number">350</span>);
+  });
+});
+</div></code></pre>
+<p>반대로 <code>height: 'toggle'</code>로 설정하면 세로 방향으로 <code>slide</code>되는 효과를 줄 수 있음.</p>
+<hr>
+<p>두번째 양식은 <code>properties</code>객체와 <code>options</code>객체를 매개변수로 넘긴다.</p>
+<p><code>options</code>객체의 멤버변수로 다양한 설정을 할 수 있는데 첫번째 양식의 <code>duration</code>, <code>easing</code>, <code>complete</code>는 당연히 설정 가능하고 <code>queue</code>, <code>step</code>, <code>start</code>, <code>direction</code> 등의 속성이 있다.</p>
+<blockquote>
+<p><a href="https://api.jquery.com/animate/#animate-properties-options">https://api.jquery.com/animate/#animate-properties-options</a></p>
+</blockquote>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"#clickme"</span>).click(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  $(<span class="hljs-string">"#book"</span>).animate({
+    <span class="hljs-attr">width</span>: <span class="hljs-string">"toggle"</span>,
+    <span class="hljs-attr">height</span>: <span class="hljs-string">"toggle"</span>
+  }, {
+    <span class="hljs-attr">duration</span>: <span class="hljs-number">5000</span>,
+	  <span class="hljs-attr">easing</span>: <span class="hljs-string">"linear"</span>,
+    <span class="hljs-attr">complete</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+      $(<span class="hljs-keyword">this</span>).after(<span class="hljs-string">"&lt;div&gt;Animation complete.&lt;/div&gt;"</span>);
+    }
+  });
+});
+</div></code></pre>
+<h3 id="animate---queue">animate() - queue</h3>
+<p><code>animate()</code>메서드를 통해 한 객체에 여러가지 애니메이션 효과를 적용하면 이 여러가지 애니메이션이 한번에 동시에 적용되는 것이 아닌<br>
+<code>queue</code>형태(선입선출) 먼저 정의된 애니메이션이 끝난후 차례대로 진행된다.</p>
+<pre><code class="language-css"><div><span class="hljs-selector-tag">div</span> {
+  <span class="hljs-attribute">background-color</span>: green;
+  <span class="hljs-attribute">height</span>: <span class="hljs-number">100px</span>;
+  <span class="hljs-attribute">width</span>: <span class="hljs-number">100px</span>;
+  <span class="hljs-attribute">position</span>: absolute;
+}
+</div></code></pre>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">button</span>&gt;</span>run<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>sample<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</div></code></pre>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"button"</span>).click(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  $(<span class="hljs-string">"div"</span>).animate({<span class="hljs-attr">height</span>: <span class="hljs-string">"300px"</span>});
+  $(<span class="hljs-string">"div"</span>).animate({<span class="hljs-attr">width</span>: <span class="hljs-string">"300px"</span>});
+  $(<span class="hljs-string">"div"</span>).animate({<span class="hljs-attr">height</span>: <span class="hljs-string">"100px"</span>,})
+  .animate({<span class="hljs-attr">width</span>: <span class="hljs-string">"100px"</span>})
+  .animate({<span class="hljs-string">"font-size"</span>: <span class="hljs-string">"3em"</span>}); <span class="hljs-comment">//체인으로 연결 가능.</span>
+});
+</div></code></pre>
+<p>하지만 동시에 적용시키고 싶을 수도 있다!<br>
+그럴땐 두번째 양식의 매개변수인 <code>options</code>객체의 <code>queue</code> 속성을 사용하면 된다.</p>
+<pre><code class="language-js"><div>.animate({
+  <span class="hljs-attr">width</span>: <span class="hljs-string">"90%"</span>
+}, {
+    <span class="hljs-attr">queue</span>: <span class="hljs-literal">false</span>,
+    <span class="hljs-attr">duration</span>: <span class="hljs-number">3000</span>
+})
+</div></code></pre>
+<p><br><br></p>
+<h3 id="jqujquery---stop">JqujQuery - stop()</h3>
+<p><code>stop()</code>메서드를 통해 객체에 애니메이션 효과가 진행중이라면 멈추게 기다리는 것(<code>duration</code>) 없이 끝낼 수 있다.</p>
+<p><code>stop( [clearQueue ] [, jumpToEnd ] )</code><br>
+스탑의 매개변수로는 <code>boolean</code>형 2개가 들어간다.</p>
+<p>첫번째 파라미터인 <code>clearQueue</code>에 <code>true</code>를 전달하면 해당 객체에 적용할(큐에서 대기중) 애니메이션들이 모두 삭제(<code>clear</code>)된다.</p>
+<p>두번째 파라미터인 <code>jumpToEnd</code>에 <code>true</code>를 전달한하면 해당 객체의 애니메이션을 최종상태로 완료시킨다.</p>
+<p>이런식으로 중간에 <code>stop()</code>메서드를 호출에 진행중이던 애니메이션을 없애고 바로 새로운 애니메이션을 적용시킬 수 있다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"#go"</span>).click(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  $(<span class="hljs-string">".block"</span>).stop(<span class="hljs-literal">true</span>, <span class="hljs-literal">false</span>).animate({
+    <span class="hljs-attr">left</span>: <span class="hljs-string">"+=100px"</span>
+  }, <span class="hljs-number">2000</span>);
+});
+$(<span class="hljs-string">"#back"</span>).click(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  $(<span class="hljs-string">".block"</span>).stop(<span class="hljs-literal">true</span>, <span class="hljs-literal">false</span>).animate({
+    <span class="hljs-attr">left</span>: <span class="hljs-string">"-=100px"</span>
+  }, <span class="hljs-number">2000</span>);
+});
+</div></code></pre>
+<h2 id="jquery---dom%EA%B0%9D%EC%B2%B4-%ED%83%90%EC%83%89">Jquery - DOM객체 탐색</h2>
+<pre><code class="language-js"><div>parentElement
+children
+firstElementChild
+lastElementChild
+nextElementSibling
+previousElementSibling
+</div></code></pre>
+<p>자바 스크립트에서 위 <code>DOM</code>객체 함수를 통해 객채간 이동이 가능하듯이<br>
+Jquery에서도 <code>Traversing</code>메서드를 지원한다.</p>
+<p>다음과 같이 태그가 있을때 상위, 하위태그를 어떻게 찾는지 확인해보자.</p>
+<pre><code class="language-css"><div><span class="hljs-selector-class">.ancestors</span> * {
+  <span class="hljs-attribute">display</span>: black;
+  <span class="hljs-attribute">border</span>: solid <span class="hljs-number">2px</span> gray;
+  <span class="hljs-attribute">padding</span>: <span class="hljs-number">5px</span>;
+  <span class="hljs-attribute">margin</span>: <span class="hljs-number">15px</span>;
+}
+
+<span class="hljs-selector-tag">span</span> {
+  <span class="hljs-attribute">display</span>: block;
+}
+</div></code></pre>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"ancestors"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"width: 500px;"</span>&gt;</span> div(증조부모)
+    <span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span> ul(조부모)
+      <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>li(부모)<span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>span<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span> ul(조부모)
+      <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>li(부모)<span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>span<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"width: 500px;"</span>&gt;</span>div(조부모)
+    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>p(부모)
+      <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>span<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</div></code></pre>
+<p>![js16]({{ &quot;/assets/web/js/js16.png&quot; | absolute_url }}){: .shadow}{: width=&quot;300&quot;}</p>
+<h3 id="parent-parents-parentsuntil">parent(), parents(), parentsUntil()</h3>
+<p><code>parent()</code> 메서드는 바로 위의 부모태그를 가리킨다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"span"</span>).css(<span class="hljs-string">"border-color"</span>, <span class="hljs-string">"red"</span>)
+.parent().css({ <span class="hljs-comment">//직계부모</span>
+	<span class="hljs-string">"border"</span>: <span class="hljs-string">"solid 2px blue"</span>
+}) *<span class="hljs-regexp">/
+</span></div></code></pre>
+<p>![js17]({{ &quot;/assets/web/js/js17.png&quot; | absolute_url }}){: .shadow}{: width=&quot;300&quot;}</p>
+<p><code>parents()</code>메서드는 모든 부모(상위)태그를 가리킨다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"span"</span>).css(<span class="hljs-string">"border-color"</span>, <span class="hljs-string">"red"</span>)
+.parents().css({ <span class="hljs-comment">//부모의 부모의 부모...모든 부모</span>
+	<span class="hljs-string">"border"</span>: <span class="hljs-string">"solid 2px blue"</span>
+})
+</div></code></pre>
+<p>![js18]({{ &quot;/assets/web/js/js18.png&quot; | absolute_url }}){: .shadow}{: width=&quot;300&quot;}</p>
+<p><code>body</code>, <code>html</code>태그까지도 가리키기 때문에 조절이 필요하다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"span"</span>).css(<span class="hljs-string">"border-color"</span>, <span class="hljs-string">"red"</span>)
+.parents(<span class="hljs-string">"ul"</span>).css({ <span class="hljs-comment">//selector를 주면 부모중 해당 선택자만 선택 가능</span>
+	<span class="hljs-string">"border"</span>: <span class="hljs-string">"solid 2px blue"</span>
+})
+</div></code></pre>
+<p>![js19]({{ &quot;/assets/web/js/js19.png&quot; | absolute_url }}){: .shadow}{: width=&quot;300&quot;}</p>
+<p>이런식으로 <code>parents(selector)</code> 매개변수에 선택자를 주어 해당 태그만 선택할 수 있다.</p>
+<p><code>parentsUntil()</code>메서드는 특정 조건을 찾을때까지 부모를 계속 찾는다.
+부모중에 selector는 포함하지 않음.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"span"</span>).css(<span class="hljs-string">"border-color"</span>, <span class="hljs-string">"red"</span>)
+.parentsUntil(<span class="hljs-string">"div"</span>).css({
+  <span class="hljs-string">"border"</span>: <span class="hljs-string">"solid 2px blue"</span>
+});
+</div></code></pre>
+<p>![js20]({{ &quot;/assets/web/js/js20.png&quot; | absolute_url }}){: .shadow}{: width=&quot;300&quot;}</p>
+<p><br><br></p>
+<h3 id="children">children</h3>
+<p>자식객체를 선택하는 메서드는 <code>children</code>이 있다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">".ancestors"</span>).children().css({ <span class="hljs-comment">//children은 직계 자식만 찾는다.  </span>
+  border: <span class="hljs-string">"solid 2px blue"</span>
+});
+</div></code></pre>
+<p>직계 자식만 선택하기 때문에 더 깊은 자식객체를 선택하고 싶다면 <code>find()</code>메서드를 사용해야 한다.</p>
+<p>만약 모든 요소뿐 아니라 모든 노드를 가져오고 싶다면 <code>contents()</code>메서드를 사용</p>
+<blockquote>
+<p><a href="https://api.jquery.com/contents/#contents">https://api.jquery.com/contents/#contents</a></p>
+</blockquote>
+<h3 id="find">find()</h3>
+<p><code>find(selector)</code>메서드는 괄호안의 선택자를 사용해 호출객체안의 객체중 해당하는 객체를 반환한다.</p>
+<p><code>$(&quot;.ancestors&quot;).find(&quot;*&quot;));</code><br>
+<code>&quot;*&quot;</code>키워드를 사용하면 해당 객체의 모든 직계 자손 뿐 아니라 자식태그를 가져온다.</p>
+<p><code>$(&quot;.ancestors&quot;).find(&quot;span&quot;);</code> 물론 선택자를 사용해 해당하는 객체만 가져올 수 있음.</p>
+<h3 id="siblings-next-prev-nextall-prevall">siblings, next, prev, nextAll, prevAll</h3>
+<p>형재레벨간 이동할 때 해당 메서드들을 사용한다.</p>
+<p>다음과 같은 태그가 있을 때 각 메서드가 어떤 역할을 하는지 확인해보자.</p>
+<pre><code class="language-css"><div><span class="hljs-selector-tag">div</span> *{
+  <span class="hljs-attribute">display</span>: block;
+  <span class="hljs-attribute">border</span>: solid <span class="hljs-number">2px</span> gray;
+  <span class="hljs-attribute">margin</span>: <span class="hljs-number">15px</span>;
+}
+</div></code></pre>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>p<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>span<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>h2<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span>h3<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>p<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</div></code></pre>
+<p>![js21]({{ &quot;/assets/web/js/js21.png&quot; | absolute_url }}){: .shadow}{: width=&quot;300&quot;}</p>
+<p><code>siblings()</code>메서드는 자신을 제외한 주위의 모든 형제 객체를 선택한다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"h2"</span>).siblings().css({ <span class="hljs-comment">//모든 형제객체 가져옴</span>
+  <span class="hljs-string">"border-color"</span>: <span class="hljs-string">"red"</span>
+})
+</div></code></pre>
+<p>![js22]({{ &quot;/assets/web/js/js22.png&quot; | absolute_url }}){: .shadow}{: width=&quot;300&quot;}</p>
+<p>물론 매개변수로 선택자를 지정 가능하다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"h2"</span>).siblings(<span class="hljs-string">"p"</span>).css({
+  <span class="hljs-string">"border-color"</span>: <span class="hljs-string">"red"</span>
+})
+</div></code></pre>
+<p><code>next()</code>와 <code>prev()</code>는 앞, 뒤의 형제 객체를 선택한다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"h2"</span>).next().css({ <span class="hljs-comment">//뒤에 형제</span>
+  <span class="hljs-string">"border-color"</span>: <span class="hljs-string">"red"</span>
+})
+$(<span class="hljs-string">"h2"</span>).prev().css({ <span class="hljs-comment">//앞의 형제</span>
+  <span class="hljs-string">"border-color"</span>: <span class="hljs-string">"blue"</span>
+})
+</div></code></pre>
+<p>![js23]({{ &quot;/assets/web/js/js23.png&quot; | absolute_url }}){: .shadow}{: width=&quot;300&quot;}</p>
+<p><code>nextAll()</code>과 <code>prevAll()</code>은 앞, 뒤의 모든 형제 객체를 선택한다.</p>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"h2"</span>).nextAll().css({ <span class="hljs-comment">//뒤의 모든 형제</span>
+  <span class="hljs-string">"border-color"</span>: <span class="hljs-string">"red"</span>
+})
+$(<span class="hljs-string">"h2"</span>).prevAll().css({ <span class="hljs-comment">//앞의 모든 형제</span>
+  <span class="hljs-string">"border-color"</span>: <span class="hljs-string">"blue"</span>
+})
+</div></code></pre>
+<p>![js24]({{ &quot;/assets/web/js/js24.png&quot; | absolute_url }}){: .shadow}{: width=&quot;300&quot;}</p>
+<p><code>nextUntil()</code>과 <code>prevUntil()</code>메서드도 있으니 참고할 수 있도록 하자.</p>
+<blockquote>
+<p><a href="https://api.jquery.com/category/traversing/tree-traversal/">https://api.jquery.com/category/traversing/tree-traversal/</a></p>
+</blockquote>
+<p><br><br></p>
+<h3 id="jquery---end">jQuery - end()</h3>
+<p><code>end()</code>메서드는 jquery 체인에서 중요한 역할을 한다.<br>
+<code>find</code>, <code>filter</code>등의 Traversing메서드에서 빠져나와 상위의 객체로 가는 역할을 한다.</p>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">ul</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"first"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"foo"</span>&gt;</span>list item 1<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>list item 2<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"bar"</span>&gt;</span>list item 3<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">ul</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"second"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"foo"</span>&gt;</span>list item 1<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>list item 2<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"bar"</span>&gt;</span>list item 3<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+</div></code></pre>
+<pre><code class="language-js"><div>$(<span class="hljs-string">"ul.first"</span>)
+  .find(<span class="hljs-string">".foo"</span>)
+  .css(<span class="hljs-string">"background-color"</span>, <span class="hljs-string">"red"</span>)
+.end()
+  .find(<span class="hljs-string">".bar"</span>)
+  .css(<span class="hljs-string">"background-color"</span>, <span class="hljs-string">"green"</span>);
+</div></code></pre>
+<h2 id="jquery---%EB%B6%84%EB%A5%98">jquery - 분류</h2>
+<h3 id="filter">filter()</h3>
+<p><code>filter()</code>메서드는 Jquery객체 배열에서 괄호 안의 선택자에 해당하는 요소만 반환하는 메서드이다.</p>
+<p><code>$(&quot;p&quot;).filter(&quot;:contains('hello')&quot;).remove();</code> - 모든 <code>p</code>태그중 <code>content</code>가 <code>hello</code>문자열이 포함되는 태그만 <code>filter</code>해서 제거</p>
+<p><code>filter()</code>메서드의 매개변수로 함수로 들어갈 수 있는데 <code>true</code>반환하는 요소를 반환한다.</p>
+<pre><code class="language-js"><div>$( <span class="hljs-string">"li"</span> )
+  .filter(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"> index </span>) </span>{
+    <span class="hljs-keyword">return</span> index / <span class="hljs-number">3</span> === <span class="hljs-number">0</span>;
+  })
+    .css( <span class="hljs-string">"background-color"</span>, <span class="hljs-string">"red"</span> );
+</div></code></pre>
+<p><code>li</code>태그들중 3의 배수번째 <code>li</code>만 배경색을 변경한다.</p>
+<h3 id="not">not()</h3>
+<p>호출한 객체 set(배열)에서 <code>not(selector)</code> 괄호안의 선택자를 제외한 객체set을 반환한다.</p>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>list item 1<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>list item 2<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"notli"</span>&gt;</span>list item 3<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>list item 4<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>list item 5<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+</div></code></pre>
+<pre><code class="language-js"><div>$( <span class="hljs-string">"li"</span> ).not( $( <span class="hljs-string">"#notli"</span> ) )
+  .css( <span class="hljs-string">"background-color"</span>, <span class="hljs-string">"red"</span> );
+</div></code></pre>
+<p>3번째 <code>li</code>태그를 제외한 모든 <code>li</code>태그 배경색을 red로 변경</p>
+<p><br><br></p>
+<h2 id="jquery-%EC%84%A0%ED%83%9D%EC%9E%90">Jquery 선택자</h2>
+<p>Jquery에선 css에서 사용하는 선택자 외에 Jquery만의 별도의 선택자를 지원한다.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><strong>Jquery 선택자</strong></th>
+<th style="text-align:left"><strong>설명</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>$(&quot;*&quot;)</code></td>
+<td style="text-align:left">모든 요소들 선택</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;tag&quot;)</code></td>
+<td style="text-align:left">태그명을 주어 해당하는 모든 태그를 선택</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;#id&quot;)</code></td>
+<td style="text-align:left"><code>#</code>을 붙여 <code>id</code>에 해당하는 요소를 선택</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;.class&quot;)</code></td>
+<td style="text-align:left"><code>.</code>을 붙여 <code>class</code>명에 해당하는 요소를 선택</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;.class, .class&quot;)</code></td>
+<td style="text-align:left">css에서 사용하는 방법, 나열한 모든 <code>class</code>선택</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;class:first&quot;)</code></td>
+<td style="text-align:left">jquery에서 사용하는 선택자, 선택된 클래스중 <strong>첫번째</strong> 요소를 선택한다.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;class:last&quot;)</code></td>
+<td style="text-align:left">jquery에서 사용하는 선택자, 선택된 클래스중 <strong>마지막</strong> 요소를 선택한다.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;class:even&quot;)</code></td>
+<td style="text-align:left">jquery에서 사용하는 선택자, 선택된 클래스중 <strong>짝수번째</strong> 요소를 선택한다.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;class:odd&quot;)</code></td>
+<td style="text-align:left">jquery에서 사용하는 선택자, 선택된 클래스중 <strong>홀수번째</strong> 요소를 선택한다.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;div:eq(n)&quot;)</code></td>
+<td style="text-align:left"><code>eq</code>는 괄호 안의 <strong>n번째 태그</strong>를 가져오는 선택자</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;div:gt(n)&quot;)</code></td>
+<td style="text-align:left"><code>gt</code>는 괄호 안의 <strong>n번째 초과</strong> 위치하는 태그를 가져오는 선택자</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;div:lt(n)&quot;)</code></td>
+<td style="text-align:left"><code>eq</code>는 괄호 안의 <strong>n번째 이하</strong> 위치하는 태그를 가져오는 선택자</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;:header&quot;)</code></td>
+<td style="text-align:left">모든 <code>hn</code>태그를 가져오는 선택자, <code>:input</code>, <code>:image</code> 등 자주 사용되는 태그는 선택자로 모두 가져올 수 있다.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;:text&quot;)</code></td>
+<td style="text-align:left"><code>input</code>태그중 <code>type</code>이 <code>text</code>인것 선택</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;:animated&quot;)</code></td>
+<td style="text-align:left">현재 <code>animate</code>메서드가 동작중인 요소를 찾아옴</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;div:contains('test')</code></td>
+<td style="text-align:left">요소의 content중 특정 문자열이 포함된 요소를 찾아옴</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;p:has(span)&quot;)</code></td>
+<td style="text-align:left"><code>span</code>태그를 가지고 있는 <code>p</code> 태그를 요소로 선택함</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;p:empty&quot;)</code></td>
+<td style="text-align:left"><code>p</code>태그중 비어있는 태그를 선택(css에도 있음)</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;p:parent&quot;)</code></td>
+<td style="text-align:left">태그중 자식이 있는 태그만 선택 <code>$(&quot;p:not(:empty)&quot;)</code>와 같다 볼 수 있음</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;div:hidden&quot;)</code></td>
+<td style="text-align:left"><code>display: none</code>, <code>visibility: hidden</code>, <code>opacity: 0</code> 모두 찾아낸다. <code>:visible</code> 선택자도 있음.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>$(&quot;:root&quot;)</code></td>
+<td style="text-align:left"><code>html</code>태그를 선택</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><a href="https://api.jquery.com/category/selectors/">https://api.jquery.com/category/selectors/</a></p>
+</blockquote>
+<blockquote>
+<p><a href="https://kouzie.github.io/html/HTML-CSS-%EA%B0%80%EC%83%81%EC%9A%94%EC%86%8C,-%EA%B2%B0%ED%95%A9%EC%9E%90,-%EC%86%8D%EC%84%B1%EC%84%A0%ED%83%9D%EC%9E%90,-%EC%A0%84%EC%97%AD%EB%B3%80%EC%88%98/#before---counter">https://kouzie.github.io/html/HTML-CSS-가상요소,-결합자,-속성선택자,-전역변수/#before---counter</a><br>
+css에서 사용하던 선택자를 모두 Jquery에서 사용 가능하다.</p>
+</blockquote>
+<p><br><br></p>
+<h3 id="is">is()</h3>
+<h2 id="jquery---noconflict">jQuery - noConflict()</h2>
+<p>충돌을 방지하기 위한 메서드, 위에서 jquery는 <code>$</code>기호를 사용해 Jquery객체를 만든다.</p>
+<p>하지만 다른 라이브러리에서 <code>$</code>를 키워드로 쓴다면 Jquery와 충돌이 일어날 수 있는데 <code>noConflict()</code> 메서드를 사용해 다른 기호를 사용할 수 있다.</p>
+<pre><code class="language-js"><div><span class="hljs-keyword">var</span> $q = jQuery.noConflict();
+$q( <span class="hljs-string">"div"</span> ).hide();
+</div></code></pre>
+<h2 id="jquery---extend">jQuery - $.extend()</h2>
+<p><code>$.extend()</code>메서드는 객체 확장 메서드로 객체에 추가 속성을 주고 싶을때 일일이 <code>객체명.속성명 = 속성값</code> 형식을 사용하면 지저분하다.</p>
+<pre><code class="language-js"><div><span class="hljs-keyword">var</span> obj = {};
+obj.name = <span class="hljs-string">"Hong"</span>;
+obj.age = <span class="hljs-number">23</span>;
+obj.job = <span class="hljs-string">"student"</span>;
+</div></code></pre>
+<p>위 코드를 extend()메서드를 사용해 다음과 같이 바꿀 수 있다.</p>
+<pre><code class="language-js"><div><span class="hljs-keyword">var</span> obj = {<span class="hljs-attr">fisrtName</span>: <span class="hljs-string">"Hong"</span>};
+$.extend(obj{
+  <span class="hljs-attr">middleName</span>: <span class="hljs-string">"gildong"</span>,
+  <span class="hljs-attr">age</span>: <span class="hljs-number">23</span>,
+  <span class="hljs-attr">job</span>: <span class="hljs-string">"student"</span>
+});
+</div></code></pre>
+<p><code>extend()</code>를 사용해 여러개의 객체를 결합할 수 있다.<br>
+<code>$.extend(객체1, 객체2, 객체3, ... 객체N)</code></p>
+<pre><code class="language-js"><div><span class="hljs-keyword">var</span> obj = {
+  <span class="hljs-attr">name</span>: <span class="hljs-string">"Honggildong"</span>,
+  <span class="hljs-attr">age</span>: <span class="hljs-number">23</span>,
+  <span class="hljs-attr">job</span>: <span class="hljs-string">"student"</span>
+};
+<span class="hljs-keyword">var</span> stdinfo = {
+  <span class="hljs-attr">kor</span>: <span class="hljs-number">100</span>,
+  <span class="hljs-attr">mat</span>: <span class="hljs-number">95</span>,
+  <span class="hljs-attr">eng</span>: <span class="hljs-number">89</span>
+};
+<span class="hljs-keyword">var</span> studentObj = $.extend(obj, stdinfo);
+$.each(studentObj, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">index, value</span>)</span>{
+  <span class="hljs-built_in">console</span>.log(index + <span class="hljs-string">": "</span> + value);
+});
+</div></code></pre>
+<p>출력값</p>
+<pre><code><div>name: Honggildong
+age: 23
+job: student
+kor: 100
+mat: 95
+eng: 89
+</div></code></pre>
+
+    </body>
+    </html>
