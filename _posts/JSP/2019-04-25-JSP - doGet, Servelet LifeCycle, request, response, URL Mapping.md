@@ -1,5 +1,5 @@
 ---
-title:  "JSP/Servlet - doGet, Servelet LifeCycle, request, response, URL Mapping!"
+title:  "JSP/Servlet - doGet, Servelet LifeCycle, request, response, URL 패턴!"
 
 read_time: false
 share: false
@@ -495,3 +495,9 @@ ex: `<url-pattern> / </url-pattern>`
 ex: `<url-pattern> /days02/Test </url-pattern>`
 우리가 지금까지 사용했던 경로가 완변히 일치해야하는 매핑방식이다.
 
+
+클라이언트 입장에서 루트주소는 `http://localhost/`이기 때문에 url패턴으로 이동시 `/Context root명/`을 붙여주어야 한다.  
+
+반면 서버입장에서 루트주소는 `http://localhost/Context root명/`이다.  
+
+서버의 경우 기본적으로 `Context root`위에서 시작되기 때문에 둘의 구분을 잘 해야 `404error`를 쉽게 피할 수 있다.

@@ -939,6 +939,9 @@ $(".ancestors").children().css({ //children은 직계 자식만 찾는다.
 
 직계 자식만 선택하기 때문에 더 깊은 자식객체를 선택하고 싶다면 `find()`메서드를 사용해야 한다.  
 
+만약 모든 요소뿐 아니라 모든 노드를 가져오고 싶다면 `contents()`메서드를 사용
+> https://api.jquery.com/contents/#contents
+
 ### find()
 
 `find(selector)`메서드는 괄호안의 선택자를 사용해 호출객체안의 객체중 해당하는 객체를 반환한다.  
