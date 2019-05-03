@@ -195,7 +195,7 @@ function printCalender(year, month) {
 `document.createElement`와 `document.createTextNode`, `li_date.appendChild` **DOM 내장 객체**를 사용해서 `li`태그를 생성한다.  
 
 
-![js7]({{ "/assets/web/js/js7.png" | absolute_url }}){: .shadow}{: .align-right}
+![js7]({{ "/assets/web/js/js7.png" | absolute_url }}){: .shadow}  
 
 `startDay`만큼 빈 `li`태그를 생성하고 `appendChild` 함수를 통해  `ul_days`에 집어넣고  
 
@@ -324,7 +324,7 @@ body {
 ```
 
 
-![js8]({{ "/assets/web/js/js8.png" | absolute_url }}){: .shadow}{: .align-right}
+![js8]({{ "/assets/web/js/js8.png" | absolute_url }}){: .shadow}  
 
 ### 날짜 선택시 표시
 
