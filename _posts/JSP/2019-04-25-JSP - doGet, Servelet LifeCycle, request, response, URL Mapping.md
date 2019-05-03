@@ -345,15 +345,19 @@ cookie - JSESSIONID=DBFB435E266CEEA73EB004BBF0F7F6D7; ID_save=admin
 
 `response`객체는 서버에서 클라이언트에게 응답할때 사용되는 객체이다.  
 
-클라이언브(브라우저)에게 보내는 응답을 위한 객체
+클라이언트(브라우저)에게 보내는 응답을 위한 객체
 1. 헤더에 추가정보 입력
 2. 리다이렉트(redirect) 기능
 
-`response.sendRedirect("url")`
-이렇게 매개변수로 url이 포함되는경우 한글이 들어갈때 인코딩을 해야한다.  
+클라이언트를 리다이렉트 시키기 위해 
+`response.sendRedirect("url")` 메서드를 사용한는데 
+url에 한글이 포함되는경우 인코딩을 해야한다.    
+
 
 다행이 인코딩 지원 메서드가 있다.  
 `URLEncoder.encode("한글", "utf-8");`
+
+한글 문자열을 `encode()`메서드로 변환시킨 후 url에 붙여놓도록 하자.  
 
 <br><br>
 
