@@ -23,23 +23,29 @@ toc: true
 문서 객체 모델(`Document Object Model`)은 객체 지향 모델로써 **구조화된 문서를 표현하는 형식**이다.  
 DOM은 플랫폼언어 중립적으로 구조화된 문서를 표현하는 W3C의 공식 표준이다(위키).  
 
-html 문서의 모든 내용은 노드로 이루어져 있다.  
+`html` 문서의 모든 내용은 노드로 이루어져 있다.  
 태그, 태그안의 content, 태그의 속성, 속성값, 주석 등등 모두 노드로 구성함.
 
-html 문서의 요소(태그)는  **요소 노드**라 한다.   
-html 문서의 요소안의 내용(content)는  **텍스트 노드**라 한다.   
-html 문서의 요소의 속성(attribute)은  **속성 노드**라 한다.  
-html 문서의 주석은 **주석 노드**라 한다.  
+노드는 다음 4가지로 분류된다.  
+
+* html 문서의 요소(태그)는  **요소 노드**라 한다.   
+
+* html 문서의 요소안의 내용(content)는  **텍스트 노드**라 한다.   
+
+* html 문서의 요소의 속성(attribute)은  **속성 노드**라 한다.  
+
+* html 문서의 주석은 **주석 노드**라 한다.  
 
 모든 내용을 노드로 구분하기 때문에 DOM객체를 사용해 HTML문서의 모든 내용을 구분할 수 있고 내용을 가져올수 있다.  
 
-`document`객체 아래로 **트리형식으로 노드가 구성**되어 있으며 DOM트리라 한다.
-Javascript를 사용해 모든 노드를 *접근, 수정, 추가, 삭제* 가능하다.
-모든 트리관계가 그렇듯 DOM트리에서도 노드간 상위 하위 관계가 있다.  
+`document`객체 아래로 **트리형식으로 노드가 구성**되어 있으며 `DOM트리`라 한다.  
+
+Javascript를 사용해 모든 노드를 *접근, 수정, 추가, 삭제* 가능하다.  
+모든 트리관계가 그렇듯 DOM트리에서도 노드간 상위 하위 관계가 있다.    
 
 > 참고 :최상위(루트노드)는 document가 아닌 **html이다**. document는 모든 노드에 접근 가능노드로 루트노드라 할 수 없음.  
 
-document는 모든 노드에 접근 가능합으로 `document.documentElement`속성을 통해 `html노드`를 를 가져온다.  
+`document`객체는 모든 노드에 접근 가능합으로 `document.documentElement`속성을 통해 `html노드`를 를 가져온다.  
 
 <br>
 
@@ -47,9 +53,11 @@ document는 모든 노드에 접근 가능합으로 `document.documentElement`�
 
 html문서는 노드로 구성된다 할 수 있지만 `Element`로 구성된다 할 수는 없다.  
 `Element`는 `Node`보다 큰 범위의 개념으로 객체 그 자체를 나타내지만  
-`Node`는 객체안의 속성, content 등을 나타낸다.  
+`Node`는 객체안의 속성, `content` 등을 나타낸다.  
 
-또한 대부분의 DOM객체 메서드에서 `Element`와 `Node`의 배열형태인 `HTML Collection`과 `NodeList`를 반환하는데 `[]`인덱스 연산자로 특정 위치를 가리키는건 공통이지만  
+또한 대부분의 DOM객체 메서드에서 `Element`와 `Node`의 배열형태인 `HTML Collection`과 `NodeList`를 반환한다, 모두 배열형태의 데이터 구조이다.  
+
+`[]`인덱스 연산자로 특정 위치를 가리키는건 `Collection`과 `NodeList` 공통이지만  
 `push(), pop(), join()`등의 메서드는 `NodeList`만 사용 가능하다.  
 
 <br>
@@ -66,7 +74,7 @@ lastChild
 nextSibling
 previousSibling
 ```
-`Element`와 다르게 노드는 매우 작은 범위로 이동한다. 때문에 노드간 이동에서 예상과 다른 결과를 얻을 수 있는데
+`Element`와 다르게 노드는 매우 작은 범위로 이동한다. 때문에 노드간 이동에서 예상과 다른 결과를 얻을 수 있는데  
 다음 `table`태그안의 노드 개수를 확인해 보면 노드가 얼마나 작으 단위인지 알 수 있다.  
 ```html
 <table border="1" id="table" >
@@ -74,7 +82,7 @@ previousSibling
   </tbody>
 </table>
 ```
-위 테이블의 노드는 `tbody` 하나뿐이라 생각할 수 있는데 3개나 된다.  
+위 테이블의 `Node`는 `tbody` 하나뿐이라 생각할 수 있는데 실제로는 3개 Node가 있다.    
 
 ```
 NodeList(3) [text, tbody#tbody, text]
@@ -86,19 +94,20 @@ length: 3
 ```
 chrome 디버그 창에서 `console.log(document.getElementById("table").childNodes);` 출력한 결과이다.  
 
-`tbody`를 둘러싸고 있는 `text Node`는 **개행**이다.   
-태그안의 개행마저 `text Node`인식하기때문  
+`tbody`를 둘러싸고 있는 `text Node`(0과 2번째 자식노드)는 **개행문자**이다.   
+(태그안의 개행마저 `text Node`인식하기때문)  
+
 따라서 `nextSibling`, `previousSibling`로 이동하다 보면 이런 공백으로 다른 값을 참조할 가능성이 많다.  
 
 
+개행문자 때문에 생기는 자식노드를 없애려면 아래저첨 개행을 없애면 `text Node`가 생기지 않는다.  
 ```html
 <table border="1" id="table" ><tbody id="tbody"></tbody></table>
 ```
-위와같이 공백을 없애면 `text Node`가 생기지 않는다.  
+<br>
 
 노드 말고 `Element`간 이동을 할 수 있다면 위와 같은 상황을 방지할 수 있는데  
 물론 요소간 이동할 수 있는 메서드도 DOM객체가 지원한다.  
-
 ```js
 parentElement
 children
@@ -108,6 +117,9 @@ nextElementSibling
 previousElementSibling
 ```
 사용하는 메서드의 반환값, 매개변수 타입이 `Node`인지 `Element`인지 필이 확인하자.  
+
+`Node`접근할 일이 없을수 있다고 생각되지만 실제 특정 문자열 뒤에 태그삽입 등의 작업을 할 때 자식 `Node`를 가져와야 할 때가 있다.  
+
 
 <br>
 
@@ -124,17 +136,18 @@ previousElementSibling
 ```
 `h1`태그의 `firstChild`(노드반환) 속성으로 얻은 노드의 `nodeType`을 출력하면 `3`이 출력된다.  
 ```
-1 Node.ELEMENT_NODE		요소노드
-2 Node.ATTRIBUTE_NODE	속성소느
-3 Node.TEXT_NODE			텍스트노드
-8 Node.COMMENT_NODE		주석노드
-9 Node.DOCUMENT_NODE		Documnet노드(문서노드)
-10 Node.DOCUMENT_TYPE_NODE	 <!DOCTYPE html>
+1   Node.ELEMENT_NODE         요소노드
+2   Node.ATTRIBUTE_NODE       속성소느
+3   Node.TEXT_NODE			      텍스트노드
+8   Node.COMMENT_NODE		      주석노드
+9   Node.DOCUMENT_NODE	      Documnet노드(문서노드)
+10  Node.DOCUMENT_TYPE_NODE   <!DOCTYPE html>
 ```
 > 참고자료: https://developer.mozilla.org/ko/docs/Web/API/Node/nodeType
 
 참고로 속성노드를 얻고싶다면 `attributes`속성을 사용하자.  
-`NodeMap`을 반환하는데 배열처럼 사용하면 된다.  
+`NodeMap`을 반환하는데 배열처럼 사용하면 된다.   
+
 `console.log(document.getElementById("id01").attributes[0].nodeType)`  
 `2`를 반환한다.  
 
@@ -147,13 +160,15 @@ previousElementSibling
 문서노드		#document
 주석노드		#comment
 ```
-`nodeName`은 읽기전용 속성으로 변경 불가능하다. 
+`nodeName`은 읽기전용 속성으로 변경 불가능하다.  
+
 `console.log(document.getElementById("id01").attributes[0].nodeName)`  
-"id"를 반환한다.  
+속성 이름인 `id`를 반환한다.  
 
 > 참고자료: https://developer.mozilla.org/ko/docs/Web/API/Node/nodeName  
 
 속성노드이건, text노드이건, 주석노드이건 해당 노드의 값을 가져오고 싶다면 **`nodeValue`**속성을 사용한다.  
+
 `console.log(document.getElementById("id01").firstChild.nodeValue);`  
 "body first child" 출력된다.
 
