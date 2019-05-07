@@ -270,7 +270,7 @@ public class DBCPInit extends HttpServlet{
 ```
 
 파라미터 외에도 `request`객체는 클라이언트(브라우저)요청에 관한 여러 정보를 가져온다.    
-```js
+```html
 <%= request.getRemoteAddr() %>
 <!-- 0:0:0:0:0:0:0:1 클라이언트의 IP주소를 가져온다. (ipv6)  -->
 
@@ -308,6 +308,7 @@ http프로토콜에 1.1버전으로 요청-->
 ```
 
 http프로토콜의 헤더정보를 읽어올 수 있다.  
+
 |**내장 객체**|**설명**|**리턴 타입**|
 |---|---|---|
 `getHeader()`|지정한 이름의 헤더값을 얻어옴 |`String`
@@ -316,7 +317,7 @@ http프로토콜의 헤더정보를 읽어올 수 있다.
 `getIntHeader()`|지정한 해더값을 정수로 얻어옴|`int`
 `getDateHeader()`|지정한 헤더값을 시간값으로 얻어옴|`long`
 
-```js
+```html
 <% 
 	Enumeration<String> en = request.getHeaderNames(); 
 	en.toString();
@@ -359,8 +360,6 @@ url에 한글이 포함되는경우 인코딩을 해야한다.
 
 한글 문자열을 `encode()`메서드로 변환시킨 후 url에 붙여놓도록 하자.  
 
-<br><br>
-
 
 ## request 디코딩, response 인코딩
 
@@ -374,7 +373,7 @@ url에 한글이 포함되는경우 인코딩을 해야한다.
 `request`로부터 데이터를 받을때 받은 파라미터를 디코딩하고,  
 `response`로 데이터를 전달할 때 다시 인코딩하여 웹브라우저에게 html페이지를 전달한다.  
 
-이 디코딩, 인코딩 과정에서 한글이 다음과 같이 깨질 수 있다.  
+이 **디코딩, 인코딩 과정**에서 한글이 다음과 같이 깨질 수 있다.  
 
 ```html
 <form action="ex05_ok.jsp" method="post">
