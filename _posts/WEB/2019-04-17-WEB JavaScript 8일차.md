@@ -589,6 +589,8 @@ console.log(navigator.platform); //Win32 - 운영체제
 
 `path`속성을 `/`로 설정시 웹 어플리케이션 안에서 쿠키를 사용 가능하다.  
 
+보통 한 웹사이트에서 쿠키를 공유하는 일이 대부분이기 때문에 `path`는 `/`로 자주 설정된다.  
+
 `expireDate`속성에 들어가는 날짜형식은 `new Date().toUTCString()` 문자형식(`Thu, 18 Apr 2019 08:38:14 GMT`) 이 들어간다.  
 
 > `toGMTString()`이 더이상 표준이 아님으로 위의 `toUTCString()` 사용을 권장한다.(브라우저에서 아지까진 지원한다)
@@ -604,7 +606,7 @@ function setCookie(name, value, exdays) {
 	now.setTime(now.getTime() + 1000*10) //10초 유지 추가
 	//Thu, 18 Apr 2019 01:33:39 GMT
 	document.cookie = name + "=" + escape(value) + "; expires=" + now.toUTCString() + "; path=/;";
-	//localhost도메인에서 모두 사용하겠다고 하려면 path=/
+	//localhost도메인에안, 모든 웹 어플리케이션에서 사용하겠다면 path=/
 }
 
 function getCookie(name) {
