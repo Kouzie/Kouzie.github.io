@@ -1,5 +1,5 @@
 ---
-title:  "JSP/Servlet - 버퍼, application, exception, 웹 기본구조, 모듈화 !"
+title:  "JSP/Servlet - 버퍼, application, exception, 웹 기본구조, 모듈화!"
 
 read_time: false
 share: false
@@ -126,7 +126,7 @@ exception = pageContext.getExecption();
 page = pageContext.getPage();
 ```
 
-`getRequest()` 메서드가 `Requset`객체를 반환함으로 `HttpServletRequest`로 다운캐스팅 해주어야한다. (response객체도 마찬가지)
+`getRequest()` 메서드가 `Requset`객체를 반환함으로 `HttpServletRequest`로 다운캐스팅 해주어야한다. (`response`객체도 마찬가지)
 
 `pageContext`는 커스텀태에서 새로운 변수를 추가할 때 에도 사용된다.
 `<c:if test=""></c:if>`지금까지 사용해온 코어 태그 역시 일종의 커스텀 태그이다.  
@@ -137,10 +137,11 @@ page = pageContext.getPage();
 
 ## 기본객체 - application
 
-웹어플리케이션(웹사이트 전체)과 관련되있는, 웹어플리케이션 전반적인 정보를 가지고 있는 객체를 `application`객체라 한다.  
+웹어플리케이션(**웹사이트 전체**)과 관련되있는, 웹어플리케이션 전반적인 정보를 가지고 있는 객체를 `application`객체라 한다.  
 
 `application`객체를 사용해 서버정보, 웹 어플리케이션이 제공하는 자원(저장공간, 파일)을 읽어올 수 있다.  
 
+> `application`의 자료형은 `ServletContext`타입이다.  
 
 `web.xml`에 `<init-param>`태그를 사용했었는데 이는 **하나의 서블릿 객체 초기화시** 필요한 파라미터를 설정하는 태그이다.  
 
@@ -170,12 +171,12 @@ web.xml에 아래와 같이 설정하자
 
 설정된 `context-param`은 모든 서블릿 클래스, jsp파일에서 가져올 수 있고 사용하는 함수는 아래와 같다.  
 
-메서드|리턴타입|설명
+**메서드**|**리턴타입**|**설명**
 |--|--|
-`application.getInitParameter("name")`|String|이름이 `name`인, `context-param`에 설정된 application초기화 파라미터 `value`를 가져온다.
-`application.getInitParameterNames()`|Enumeration<String>|모든 application초기화 파라미터 `name`을 가져온다.  
+`application.getInitParameter("name")`|`String`|이름이 `name`인, `context-param`에 설정된 `application`초기화 파라미터 `value`를 가져온다.
+`application.getInitParameterNames()`|`Enumeration<String>`|모든 `application`초기화 파라미터 `name`을 가져온다.  
 
-```html
+```js
 <% 
 Enumeration<String> en = application.getInitParameterNames();
 while(en.hasMoreElements())
@@ -192,17 +193,22 @@ loginEnabled: true
 debugLevel: 5
 ```
 
+>jsp파일에선 application은 기본 제공되는 객체이지만 서블릿 클래스에선 기본 제공되지 않는다.  
+따라서 `application`객체를 얻고 싶다면 `HttpServlet.getServletContext()`메서드를 호출해야 한다.  
+
+
+
 ### 웹 어플리케이션 자원 읽어오기
 
-`application`에서 가장 많이 사용되는 기능으로  
+웹 어플리케이션의 자원 읽어 오는 것은 `application`에서 가장 많이 사용되는 기능으로  
 실제 서버에 저장된 파일을 읽어오거나 저장할 때 정확한 위치를 통해 `File`객체와 입출력 스트림을 생성해야 한다.  
 
 사용되는 메서드는 아래 3가지
 
-메서드|리턴타입|설명
+**메서드**|**리턴타입**|**설명**
 |---|---|---|
-`getRealPath(String path)`|`String`|웹 어플리케이션 내에서 지정한 경로를 시스템경로(절대경로)로 반환한다.  
-`getResource(String path)`|`java.net.URL`|웹 어플리케이션 내에서 지정한 경로를 접근할수 있는 URL주소로 반환한다.  
+`getRealPath(String path)`|`String`|웹 어플리케이션 내에서 지정한 경로를 **시스템경로**로 반환한다.  
+`getResource(String path)`|`java.net.URL`|웹 어플리케이션 내에서 지정한 경로를 접근할수 있는 **URL주소**로 반환한다.  
 `getResourceAsStream(String path)`|`java.io.inputStream`|웹 어플리케이션 내에서 지정한 경로에 연결된 `inputStream`객체를 반환한다.  
 
 예를 들어 `contextPath`가 `jspPro`라는 폴더일 때 실제 폴더위치는 다음일 것이다.  
@@ -227,19 +233,20 @@ debugLevel: 5
 
 ### 서버정보 읽어오기
 
-application 기본객체로 서버관련 정보를 얻어올 수 있다.  
+`application` 기본객체로 서버관련 정보를 얻어올 수 있다.  
 
-`application.getServerInfo()` - 서버 정보 반환
-`application.getMajorVersion()` - 서버 지원 서블릿 규약의 메이저 버전 반환  
+`application.getServerInfo()` - 서버 정보 반환  
+`application.getMajorVersion()` - 서버 지원 서블릿 규약의 메이저 버전 반환    
 `application.getMinorVersion()` - 서버 지원 서블릿 규약의 마이너 버전 반환  
 
-```
+```js
 톰켓버전: <%= application.getServerInfo() %><br>
 
 서블릿 규약:
 <%= application.getMajorVersion() %>.
 <%= application.getMinorVersion() %><br>
 ```
+
 출력값
 ```
 톰켓버전: Apache Tomcat/8.5.39
@@ -502,14 +509,49 @@ JSP공통 기능을 포함시키는 것은 `<%@ include="" %>`지시자를 사�
 </html>
 ```
 
-### web.xml에서 include지시자 추가
+### web.xml에서 모듈 추가하도록 설정
 
-만약 500페이지가 나온다면 inlcude 지시자를 500번 추가시켜 주어야 할 까?  
+만약 웹 어플리케이션에 필요한 페이지가 500페이지가량 된다면  나온다면 `inlcude` 지시자를 500번 추가해야 하나?  
 
-web.xml설정 한번으로 모든 페이지에 모듈화된 페이지를 삽입시킬 수 있다.  
+`web.xml`설정 한번으로 모든 페이지에 모듈화된 페이지를 삽입시킬 수 있다.  
 
-```html
-<%!
-	String title = "지시자 테스트";
+
+아래 `includee.jspf`파일은 모든 웹페이지에 추가시켜야할 정보가 들어가 있다.  
+`jspf`란 확장자는 모듈페이지를 표기하기 위해 사용하는 것으로 `jsp`확장자를 사용해도 무관하다. 그저 구분을 위해 사용한 것.
+```js
+/* includee.jspf */
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%
+	//웹사이트 전체에 사용되는 공통적 기능을 선언, 수행
+	request.setCharacterEncoding("UTF-8");
+	String contextPath = request.getContextPath();
+	String downloadPath = "download";
 %>
 ```
+
+이제 위의 `includee.jspf`를 내가 설정한 `url-pattern`에 해당하는 모든 페이지에 모듈을 추가해보자.   
+```xml
+<jsp-config>
+	<jsp-property-group>
+		<url-pattern>/days08/*</url-pattern>
+		<include-prelude>/days08/includee.jspf</include-prelude>
+		<!-- <include-coda></include-coda> -->
+	</jsp-property-group>
+</jsp-config>
+```
+
+`<jsp-config>`, `<jsp-property-group>`, `<include-prelude>`, `<include-coda>`  
+
+처음보는 태그가 대거 등장했는데 모두 모듈을 추가하기 위한 태그들이다.  
+
+`include-prelude`은 페이지 상단에 추가되는 코드가 있는 모듈 페이지를 추가하고
+
+`include-coda`은 페이지 하단에 추가되는 코드가 있는 모듈 페이지를 추가한다.  
+
+
+보통 사이트를 보면 상단에는 상단 배너(검색창이나 목록, 연관 사이트보기 등)이 있고  
+
+하단에는 하단배너(저작권 표시 등)이 있다.  
+
+모든 페이지에 이런 배너들이 상, 하단에 반복되기 때문에 `<jsp-config>`태그를 통해 한꺼번에 넣어주면 편하다.  
+
