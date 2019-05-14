@@ -342,6 +342,14 @@ accept-encoding - gzip, deflate, br
 accept-language - ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
 cookie - JSESSIONID=DBFB435E266CEEA73EB004BBF0F7F6D7; ID_save=admin
 ```
+
+헤더에는 `referer`이라는 전에 접속했던 url값을 가지고 있는 속성이 있다.  
+
+자신의 사이트로 접속해오기전 클라이언트가 있던 사이트 주수로를 `request.getHeader("referer")`로 얻어올 수 있다.  
+> 위의 getHeaderNames에서 출력 안된 이유는 이전사이트 접속없이 바로 접근했기 때문.
+
+
+
 ### response
 
 `response`객체는 서버에서 클라이언트에게 응답할때 사용되는 객체이다.  
