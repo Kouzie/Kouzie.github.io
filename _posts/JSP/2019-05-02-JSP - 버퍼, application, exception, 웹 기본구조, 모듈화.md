@@ -115,15 +115,20 @@ eclipse에서 개발이 끝나고 배포하려면 `export`에서 `WAR File`로 �
 
 `pageContext`를 통해서도 가져올 수 있다.
 
+**메서드**|**반환형**|**설명**
+:-----:|:-----:|:-----:
+`getRequest()` | `ServletRequest` | `request` 기본 객체를 구한다. 
+`getResponse()` | `ServletResponse` | `response` 기본 객체를 구한다. 
+`getSession()` | `HttpSession` | `session` 기본 객체를 구한다. 
+`getServletContext()` | `ServletContext` | `application` 기본 객체를 구한다. 
+`getServletConfig()` | `ServletConfig` | `config` 기본 객체를 구한다. 
+`getOut()` | `JspWriter` | `out` 기본 객체를 구한다.
+`getException()` | `Exception` | `exception` 기본 객체를 구한다. 
+`getPage()` | `Object` | `page` 기본 객체를 구한다. 
+
 ```java
 requset = (HttpServletRequest)pageContext.getRequest();
 response = (HttpServletResponse)pageContext.gerResponse();
-session = pageContext.getSession();
-application = pageContext.getServletContext();
-config = pageContext.getServletConfig();
-out = pageContext.getOut();
-exception = pageContext.getExecption();
-page = pageContext.getPage();
 ```
 
 `getRequest()` 메서드가 `Requset`객체를 반환함으로 `HttpServletRequest`로 다운캐스팅 해주어야한다. (`response`객체도 마찬가지)
