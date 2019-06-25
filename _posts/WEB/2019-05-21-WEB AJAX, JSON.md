@@ -356,9 +356,7 @@ jsonData += "}";
 
 상당히 코드가 더러운데 JSON라이브러리를 사용하면 깔끔하게 처리 가능하다.
 
-
-
-### $.ajax() - json과 jquery
+### $.ajax() - ajax와 jquery
 
 json객체를 보내고 받을때 `httpRequest.open("GET", url, true)`, `httpRequest.send(null)`, `.load()` 등의 함수를 사용했는데  
 
@@ -366,17 +364,86 @@ json객체를 보내고 받을때 `httpRequest.open("GET", url, true)`, `httpReq
 파라미터 지정부터 콜백함수 등록까지!
 
 
+### JSON객체를 위한 java 라이브러리
+
+위와같이 문자열 형태로 이어붙이는 방법은 실수하기 쉽고 유지보수가 어렵기 때문에 JSON객체를 만들때 라이브러리를 사용한다.  
+
+> https://code.google.com/archive/p/json-simple/downloads
+
+`json-simple-1.1.1.jar` 하나만 다운받으면 사용가능하다.  
+
+사용되는 객체로는 `JsonObject`와 `JsonArray`가 있다.  
+
+```java
+JSONObject jobj = new JSONObject();
+JSONArray jarr = new JSONArray();
+```
+
+`JSONObject` 클래스에는 `put(key, value)`, `remove(key)` 등의 메서드가 있고  
+`JSONArray` 클레스에는 `add(Object)`, `remove(index)`, `remove(Object)` 등의 메서드가 있다.  
+
+
+바로 위에서 만든 `emp` json객체를 JSON 라이브러리를 사용해서 만들어보자.  
+```java
+<%@page import="org.json.simple.JSONObject"%>
+<%@page import="org.json.simple.JSONArray"%>
+<%@page import="com.util.ConnectionProvider"%>
+<%@page import="java.sql.ResultSet"%>
+<%@page import="java.sql.PreparedStatement"%>
+<%@page import="java.sql.Connection"%>
+<%@ page trimDirectiveWhitespaces="true"
+	contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%
+	Connection conn = null;
+	PreparedStatement pstmt = null;
+	ResultSet rs = null;
+	String sql = "select empno, ename from emp order by sal desc";
+	JSONObject jsonData = null;
+	try {
+		conn = ConnectionProvider.getConnection();
+		pstmt = conn.prepareStatement(sql);
+		rs = pstmt.executeQuery();
+		jsonData = new JSONObject();
+
+		JSONArray jsonEmpArray = new JSONArray(); //[{empno:??, ename:??, sal:??}, {...}, {...}]
+
+		while (rs.next()) {
+			JSONObject jsonEmp = new JSONObject();
+			int empno = rs.getInt("empno");
+			String ename = rs.getString("ename");
+			jsonEmp.put("empno", empno);
+			jsonEmp.put("ename", ename);
+			jsonEmpArray.add(jsonEmp);
+
+		}
+
+		jsonData.put("emp", jsonEmpArray);
+
+	} catch (Exception e) {
+		e.printStackTrace();
+	} finally {
+		pstmt.close();
+		rs.close();
+		conn.close();
+	}
+%>
+<%=jsonData%>
+```
+`jsonData`의 `toString()` 메서드를 출력하면 요청한 클라이언트에게 jsonObject가 문자열로 전송된다. 
+
+
 ```js
 $(document).ready(function() {
 	$("#jsontest").click(function() {
 		$.ajax({
-			url : "ex02_emp_json.jsp",
+			url : "emp_json.jsp",
 			dataType : "json",
 			data: {
 				"detpno": 20
 			},
 			type : "get",
-			cache : false, //담겨져있는놈을 응답하기 때문에 새로 응답을 무조건 받는다.  
+			cache : false, //로컬말고 서버에 재요청 
 			success : function(data) {
 				$(data.emp).each(function(index, e) {
 					var info = e.empno + " / " + e.ename;
@@ -394,21 +461,27 @@ $(document).ready(function() {
 <input type="button" id="jsontest" value="jquery+ajax+json" />
 <div id="demo"></div>
 ```
+
+```
+7839 / KING
+7902 / FORD
+7566 / JONES
+7698 / BLAKE
+7782 / CLARK
+7499 / ALLEN
+7844 / TURNER
+7934 / MILLER
+7654 / MARTIN
+7521 / WARD
+7900 / JAMES
+7369 / SMITH
+```
+
 `success :`에서 성공시 호출하는 콜백함수를 등록하고 
 `error :`에서 실패시 호출하는 콜백함수를 등록한다.  
 `complete: `정상이든 비정상인든 실행이 완료될 경우 실행될 함수.  
 
 `data:`에서 파라미터를 추가한다. post방식의 경우 무조건 `data:`를 사용해야 하지만 get방식의 경우 url뒤에 붙여보내도 상관없다.  
-
-### JSON객체를 위한 java 라이브러리
-
-위와같이 문자열 형태로 이어붙이는 방법은 실수하기 쉽고 유지보수가 어렵기 때문에 JSON객체를 만들때 라이브러리를 사용한다.  
-
-> https://code.google.com/archive/p/json-simple/downloads
-
-`json-simple-1.1.1.jar` 하나만 다운받으면 사용가능하다.  
-
-
 
 ### 자동완성
 
@@ -467,13 +540,6 @@ $(document).ready(function() {
 	<p>.</p>
 	<p>.</p>
 	<p>.</p>
-	<p>.</p>
-	<p>.</p>
-	<p>.</p>
-	<p>.</p>
-	<p>.</p>
-	<p>.</p>
-	<p>.</p>
 	<script>
 		var items; //검색결과 저장용 변수
 
@@ -522,7 +588,4 @@ $(document).ready(function() {
 </html>
 ```
 
-
-
 > 참고: url과 파라미터를 요청하면 어떤 json객체가 오는지 보고 싶을때 아래 프로그램을 사용하자.  
-
