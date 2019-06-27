@@ -236,7 +236,7 @@ OS name: "windows 10", version: "10.0", arch: "amd64", family: "windows"
 `artifactId` - 프로젝트명(`javaprj`)
 `archetypeArtifactId` - 템플릿 이름(`maven-archetype-quickstart`)
 
-```xml
+```
 [INFO] Scanning for projects...
 [INFO]
 [INFO] ------------------< org.apache.maven:standalone-pom >-------------------
