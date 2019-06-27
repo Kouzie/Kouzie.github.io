@@ -512,8 +512,7 @@ XML 스키마 사용 시, `<aop:aspect>` 태그의 `order` 속성을 사용해�
 |---|---|
 `Controller` | `Front Controller`
 `Handler` | `Controller`
-`View` | `View`  
-
+`View` | `View`
 `Spring`에선 보통 `maven` 빌드관리를 사용한 프로젝트를 생성하지만 전체적인 구조를 알기 위해 먼저 `eclipse`에서 `Dynamic web project`로 스프링 프레임워크를 사용해보자.  
 
 ### 스프링 MVC 구성 요소
@@ -521,7 +520,7 @@ XML 스키마 사용 시, `<aop:aspect>` 태그의 `order` 속성을 사용해�
 ![image6]({{ "/assets/Spring/image6.png" | absolute_url }}){: .shadow}  
 
 **요소**|**역할**
-:-----:|-----
+:-----:|:-----:
 `DispatcherServlet`|브라우저가 보낸 **요청을 일괄 관리**하는 `FrontController`, 결과값을 `view`에 전달하여 알맞은 응답을 생성.`View에` 전달하여 알맞은 응답을 생성하도록 한다.
 `HandlerMapping`|요청URL과 `Controller`클래스를 **맵핑**
 `HandlerAdapter`|`DispatcherServlet`의 처리 요청을 변환해서 컨트롤러에게 전달하고, 컨트롤러의 응답 결과를 **`DispatcherServlet`이 요구하는 형식으로 변환**한다, 웹 브라우저 캐시 등의 설정도 담당(실제 일을 시키는 역할)
@@ -609,7 +608,6 @@ XML 스키마 사용 시, `<aop:aspect>` 태그의 `order` 속성을 사용해�
 `contextConfigLocation`라는 파라미터를 쓰면, `Context Loader`가 `load`할 수 있는 설정파일을 여러개 쓸 수 있다.
 
 >`dispatcher-servlet.xml`는 `spring-framework-3.0.2.RELEASE\docs\spring-framework-reference\pdf` 파일에서 450페이지로 참고  
-
 ```xml
 <!-- dispatcher-servlet.xml -->
 <?xml version="1.0" encoding="UTF-8"?>
@@ -631,10 +629,9 @@ http://www.springframework.org/schema/context/spring-context-3.0.xsd">
    </bean>
 </beans>
 ```
-
 형식은 java프로젝트에서 사용하던 xml형식과 같다.(`<bean>`태그로 스프링 빈 객체 생성, `<property>`태그로 의존설정 등)  
 
-만약 `dispatcher-servlet.xml`과 같은 xml설정파일이 아닌 자바 코드기반 설정파일을 `DispatcherServlet`객체 생성시 설정파일로 사용하고 싶다면 `web.xml`에 아래와 같이 설정  
+만약 `dispatcher-servlet.xml`과 같은 xml설정파일이 아닌 자바 코드기반 설정파일을 `DispatcherServlet`객체 생성시 설정파일로 사용하고 싶다면 `web.xml`에 아래와 같이 설정
 
 ```xml
 <!-- web.xml -->
@@ -657,9 +654,7 @@ http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 </init-param>
 ```
 
-`DispatcherServlet`은 기본적으로 스프링 컨테이너를 생성할 때 설정을 통해 사용할 구현 클래스로 `org.springframework.web.context.support.XmlWebApplicationContext`을 사용하는데  
-이를 `@Configuration` 어노테이션을 사용한 자바코드 설정파일로 구현하고 싶다면  
-구현클래스를 위와같이 `org.springframework.context.annotation.AnnotationConfigApplicationContext` 클래스로 바꿔 주어야 한다.  
+`DispatcherServlet`은 기본적으로 스프링 컨테이너를 생성할 때 설정을 통해 사용할 구현 클래스로 `org.springframework.web.context.support.XmlWebApplicationContext`을 사용하는데 이를 `@Configuration` 어노테이션을 사용한 자바코드 설정파일로 구현하고 싶다면 구현클래스를 위와같이 `org.springframework.context.annotation.AnnotationConfigApplicationContext` 클래스로 바꿔 주어야 한다.  
 
 ### 스프링 `CharacterEncodingFilter`
 
@@ -781,8 +776,7 @@ public class NoticeDetailController implements Controller{
 }
 ```
 
-모두 `org.springframework.web.servlet.mvc.Controller`란 인터페이스와 `handleRequest`메서드를 구현하고 있는데  
-
+모두 `org.springframework.web.servlet.mvc.Controller`란 인터페이스와 `handleRequest`메서드를 구현하고 있는데 
 `<bean name="/customer/notice.htm" ...>` 빈 객체 `name` 속성에 설정된 url 패턴에 해당하는 작업을 수행하는 컨트롤러 임을 의미한다.  
 
 또한 `ModelAndView`객체에 이동할 `view` 파일 설정, `view`페이지에서 출력할 `list`혹은 `notice`객체를 포함시켜 반환한다.
@@ -1273,181 +1267,3 @@ com.springsource.org.apache.commons.io-1.4.0.jar
 5. CustomerController.java 내의 noticeReg(POST일 때) 컨트롤러 메소드에서 MultipartFile 객체 생성 및 코딩
 
 6. 파일 존재 여부 확인해서 존재하면 파일 객체 만들고 transferTo메소드를 통해 저장 -->
-
-
-
-## WebAppliactionContext 계층
-
-`AppliactionContext`는 스프링 컨테이너를 생성하고 접근하는 객체가 상속하는 클래스이다.  
-
-**스프링 컨테이너**는 빈객체를 생성해 나가는 일종의 공장같은 개념으로 여러개의 스프링 컨테이너가 생길 수 있고 계층관계를 가질 수 도 있다.  
-
-웹 프로젝트에선 `AppliactionContext`으로 스프링 컨테이너를 생성, 관리하지 않고 `DispatcherServlet`을 사용해 스프링 컨테이너를 생성, 관리했는데 
-웹 프로젝트에선 `DispatcherServlet`를 여러개 생성 가능하다. 물론 각 `DispatcherServlet`에 해당하난 xml설정파일이 있어야 한다.  
-
-
-이렇게 만들어진 여러개의 `DispatcherServlet`에서 생성된 빈 객체 끼리는 별도 설정 없이는 서로 접근이 불가능하다.  
-
-당연히 서로 접근해야 하는 경우가 발생하는데 DAO나 DB 템플릿 객체 같은 것이 이에 해당된다.  
-
-굳이 여러개의 `DispatcherServlet`에 각각 만들어줄 필요가 없는 클래스들이 각각의 `DispatcherServlet`에 공유되어야 하는데 이를 위해 사용하는 것이 `WebAppliactionContext` 계층 개념이디.  
-
-이런 이유로 서로 접근할 통로를 만들기 위해 부모역할을 하는 `root AppliactionContext`을 사용하는데 
-
-`root AppliactionContext`는 `ContextLoaderListener` 을 사용해 만들 수 있다.  
-
-```xml
-<!-- web.xml -->
-<?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
-	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" 
-	metadata-complete="true" 
-	version="3.1">
-  <display-name>Welcome to Tomcat</display-name>
-  <description>Welcome to Tomcat</description>
-  <servlet>
-	<servlet-name>dispatcher</servlet-name>
-	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-	<load-on-startup>1</load-on-startup>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>dispatcher</servlet-name>
-    <url-pattern>*.htm</url-pattern>
-  </servlet-mapping>
-</web-app>
-```
-`web.xml`을 위와같이 설정하면 `dispatcher-servlet.xml` 파일을 찾아 `DispatcherServlet` 객체를 생성한다.  
-
-```xml
-<!-- dispatcher-servlet.xml -->
-<?xml version="1.0" encoding="UTF-8"?>
-<beans 
-  xmlns="http://www.springframework.org/schema/beans" 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:p="http://www.springframework.org/schema/p" 
-  xmlns:context="http://www.springframework.org/schema/context"
-  xsi:schemaLocation=" http://www.springframework.org/schema/beans
-	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-	http://www.springframework.org/schema/context
-	http://www.springframework.org/schema/context/spring-context-3.0.xsd">
-
-	<context:component-scan base-package="controllers, newlecture"/>
-  <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
-    <property name="maxUploadSize" value="-1"></property>
-  </bean>
-
-  <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-    <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"></property>
-    <property name="username" value="scott"></property>
-    <property name="password" value="tiger"></property>
-    <property name="url" value="jdbc:oracle:thin:@172.17.107.68:1521:xe"></property>
-  </bean>
-  <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-    <constructor-arg>
-      <ref bean="dataSource" />
-    </constructor-arg>
-  </bean>
-</beans>
-```
-파입 업로드를 위한 `multipartResolver`, DB연동을 위한 `dataSource`객체와 `jdbcTemplate` 템플릿 객체.  
-
-그리고 `component-scan`을 통해 자동 생성되는 여러개의 빈 객체들...
-
-앞으로 여러개의 `DispatcherServlet` 객체가 생성된다 했을 때 데이터베이스 연동을 위한 `dataSource`과 `jdbcTemplate`은 앞으로 생길 `DispatcherServlet`에 하나씩 가지고 있을 필요 없이  
-모든 `DispatcherServlet`가 공유하면 된다.  
-
-즉 DB연동 객체를 가지는 `DispatcherServlet` 를 따로 분리해보자.  
-
-DB연동 객체는 모든 `DispatcherServlet` 객체에서 접근 가능해야 함으로 `root AppliactionContext`에서 빈 객체로 생성할 것 이다.  
-
-먼저 기존의 `dispatcher-servlet.xml` 파일에서 DB연관 서블릿 객체를 모두 지우고
-
-```xml
-<!-- dispatcher-servlet.xml -->
-<?xml version="1.0" encoding="UTF-8"?>
-<beans 
-  xmlns="http://www.springframework.org/schema/beans" 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:p="http://www.springframework.org/schema/p" 
-  xmlns:context="http://www.springframework.org/schema/context"
-  xsi:schemaLocation=" http://www.springframework.org/schema/beans
-	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-	http://www.springframework.org/schema/context
-	http://www.springframework.org/schema/context/spring-context-3.0.xsd">
-
-	<context:component-scan base-package="controllers, newlecture"/>
-  <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
-    <property name="maxUploadSize" value="-1"></property>
-  </bean>
-</beans>
-```
-
-따로 DB연동 객체를 생성하는 xml설정파일을 생성
-```xml
-<!-- datasource-service.xml -->
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:p="http://www.springframework.org/schema/p"
-  xmlns:context="http://www.springframework.org/schema/context"
-  xsi:schemaLocation="
-  http://www.springframework.org/schema/beans
-  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-  http://www.springframework.org/schema/context
-  http://www.springframework.org/schema/context/spring-context-3.0.xsd">
-  <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-    <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"></property>
-    <property name="url" value="jdbc:oracle:thin:@172.17.107.68:1521:xe"></property>
-    <property name="username" value="scott"></property>
-    <property name="password" value="tiger"></property>
-  </bean>		
-  <bean id="jdbcTemplate" class="org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate">
-    <constructor-arg ref="dataSource"></constructor-arg>  
-  </bean>
-</beans>
-```
-
-이제 `web.xml`에서 `root AppliactionContext` 용 `Dispatcher`객체를 생성하고 `root AppliactionContext`안의 빈 객체를 사용할 `Dispatcher`를 만들면 된다.  
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" metadata-complete="true" version="3.1">
-  <display-name>Welcome to Tomcat</display-name>
-  <description>
-     Welcome to Tomcat
-  </description>
-  <context-param>
-    <param-name>contextConfigLocation</param-name>
-    <param-value>
-      /WEB-INF/datasource-service.xml
-    </param-value>
-  </context-param>
-  <listener>
-    <listener-class>
-      org.springframework.web.context.ContextLoaderListener
-    </listener-class>
-  </listener>
-
-  <servlet>
-    <servlet-name>dispatcher</servlet-name>
-    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-    <load-on-startup>1</load-on-startup>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>dispatcher</servlet-name>
-    <url-pattern>*.htm</url-pattern>
-  </servlet-mapping>
-</web-app>
-```
-`<context-param>`태그와 `<listener>`태그를 통해 `root AppliactionContext`를 만든다.  
-컨테이너에 설정되는 컨텍스트 파라미터 `contextConfigLocation`에 `<param-value>` 태그안의 적혀있는 xml파일들을 집어넣어 공용으로 사용할 빈객체들을 생성한다.  
-
-
-![image9]({{ "/assets/Spring/image9.png" | absolute_url }}){: .shadow}  
-
-위 xml 설정대로라면 지금은 총 2개의 `WebAppliactionContext`(스프링 컨테이너)가 생겼다.  
-
-아직 만들어지지 않았지만 앞으로 만들어지는 `WebAppliactionContext` 객체들도 `root AppliactionContext`이 제공하는 DB연결 객체를 사용할 수 있다.  
-
-
