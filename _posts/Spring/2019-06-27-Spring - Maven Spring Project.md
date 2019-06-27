@@ -500,6 +500,6 @@ Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
 
 `프로젝트 우클릭 -> Maven -> Add Dependency`를 통해서도 추가 가능하다.  
 
-![image19]({{ "/assets/Spring/image19.png" | absolute_url }}){: .shadow}   
+![image19]({{ "/assets/Spring/image19.png" | absolute_url }}){: .shadow}  
 
 ![image20]({{ "/assets/Spring/image19.png" | absolute_url }}){: .shadow}   
