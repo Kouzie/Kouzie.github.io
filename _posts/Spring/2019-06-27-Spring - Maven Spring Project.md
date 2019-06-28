@@ -1,5 +1,5 @@
 ---
-title:  "Spring - 스프링 프로젝트!"
+title:  "Spring - Maven Spring Project!"
 
 read_time: false
 share: false

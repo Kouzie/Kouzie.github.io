@@ -924,14 +924,15 @@ ConnectionPool p1 = ctx.getBean("connPoll", ConnectionPool.class);
 ConnectionPool p2 = ctx.getBean("connPoll", ConnectionPool.class);
 ```
 
-위와 같이 ConnectionPool 객체를 2개 생성하면 모두 같은 인스턴스를 가리킨다.  
+위와 같이 `ConnectionPool` 객체를 2개 생성하면 모두 같은 인스턴스를 가리킨다.  
 
 이는 기본적으로 스프링 컨테이너가 빈 객체를 싱글톤 방식으로 생성하기 때문...
 
-> 만약 해당 빈 객체가 싱글톤 객체로 생성되는 것을 명시하고 싶다면 아래 설정 참고
+> 만약 해당 빈 객체가 싱글톤 객체로 생성되는 것을 명시하고 싶다면 아래 설정 참고  
+
+
 ```java
 //<bean id="connPoll" class="spring.dbconn.ConnectionPool" scope="singleton"/>
-
 @Bean
 @Scope("singleton")
 public ConnectionPool connectionPool() {
@@ -939,10 +940,10 @@ public ConnectionPool connectionPool() {
 }
 ```
 
-<br><br>
+<br>
 
 반면 프로토 타입으로 scope를 설정할 경우 여러개의 인스턴스 생성이 가능  
 
 단 스프링 컨테이너는 프로토 타입 scope 빈 객체의 초기화 까지만 관리하고 소멸과정을 따로 관리하지 않는다.(스프링 컨테이너 종료시 같이 소멸되지 않음)  
 
-일반적으로 사용되는 Scope는 싱글톤이고 만약 같은 타입의 객체를 여러개 생성해야 한다면 프로토 타입보만 팩토리 클래스를 만들어 사용하는 것이 좋다.  
+일반적으로 사용되는 Scope는 싱글톤이고 만약 같은 타입의 객체를 여러개 생성해야 한다면 프로토 타입보만 **팩토리 클래스를 만들어 사용하는 것이 좋다.**  
