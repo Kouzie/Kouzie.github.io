@@ -280,7 +280,7 @@ package: com.newlecture
 명령을 실행한 폴더위치에 `javaprj` 폴더가 생겼다면 
 프로젝트가 만들어 졌다면 테스트로 컴파일하자.
 
-cmd로 `mvn compile`
+`javaprj`로 이동후 cmd에서 `mvn compile` 명령 실행
 ```
 [INFO] Scanning for projects...
 [INFO]
@@ -503,3 +503,23 @@ Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
 ![image19]({{ "/assets/Spring/image19.png" | absolute_url }}){: .shadow}  
 
 ![image20]({{ "/assets/Spring/image19.png" | absolute_url }}){: .shadow}   
+
+
+## 자주사용하는 어노테이션 목록
+
+어노테이션 | 설명 | 사용 
+|---|---|---|
+`@Controller` | 스프링 MVC의 컨트롤러 객체임을 명시함 | 클래스
+`@RequestMapping` | URL매핑을 위한 어노테이션 | 클래스, 메서드
+`@RequestParam` | 요청에서 특별한 파라미터 값을 매개변수에 초기화 | 파라미터
+`@RequestHeader` | 요청에서 특정 HTTP헤터 정보를 추출할 때 사용 | 파라미터
+`@PathValue` | 현재 URL에서 원하는 정보를 추출할 때 사용하는 어노테이션 | 파라미터
+`@CookieValue` | 요청 헤더에서 쿠키값을 추출할 때 사용하는 어노테이션 | 파라미터
+`@ModelAttribute` | 자동으로 해당 객체를 뷰까지 전달하도록 하는 어노테이션 | 메서드, 파라미터
+`@SessionAttribute` | 세션상에서 모델의 정보를 유지하고 싶은 경우 사용 | 클래스
+`@InitBinder` | 파라미터를 수집해 객체로 만들경우에 커스터마이징 | 메소드
+`@ResponseBody` | 리턴 타입이 HTTP 응답 메시지로 전송, JSON객체 사용시 적용함 | 메소드, 리턴타입
+`@RequestBody` | 요청 문자열이 그대로 파라미터로 전달 | 파라미터
+`@Repository` | DOA객체임을 명시하는 어노테이션 | 클래스
+`@Service` | 서비스 객체임을 명시하는 어노테이션 | 클래스
+

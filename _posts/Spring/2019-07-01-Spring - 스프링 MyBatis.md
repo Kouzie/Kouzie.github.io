@@ -78,13 +78,13 @@ xml설정에 따라 `SqlSessionTemplate`을 생성하는 구성요소가 `SqlSes
 
 MyBatis를 이용해 Dao객체 만드는 방법은 2가지다.
 
-1. SqlSessionTemplate을 이용한 DAO 새성
+1. SqlSessionTemplate을 이용한 DAO 생성
 2. 매퍼 동적생성을 이용한 DAO 생성
 
-먼저 `SqlSessionTemplate을 이용한 DAO 새성`을 알아보자.  
+먼저 `SqlSessionTemplate을 이용한 DAO 생성`을 알아보자.  
 
   
-### SqlSessionTemplate을 이용한 DAO 새성
+### SqlSessionTemplate을 이용한 DAO 생성
 
 MyBatis를 사용하려면 일단 **`mybatis-spring`모듈이 제공하는 `SqlSessionFactoryBean`와 `SqlSessionTemplate` 빈 객체를 생성**해야한다.  
 
