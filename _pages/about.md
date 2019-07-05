@@ -17,8 +17,6 @@ toc: true
 역시 개발이 제일 재밌다고 생각하는 초보 개발자  
 이젠 개발로 돈도 한번 벌어보고 싶다....  
 
----
-
 ## Education
 
 * 북경 이공대 부속 중학교  
@@ -30,16 +28,14 @@ toc: true
 * 국비교육(쌍용교육센터)  
   전역후 웹을 배우고 싶어 신청했다. 좋은 강사님을 만나 재밌게 교육받았다.
 
----
-
 # Project
 
 ## 1. 테니스 계수기 출력 프로젝트
 
 자바 문법수업 끝나고 객체지향적 설계 밑 코딩 실력을 배야하기 위한 프로젝트  
 
-![image3]({{ "/assets/project/tennis/image3.png" | absolute_url }}){: .shadow}{: .align-left}{: width="400"}  
-![image1]({{ "/assets/project/tennis/image1.png" | absolute_url }}){: .shadow}{: .align-left}{: width="400"}    
+![image3]({{ "/assets/project/tennis/image3.png" | absolute_url }}){: .shadow}{: width="400"}  
+![image1]({{ "/assets/project/tennis/image1.png" | absolute_url }}){: .shadow}{: width="400"}    
 
 `jfiglet` 라이브러리를 사용해 출력
 
@@ -51,9 +47,9 @@ Java 소켓, 멀티스레드 파트를 마치고 시작한 개인 프로젝트.
 javaFX, Scene빌더를 사용해 UI 구현  
 방을 만들어 여러명이서 채팅 가능.
 
-![image1]({{ "/assets/project/chatting/image1.png" | absolute_url }}){: .shadow}{: .align-left}
-![image3]({{ "/assets/project/chatting/image3.png" | absolute_url }}){: .shadow}{: .align-left}
-![image2]({{ "/assets/project/chatting/image2.png" | absolute_url }}){: .shadow}{: .align-left}  
+![image1]({{ "/assets/project/chatting/image1.png" | absolute_url }}){: .shadow}
+![image3]({{ "/assets/project/chatting/image3.png" | absolute_url }}){: .shadow}
+![image2]({{ "/assets/project/chatting/image2.png" | absolute_url }}){: .shadow}  
 
 > 상세설명: https://kouzie.github.io/java/project/java-채팅-프로그램!/#objectoutputstream
 
@@ -65,12 +61,12 @@ Oracle DB sql, pl/sql 수업을 마치고 DB 개념적, 논리적 모델링 밑 
 ![concetp]({{ "/assets/project/dbproject/modeling_concept.png" | absolute_url }}){: .shadow}  
 ![logic]({{ "/assets/project/dbproject/modeling_logic.png" | absolute_url }}){: .shadow}  
 
-![image21]({{ "/assets/project/dbproject/image21.png" | absolute_url }}){: .align-left}{: .shadow}  
-![image22]({{ "/assets/project/dbproject/image22.png" | absolute_url }}){: .align-left}{: .shadow}  
-![image24]({{ "/assets/project/dbproject/image24.png" | absolute_url }}){: .align-left}{: .shadow}  
-![image25]({{ "/assets/project/dbproject/image25.png" | absolute_url }}){: .align-left}{: .shadow}  
-![image26]({{ "/assets/project/dbproject/image26.png" | absolute_url }}){: .align-left}{: .shadow}  
-![image27]({{ "/assets/project/dbproject/image27.png" | absolute_url }}){: .align-left}{: .shadow}  
+![image21]({{ "/assets/project/dbproject/image21.png" | absolute_url }}){: .shadow}  
+![image22]({{ "/assets/project/dbproject/image22.png" | absolute_url }}){: .shadow}  
+![image24]({{ "/assets/project/dbproject/image24.png" | absolute_url }}){: .shadow}  
+![image25]({{ "/assets/project/dbproject/image25.png" | absolute_url }}){: .shadow}  
+![image26]({{ "/assets/project/dbproject/image26.png" | absolute_url }}){: .shadow}  
+![image27]({{ "/assets/project/dbproject/image27.png" | absolute_url }}){: .shadow}  
 
 > 상세설명 : https://prezi.com/mofotqxheo6s/db/ 
 
@@ -85,9 +81,16 @@ JSP/Servlet 수업이 끝나고 MVC Model2 패턴으로 웹 어플리케이션 �
 
 ### 실행화면  
 
-![image13]({{ "/assets/project/poing/image13.gif" | absolute_url }}){: .shadow}  
+**사용자 정보 수정**  
+![image13]({{ "/assets/project/poing/image13.gif" | absolute_url }}){: .shadow}   
+
+**리뷰 출력, 좋아요 찜하기**  
 ![image23]({{ "/assets/project/poing/image23.gif" | absolute_url }}){: .shadow}  
+
+**GoogleMap, 레스토랑 리스트출력**
 ![image63]({{ "/assets/project/poing/image63.gif" | absolute_url }}){: .shadow}  
+
+**관리자 레스토랑 리뷰남기기**  
 ![image70]({{ "/assets/project/poing/image70.gif" | absolute_url }}){: .shadow}  
 
 
