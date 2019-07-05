@@ -6,47 +6,96 @@ last_modified_at: 2019-07-05T15:15:09-04:00
 toc: true
 ---
 
-Minimal Mistakes is a flexible two-column Jekyll theme. Perfect for hosting your personal site, blog, or portfolio on GitHub or self-hosting on your own server. As the name implies --- styling is purposely minimalistic to be enhanced and customized by you :smile:.
+## profile
 
-{% include gallery id="layouts_gallery" caption="Examples of included layouts `splash`, `single`, and `archive`." %}
+<div class="author__avatar">
+  ![profile]({{ "/assets/about/profile.jpg" | absolute_url }}){: .center}
+</div>
 
-[Install the Theme]({{ "/docs/quick-start-guide/" | relative_url }}){: .btn .btn--success .btn--large}
+고지용
 
-## Notable Features
-
-- Bundled as a "theme gem" for easier install/upgrading.
-- Compatible with GitHub Pages.
-- Support for Jekyll's built-in Sass/SCSS preprocessor.
-- Nine different skins (color variations).
-- Several responsive layout options (single, archive index, search, splash, and paginated home page).
-- Optimized for search engines with support for [Twitter Cards](https://dev.twitter.com/cards/overview) and [Open Graph](http://ogp.me/) data
-- Optional [header images](https://mmistakes.github.io/minimal-mistakes/docs/layouts/#headers), [custom sidebars](https://mmistakes.github.io/minimal-mistakes/docs/layouts/#sidebars), [table of contents](https://mmistakes.github.io/minimal-mistakes/docs/helpers/#table-of-contents), [galleries](https://mmistakes.github.io/minimal-mistakes/docs/helpers/#gallery), related posts, [breadcrumb links](https://mmistakes.github.io/minimal-mistakes/docs/configuration/#breadcrumb-navigation-beta), [navigation lists](https://mmistakes.github.io/minimal-mistakes/docs/helpers/#navigation-list), and more.
-- Commenting support (powered by [Disqus](https://disqus.com/), [Facebook](https://developers.facebook.com/docs/plugins/comments), [Discourse](https://www.discourse.org/), [utterances](https://utteranc.es/), static-based via [Staticman v1 and v2](https://staticman.net/), and custom).
-- [Google Analytics](https://www.google.com/analytics/) support.
-- UI localized text in English (default), Brazilian Portuguese (Português brasileiro), Chinese, Danish, Dutch, French (Français), German (Deutsch), Greek, Hindi (हिंदी), Hungarian, Indonesian, Italian (Italiano), Japanese, Korean, Malayalam, Nepali (Nepalese), Persian (فارسی), Polish, Punjabi (ਪੰਜਾਬੀ), Romanian, Russian, Slovak, Spanish (Español), Swedish, Thai, Turkish (Türkçe), and Vietnamese.
+최근에 개발에 재미를 가진 개발자 ~~를 직업으로 가지고 싶은 사람~~  
+이젠 개발로 돈도 한번 벌어보고 싶다....  
 
 ---
 
-## Credits
+## Education
 
-### Icons + Demo Images:
+* 북경 이공대 부속 중학교  
+  - 생긴것 처럼 중국 유학생이다, 한국 온지 4년이 넘어 까막눈이 되었지만 회화는 자신있게 말할 수 있다.  
 
-- [The Noun Project](https://thenounproject.com) -- Garrett Knoll, Arthur Shlain, and [tracy tam](https://thenounproject.com/tracytam)
-- [Font Awesome](http://fontawesome.io/)
-- [Unsplash](https://unsplash.com/)
+* 한국IT전문학교 - 학사취득
+  - 꿈을 찾아 IT로 오게되었다~~(사실 북경대 시험 떨어짐)~~ 보안을 배우고 간단한 백신을 만들어 보았다.
 
-### Other:
-
-- [Jekyll](https://jekyllrb.com/)
-- [jQuery](https://jquery.com/)
-- [Susy](http://susy.oddbird.net/)
-- [Breakpoint](http://breakpoint-sass.com/)
-- [Magnific Popup](http://dimsemenov.com/plugins/magnific-popup/)
-- [FitVids.JS](http://fitvidsjs.com/)
-- Greedy Navigation - [lukejacksonn](https://codepen.io/lukejacksonn/pen/PwmwWV)
-- [jQuery Smooth Scroll](https://github.com/kswedberg/jquery-smooth-scroll)
-- [Lunr](http://lunrjs.com)
+* 국비교육(쌍용교육센터)  
+  - 전역후 웹을 배우고 싶어 신청했다. 좋은 강사님을 만나 재밌게 교육받았다.
 
 ---
 
-Minimal Mistakes is designed, developed, and maintained by Michael Rose. Just another boring, tattooed, designer from Buffalo New York.
+## Project
+
+### 1. 테니스 계수기 출력 프로젝트
+
+자바 문법수업 끝나고 객체지향적 설계 밑 코딩 실력을 배야하기 위한 프로젝트  
+
+![image3]({{ "/assets/project/tennis/image3.png" | absolute_url }}){: .shadow}{: .align-left}
+![image1]({{ "/assets/project/tennis/image1.png" | absolute_url }}){: .shadow}{: .align-left}  
+
+`jfiglet` 라이브러리를 사용해 출력
+
+> 상세설명: https://kouzie.github.io/java/project/java-테니스-프로젝트!/#
+
+### 1.5 채팅 프로그램
+
+Java 소켓, 멀티스레드 파트를 마치고 시작한 개인 프로젝트.  
+javaFX, Scene빌더를 사용해 UI 구현  
+방을 만들어 여러명이서 채팅 가능.
+
+![image1]({{ "/assets/project/chatting/image1.png" | absolute_url }}){: .shadow}{: .align-left}
+![image3]({{ "/assets/project/chatting/image3.png" | absolute_url }}){: .shadow}{: .align-left}
+![image2]({{ "/assets/project/chatting/image2.png" | absolute_url }}){: .shadow}{: .align-left}  
+
+> 상세설명: https://kouzie.github.io/java/project/java-채팅-프로그램!/#objectoutputstream
+
+
+### 2. DB Project  
+
+Oracle DB sql, pl/sql 수업을 마치고 DB 개념적, 논리적 모델링 밑 SQL 실력향상을 위해 진행한 프로젝트  
+
+![concetp]({{ "/assets/project/dbproject/modeling_concept.png" | absolute_url }}){: .shadow}  
+![logic]({{ "/assets/project/dbproject/modeling_logic.png" | absolute_url }}){: .shadow}  
+
+![image21]({{ "/assets/project/dbproject/image21.png" | absolute_url }}){: .align-left}{: .shadow}  
+![image22]({{ "/assets/project/dbproject/image22.png" | absolute_url }}){: .align-left}{: .shadow}  
+![image23]({{ "/assets/project/dbproject/image23.png" | absolute_url }}){: .align-left}{: .shadow}  
+![image24]({{ "/assets/project/dbproject/image24.png" | absolute_url }}){: .align-left}{: .shadow}  
+![image25]({{ "/assets/project/dbproject/image25.png" | absolute_url }}){: .align-left}{: .shadow}  
+![image26]({{ "/assets/project/dbproject/image26.png" | absolute_url }}){: .align-left}{: .shadow}  
+![image27]({{ "/assets/project/dbproject/image27.png" | absolute_url }}){: .align-left}{: .shadow}  
+
+> 상세설명 : https://prezi.com/mofotqxheo6s/db/ 
+
+
+### Java/Servlet MVC Model2 프로젝트
+
+JSP/Servlet 수업이 끝나고 MVC Model2 패턴으로 웹 어플리케이션 개발  
+
+기존 사이트 https://www.poing.co.kr/seoul 을 그대로 구현하는 프로젝트로 `JSP/Servlet`, `jQuery`, `Oracle` 사용
+
+![dbmodel_login]({{ "/assets/project/poing/dbmodel_login.png" | absolute_url }}){: .shadow}  
+
+### 실행화면  
+
+![image13]({{ "/assets/project/poing/image13.gif" | absolute_url }}){: .shadow}  
+![image23]({{ "/assets/project/poing/image23.gif" | absolute_url }}){: .shadow}  
+![image63]({{ "/assets/project/poing/image63.gif" | absolute_url }}){: .shadow}  
+![image70]({{ "/assets/project/poing/image70.gif" | absolute_url }}){: .shadow}  
+
+
+> 소스코드 : https://github.com/Kouzie/Poing
+
+
+---
+
+## 소개
+
