@@ -19,14 +19,14 @@ toc: true
 
 ## Education
 
-* 북경 이공대 부속 중학교  
+* 북경 이공대 부속 중학교   
   생긴것 처럼 중국 유학생이다, 한국 온지 4년이 넘어 까막눈이 되었지만 회화는 자신있게 말할 수 있다.  
 <br>
-* 한국IT전문학교 - 학사취득
-  꿈을 찾아 IT로 오게되었다~~(사실 북경대 시험 떨어짐)~~ 보안을 배우고 간단한 백신을 만들어 보았다.
+* 한국IT전문학교 - 학사취득  
+  꿈을 찾아 IT로 오게되었다~~(사실 북경대 시험 떨어짐)~~ 보안을 배우고 간단한 백신을 만들어 보았다.  
 <br>
 * 국비교육(쌍용교육센터)  
-  전역후 웹을 배우고 싶어 신청했다. 좋은 강사님을 만나 재밌게 교육받았다.
+  전역후 웹을 배우고 싶어 신청했다. 좋은 강사님을 만나 재밌게 교육받았다.  
 
 # Project
 
@@ -39,7 +39,7 @@ toc: true
 
 `jfiglet` 라이브러리를 사용해 출력
 
-> 상세설명: https://kouzie.github.io/java/project/java-테니스-프로젝트!/#
+> 상세설명: https://kouzie.github.io/java/project/java-테니스-프로젝트!/
 
 ## 1.5 채팅 프로그램
 
@@ -51,24 +51,37 @@ javaFX, Scene빌더를 사용해 UI 구현
 ![image3]({{ "/assets/project/chatting/image3.png" | absolute_url }}){: .shadow}
 ![image2]({{ "/assets/project/chatting/image2.png" | absolute_url }}){: .shadow}  
 
-> 상세설명: https://kouzie.github.io/java/project/java-채팅-프로그램!/#objectoutputstream
+> 상세설명: https://kouzie.github.io/java/project/java-채팅-프로그램!/
 
 
 ## 2. DB Project  
 
 Oracle DB sql, pl/sql 수업을 마치고 DB 개념적, 논리적 모델링 밑 SQL 실력향상을 위해 진행한 프로젝트  
 
-![concetp]({{ "/assets/project/dbproject/modeling_concept.png" | absolute_url }}){: .shadow}  
+![concetp]({{ "/assets/project/dbproject/modeling_concept.png" | absolute_url }}){: .shadow}{: width="700"}    
 ![logic]({{ "/assets/project/dbproject/modeling_logic.png" | absolute_url }}){: .shadow}  
 
+### 지역정보 기반 게시글 출력 프로시저
+
+도로명 주소 개발자 센터에서 제공하는 DB를 사용한  
+반경 10km 위치의 게시글 출력 프로시저  
+
+> http://www.juso.go.kr/addrlink/addressBuildDevNew.do?menu=geodata
+
+`nested table Collection`을 위한 type정의    
 ![image21]({{ "/assets/project/dbproject/image21.png" | absolute_url }}){: .shadow}  
+
+검색 기준 위치를 같는 `Collection` 객체 생성  
 ![image22]({{ "/assets/project/dbproject/image22.png" | absolute_url }}){: .shadow}  
 ![image24]({{ "/assets/project/dbproject/image24.png" | absolute_url }}){: .shadow}  
+
+조회한 정보를 `Collection` 객체에 저장 및 출력  
 ![image25]({{ "/assets/project/dbproject/image25.png" | absolute_url }}){: .shadow}  
 ![image26]({{ "/assets/project/dbproject/image26.png" | absolute_url }}){: .shadow}  
 ![image27]({{ "/assets/project/dbproject/image27.png" | absolute_url }}){: .shadow}  
 
-> 상세설명 : https://prezi.com/mofotqxheo6s/db/ 
+> 상세설명 : https://prezi.com/mofotqxheo6s/db/  
+> 참고자료: https://kouzie.github.io/database/DB-nested-table/#   
 
 
 ## 3. Java/Servlet MVC Model2 프로젝트
