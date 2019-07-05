@@ -37,6 +37,32 @@ toc: true
 
 # Project
 
+## 0. Strike
+
+학교 졸업 작품으로 만든 백신, C/C++, Qt 프레임워크를 사용해 개발하였다.  
+
+![process]({{ "/assets/project/strike/process.png" | absolute_url }}){: .shadow}{: width="400"}
+![job]({{ "/assets/project/strike/job.png" | absolute_url }}){: .shadow}{: width="400"}
+
+
+### 실행화면
+
+![media1]({{ "/assets/project/strike/media1.avi" | absolute_url }})   
+
+### 간단한 설명
+
+이진 검색을 통한 바이러스 MD5 해시탐지(해시는 Virus Total에서 제공)  
+
+yara와 PE구조를 통해 바이러스 패턴탐지  
+
+실시간 탐지 - WindowSDK에서 제공하는 오픈소스 사용.  
+> https://github.com/pauldotknopf/WindowsSDK7-Samples/tree/master/winui/shell/appplatform/ChangeNotifyWatcher   
+
+dll인젝션을 통한 후킹 - 프로그램 실행전 시그니처를 통해 안전한 실행파일인지 검사, 시그니처가 없다면 후킹을 통해 제한된 권한으로 실행(MinHook Hooking Library 사용)  
+>https://www.codeproject.com/Articles/44326/MinHook-The-Minimalistic-x-x-API-Hooking-Libra?msg=4843828#xx4843828xx  
+
+
+
 ## 1. 테니스 계수기 출력 프로젝트
 
 자바 문법수업 끝나고 객체지향적 설계 밑 코딩 실력을 배양하기 위한 프로젝트  
