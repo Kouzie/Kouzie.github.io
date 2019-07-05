@@ -67,7 +67,6 @@ Oracle DB sql, pl/sql 수업을 마치고 DB 개념적, 논리적 모델링 밑 
 
 ![image21]({{ "/assets/project/dbproject/image21.png" | absolute_url }}){: .align-left}{: .shadow}  
 ![image22]({{ "/assets/project/dbproject/image22.png" | absolute_url }}){: .align-left}{: .shadow}  
-![image23]({{ "/assets/project/dbproject/image23.png" | absolute_url }}){: .align-left}{: .shadow}  
 ![image24]({{ "/assets/project/dbproject/image24.png" | absolute_url }}){: .align-left}{: .shadow}  
 ![image25]({{ "/assets/project/dbproject/image25.png" | absolute_url }}){: .align-left}{: .shadow}  
 ![image26]({{ "/assets/project/dbproject/image26.png" | absolute_url }}){: .align-left}{: .shadow}  
