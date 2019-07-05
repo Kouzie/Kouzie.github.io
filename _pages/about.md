@@ -20,7 +20,7 @@ toc: true
 
 ## 로드맵
 
-* 북경 이공대 부속 중학교   
+* 북경 이공대 부속 중학교   - 고등학교 졸업
   생긴것 처럼 중국 유학생이다, 한국 온지 4년이 넘어 까막눈이 되었지만 회화는 자신있게 말할 수 있다.  
 <br>
 * 한국IT전문학교 - 학사취득  
@@ -68,27 +68,8 @@ Oracle DB sql, pl/sql 수업을 마치고 DB 개념적, 논리적 모델링 밑 
 ![concetp]({{ "/assets/project/dbproject/modeling_concept.png" | absolute_url }}){: .shadow}{: width="700"}    
 ![logic]({{ "/assets/project/dbproject/modeling_logic.png" | absolute_url }}){: .shadow}  
 
-### 지역정보 기반 게시글 출력 프로시저
-
-도로명 주소 개발자 센터에서 제공하는 DB를 사용한  
-반경 10km 위치의 게시글 출력 프로시저  
-
-> http://www.juso.go.kr/addrlink/addressBuildDevNew.do?menu=geodata
-
-`nested table Collection`을 위한 type정의    
-![image21]({{ "/assets/project/dbproject/image21.png" | absolute_url }}){: .shadow}  
-
-검색 기준 위치를 같는 `Collection` 객체 생성  
-![image22]({{ "/assets/project/dbproject/image22.png" | absolute_url }}){: .shadow}  
-![image24]({{ "/assets/project/dbproject/image24.png" | absolute_url }}){: .shadow}  
-
-조회한 정보를 `Collection` 객체에 저장 및 출력  
-![image25]({{ "/assets/project/dbproject/image25.png" | absolute_url }}){: .shadow}  
-![image26]({{ "/assets/project/dbproject/image26.png" | absolute_url }}){: .shadow}  
-![image27]({{ "/assets/project/dbproject/image27.png" | absolute_url }}){: .shadow}  
-
-> 상세설명 : <a>https://prezi.com/mofotqxheo6s/db/</a>  
-> 참고자료: <a>https://kouzie.github.io/database/DB-nested-table/</a>
+> 상세설명 : <a href="https://prezi.com/mofotqxheo6s/db/">https://prezi.com/mofotqxheo6s/db/</a>  
+> 참고자료: <a href="https://kouzie.github.io/database/DB-nested-table/">https://kouzie.github.io/database/DB-nested-table/</a>  
 
 
 ## 3. Java/Servlet MVC Model2 프로젝트
@@ -114,11 +95,11 @@ JSP/Servlet 수업이 끝나고 MVC Model2 패턴으로 웹 어플리케이션 �
 ![image70]({{ "/assets/project/poing/image70.gif" | absolute_url }}){: .shadow}  
 
 
-> 소스코드 : <a>https://github.com/Kouzie/Poing</a>
+> 소스코드 : <a href="https://github.com/Kouzie/Poing">https://github.com/Kouzie/Poing</a>
 
 
 ---
-
+<!-- 
 ## 간단한 소개  
 
 엄청 열심히 살아온 인생은 아니지만  
@@ -128,17 +109,9 @@ JSP/Servlet 수업이 끝나고 MVC Model2 패턴으로 웹 어플리케이션 �
 
 ![image70]({{ "/assets/about/mbti.png" | absolute_url }}){: .shadow}{: width="300" }{: align-left}   
 
-> <a>https://www.16personalities.com/ko/성격유형-isfj</a>  
+> <a href="https://www.16personalities.com/ko/성격유형-isfj">https://www.16personalities.com/ko/성격유형-isfj</a>  
 
 `수호자형 사람은 무엇을 받으면 몇 배로 베푸는 진정한 이타주의자로 열정과 자애로움으로 일단 믿는 이들이라면 타인과도 잘 어울려 일에 정진합니다. 약 13%로 꽤 높은 인구 비율을 차지하는데, 인구 대다수를 차지하는 데 있어 이들보다 더 나은 성격 유형은 아마 없을 것입니다. `
 
 좋게 포장해 놓았지만 세상 인구 13%가 가지는 가장 평범한 유형이다...  
-
-### 최근 관심사항  
-
-**알고리즘 연습**  
-> https://programmers.co.kr/skill_checks
-
-최근이 아니라 오래전부터 관심사항이였는데 어렵다... 
-(최근에 프로그래머스 문제를 풀고 있는데 1~2단계는 다풀었는데 3단계부터 너무 어려워졌다...)  
-
+ -->

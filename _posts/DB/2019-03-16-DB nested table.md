@@ -121,4 +121,25 @@ type으로 정의한 collection을 사용할 때에는 아무리 안에 들어�
 
 사실 패키지를 사용하면 이런식으로 복잡한 Collection을 사용하지 않아도 내가 원하는 기능을 구현 가능하다 하지만.... 패키지 배우는게 더 힘들거 같아서...
 
-DB만질날이 언젠가 오면 그때 배워야지ㅎㅎ;;
+### 예제) 지역정보 기반 게시글 출력 프로시저
+
+
+도로명 주소 개발자 센터에서 제공하는 DB를 사용한  
+반경 10km 위치의 게시글 출력 프로시저  
+
+> <a href="http://www.juso.go.kr/addrlink/addressBuildDevNew.do?menu=geodata">http://www.juso.go.kr/addrlink/addressBuildDevNew.do?menu=geodata</a>
+
+`nested table Collection`을 위한 type정의    
+![image21]({{ "/assets/project/dbproject/image21.png" | absolute_url }}){: .shadow}  
+
+검색 기준 위치를 같는 `Collection` 객체 생성  
+![image22]({{ "/assets/project/dbproject/image22.png" | absolute_url }}){: .shadow}  
+![image24]({{ "/assets/project/dbproject/image24.png" | absolute_url }}){: .shadow}  
+
+조회한 정보를 `Collection` 객체에 저장 및 출력  
+![image25]({{ "/assets/project/dbproject/image25.png" | absolute_url }}){: .shadow}  
+![image26]({{ "/assets/project/dbproject/image26.png" | absolute_url }}){: .shadow}  
+![image27]({{ "/assets/project/dbproject/image27.png" | absolute_url }}){: .shadow}  
+
+
+
