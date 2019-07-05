@@ -2,13 +2,15 @@
 permalink: /about/
 title: "About"
 excerpt: "About Me!."
+classes: wide
 last_modified_at: 2019-07-05T15:15:09-04:00
 toc: true
 ---
 
-## profile
+# profile
 
 ![profile]({{ "/assets/about/profile.jpg" | absolute_url }}){: .center}  
+
 고지용 (1996.9 24)    
 평범한 가정에서 자란 보통사람.  
 
@@ -20,30 +22,30 @@ toc: true
 ## Education
 
 * 북경 이공대 부속 중학교  
-  - 생긴것 처럼 중국 유학생이다, 한국 온지 4년이 넘어 까막눈이 되었지만 회화는 자신있게 말할 수 있다.  
-
+  생긴것 처럼 중국 유학생이다, 한국 온지 4년이 넘어 까막눈이 되었지만 회화는 자신있게 말할 수 있다.  
+<br>
 * 한국IT전문학교 - 학사취득
-  - 꿈을 찾아 IT로 오게되었다~~(사실 북경대 시험 떨어짐)~~ 보안을 배우고 간단한 백신을 만들어 보았다.
-
+  꿈을 찾아 IT로 오게되었다~~(사실 북경대 시험 떨어짐)~~ 보안을 배우고 간단한 백신을 만들어 보았다.
+<br>
 * 국비교육(쌍용교육센터)  
-  - 전역후 웹을 배우고 싶어 신청했다. 좋은 강사님을 만나 재밌게 교육받았다.
+  전역후 웹을 배우고 싶어 신청했다. 좋은 강사님을 만나 재밌게 교육받았다.
 
 ---
 
-## Project
+# Project
 
-### 1. 테니스 계수기 출력 프로젝트
+## 1. 테니스 계수기 출력 프로젝트
 
 자바 문법수업 끝나고 객체지향적 설계 밑 코딩 실력을 배야하기 위한 프로젝트  
 
-![image3]({{ "/assets/project/tennis/image3.png" | absolute_url }}){: .shadow}{: .align-left}
-![image1]({{ "/assets/project/tennis/image1.png" | absolute_url }}){: .shadow}{: .align-left}  
+![image3]({{ "/assets/project/tennis/image3.png" | absolute_url }}){: .shadow}{: .align-left}{: width="400"}  
+![image1]({{ "/assets/project/tennis/image1.png" | absolute_url }}){: .shadow}{: .align-left}{: width="400"}    
 
 `jfiglet` 라이브러리를 사용해 출력
 
 > 상세설명: https://kouzie.github.io/java/project/java-테니스-프로젝트!/#
 
-### 1.5 채팅 프로그램
+## 1.5 채팅 프로그램
 
 Java 소켓, 멀티스레드 파트를 마치고 시작한 개인 프로젝트.  
 javaFX, Scene빌더를 사용해 UI 구현  
@@ -56,7 +58,7 @@ javaFX, Scene빌더를 사용해 UI 구현
 > 상세설명: https://kouzie.github.io/java/project/java-채팅-프로그램!/#objectoutputstream
 
 
-### 2. DB Project  
+## 2. DB Project  
 
 Oracle DB sql, pl/sql 수업을 마치고 DB 개념적, 논리적 모델링 밑 SQL 실력향상을 위해 진행한 프로젝트  
 
@@ -74,7 +76,7 @@ Oracle DB sql, pl/sql 수업을 마치고 DB 개념적, 논리적 모델링 밑 
 > 상세설명 : https://prezi.com/mofotqxheo6s/db/ 
 
 
-### Java/Servlet MVC Model2 프로젝트
+## 3. Java/Servlet MVC Model2 프로젝트
 
 JSP/Servlet 수업이 끝나고 MVC Model2 패턴으로 웹 어플리케이션 개발  
 
