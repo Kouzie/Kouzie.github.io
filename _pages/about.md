@@ -8,13 +8,11 @@ toc: true
 
 ## profile
 
-<div class="author__avatar">
-  ![profile]({{ "/assets/about/profile.jpg" | absolute_url }}){: .center}
-</div>
+![profile]({{ "/assets/about/profile.jpg" | absolute_url }}){: .center}  
+고지용 (1996.9 24)    
+평범한 가정에서 자란 보통사람.  
 
-고지용
-
-최근에 개발에 재미를 가진 개발자 ~~를 직업으로 가지고 싶은 사람~~  
+역시 개발이 제일 재밌다고 생각하는 초보 개발자  
 이젠 개발로 돈도 한번 벌어보고 싶다....  
 
 ---
