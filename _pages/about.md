@@ -6,18 +6,23 @@ classes: wide
 last_modified_at: 2019-07-05T15:15:09-04:00
 toc: true
 ---
-
+      
 # profile
 
-![profile]({{ "/assets/about/profile.jpg" | absolute_url }}){: .center}{: height="500"}  
+<div class="author__avatar">
+      
 
+![profile]({{ "/assets/about/profile.jpg" | absolute_url }}){: .center}{: width="250"}  
+
+
+</div>
 고지용 (1996.9 18)   
 평범한 가정에서 자란 보통사람.  
 
 역시 개발이 제일 재밌다고 생각하는 초보 개발자  
 이젠 개발로 돈도 한번 벌어보고 싶다....  
 
-## 
+## 로드맵
 
 * 북경 이공대 부속 중학교   
   생긴것 처럼 중국 유학생이다, 한국 온지 4년이 넘어 까막눈이 되었지만 회화는 자신있게 말할 수 있다.  
@@ -124,11 +129,15 @@ JSP/Servlet 수업이 끝나고 MVC Model2 패턴으로 웹 어플리케이션 �
 게으르게 살았다기에는 열심히 산 인생.  
 
 성격에 대한 객관적 정보를 제공하기 위해 mbti검사를 해보았습니다.   
+<p>
 
-![image70]({{ "/assets/about/mbti.png" | absolute_url }}){: .shadow}  
+![image70]({{ "/assets/about/mbti.png" | absolute_url }}){: .shadow}{: width="300" }{: align-left}  
 > <a>https://www.16personalities.com/ko/성격유형-isfj</a>  
 
 `수호자형 사람은 무엇을 받으면 몇 배로 베푸는 진정한 이타주의자로 열정과 자애로움으로 일단 믿는 이들이라면 타인과도 잘 어울려 일에 정진합니다. 약 13%로 꽤 높은 인구 비율을 차지하는데, 인구 대다수를 차지하는 데 있어 이들보다 더 나은 성격 유형은 아마 없을 것입니다. `
 
-좋게 포장해 놓았지만 세상 인구 13%가 가지는 가장 평범한 유형이다...
+좋게 포장해 놓았지만 세상 인구 13%가 가지는 가장 평범한 유형이다...  
+</p>
+
+### 최근 관심사항  
 
