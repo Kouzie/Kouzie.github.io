@@ -9,13 +9,9 @@ toc: true
       
 # profile
 
-<div class="author__avatar">
-      
 
-![profile]({{ "/assets/about/profile.jpg" | absolute_url }}){: .center}{: width="250"}  
+![profile]({{ "/assets/about/profile.jpg" | absolute_url }}){: .center}{: width="250"}{: author__avatar}  
 
-
-</div>
 고지용 (1996.9 18)   
 평범한 가정에서 자란 보통사람.  
 
@@ -31,7 +27,7 @@ toc: true
   꿈을 찾아 IT로 오게되었다~~(사실 북경대 시험 떨어짐)~~ 보안을 배우고 간단한 백신을 만들어 보았다.  
 <br>
 * 군 입대 - 육군 정보보호병(17.2 ~ 18.11)  
-  네트워크 장비, 방화벽, NAC로 군 인트라넷 연결을 담당하였다. 특기병이지만 유격, 혹한기 다 해버렸다... 덤으로 랜선을 순식간에 집는 능력을 얻었다.   
+  네트워크 장비, 방화벽, NAC로 군 인트라넷 연결을 담당하였다. 랜선을 순식간에 집는 능력을 얻었다.   
 <br>
 * 국비교육(쌍용교육센터)  
   전역후 웹을 배우고 싶어 신청했다. 좋은 강사님을 만나 재밌게 교육받았다. 현재 스프링 프레임워크 프로젝트를 진행중이다.   
@@ -129,15 +125,20 @@ JSP/Servlet 수업이 끝나고 MVC Model2 패턴으로 웹 어플리케이션 �
 게으르게 살았다기에는 열심히 산 인생.  
 
 성격에 대한 객관적 정보를 제공하기 위해 mbti검사를 해보았습니다.   
-<p>
 
-![image70]({{ "/assets/about/mbti.png" | absolute_url }}){: .shadow}{: width="300" }{: align-left}  
+![image70]({{ "/assets/about/mbti.png" | absolute_url }}){: .shadow}{: width="300" }{: align-left}   
+
 > <a>https://www.16personalities.com/ko/성격유형-isfj</a>  
 
 `수호자형 사람은 무엇을 받으면 몇 배로 베푸는 진정한 이타주의자로 열정과 자애로움으로 일단 믿는 이들이라면 타인과도 잘 어울려 일에 정진합니다. 약 13%로 꽤 높은 인구 비율을 차지하는데, 인구 대다수를 차지하는 데 있어 이들보다 더 나은 성격 유형은 아마 없을 것입니다. `
 
 좋게 포장해 놓았지만 세상 인구 13%가 가지는 가장 평범한 유형이다...  
-</p>
 
 ### 최근 관심사항  
+
+**알고리즘 연습**  
+> https://programmers.co.kr/skill_checks
+
+최근이 아니라 오래전부터 관심사항이였는데 어렵다... 
+(최근에 프로그래머스 문제를 풀고 있는데 1~2단계는 다풀었는데 3단계부터 너무 어려워졌다...)  
 
