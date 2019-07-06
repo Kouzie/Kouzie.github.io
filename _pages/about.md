@@ -10,12 +10,12 @@ toc: true
 # profile
 
 
-![profile]({{ "/assets/about/profile.jpg" | absolute_url }}){: .center}{: width="250"}{: author__avatar}  
+<img src="https://kouzie.github.io/assets/about/profile.jpg" alt="profile" class="center" width="250" style="border-radius: 5%;">
 
 고지용 (1996.9 18)   
 평범한 가정에서 자란 보통사람.  
 
-역시 개발이 제일 재밌다고 생각하는 초보 개발자  
+그래도 개발이 제일 재밌다고 생각하는 초보 개발자  
 이젠 개발로 돈도 한번 벌어보고 싶다....  
 
 ## 로드맵
@@ -30,7 +30,7 @@ toc: true
   네트워크 장비, 방화벽, NAC로 군 인트라넷 연결을 담당하였다. 랜선을 순식간에 집는 능력을 얻었다.   
 <br>
 * **국비교육(쌍용교육센터)**  
-  전역후 웹을 배우고 싶어 신청했다. 좋은 강사님을 만나 재밌게 교육받았다. 현재 스프링 프레임워크 프로젝트를 진행중이다.   
+  전역후 웹을 배우고 싶어 신청했다. 좋은 강사님을 만나 재밌게 교육받았다. 현재 스프링 프레임워크로 프로젝트를 진행중이다.   
 
 ---
 
@@ -47,13 +47,13 @@ toc: true
 
 ### 실행화면
 
-![media1]({{ "/assets/project/strike/media1.avi" | absolute_url }})   
+<vedio src="https://kouzie.github.io/assets/project/strike/media1.avi" controls="controls"></vedio> 
 
 ### 간단한 설명
 
 이진 검색을 통한 바이러스 MD5 해시탐지(해시는 Virus Total에서 제공)  
 
-yara와 PE구조를 통해 바이러스 패턴탐지  
+Yara의 PE구조를 분석을 이용한 바이러스 패턴탐지  
 
 실시간 탐지 - WindowSDK에서 제공하는 오픈소스 사용.  
 > https://github.com/pauldotknopf/WindowsSDK7-Samples/tree/master/winui/shell/appplatform/ChangeNotifyWatcher   
@@ -61,6 +61,7 @@ yara와 PE구조를 통해 바이러스 패턴탐지
 dll인젝션을 통한 후킹 - 프로그램 실행전 시그니처를 통해 안전한 실행파일인지 검사, 시그니처가 없다면 후킹을 통해 제한된 권한으로 실행(MinHook Hooking Library 사용)  
 >https://www.codeproject.com/Articles/44326/MinHook-The-Minimalistic-x-x-API-Hooking-Libra?msg=4843828#xx4843828xx  
 
+> 후기: 오픈소스가 아니였다면 구현조차 안됐던 프로젝트, 실시간 탐지를 위한 필터 드라이버를 적용시키지 못한게 가장 아쉬웠다...
 
 
 ## 1. 테니스 계수기 출력 프로젝트
