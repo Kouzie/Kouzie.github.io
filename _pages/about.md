@@ -47,7 +47,11 @@ toc: true
 
 ### 실행화면
 
-<vedio src="https://kouzie.github.io/assets/project/strike/media1.mp4" controls="controls"></vedio> 
+<video src="https://kouzie.github.io/assets/project/strike/media1.mp4" controls="controls" style="width: 900px">
+  이 브라우저에서는 재생 불가능합니다.  
+</video>
+
+
 
 ### 간단한 설명
 
