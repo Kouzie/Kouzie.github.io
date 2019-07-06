@@ -47,7 +47,7 @@ toc: true
 
 ### 실행화면
 
-<vedio src="https://kouzie.github.io/assets/project/strike/media1.avi" controls="controls"></vedio> 
+<vedio src="https://kouzie.github.io/assets/project/strike/media1.mp4" controls="controls"></vedio> 
 
 ### 간단한 설명
 
