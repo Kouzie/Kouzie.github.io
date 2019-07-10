@@ -126,12 +126,15 @@ dll인젝션을 통한 후킹 - 프로그램 실행전 시그니처를 통해 �
 
 ### 실행화면
 
-<video src="https://kouzie.github.io/assets/project/strike/media1.mp4" controls="controls" style="width: 900px">
+<video src="https://kouzie.github.io/assets/project/strike/media1.mp4" controls="controls" style="width: 600px">
   이 브라우저에서는 재생 불가능합니다.  
 </video>
 
 
 > 후기: 오픈소스가 아니였다면 구현조차 안됐던 프로젝트, 실시간 탐지를 위한 필터 드라이버를 적용시키지 못한게 가장 아쉬웠다...
+
+
+
 ---
 <!-- 
 ## 간단한 소개  
