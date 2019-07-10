@@ -21,7 +21,7 @@ toc: true
 ## 로드맵
 
 * **북경 이공대 부속 중학교  - 고등학교 졸업**  
-  생긴것 처럼 중국 유학생이다, 한국 온지 4년이 넘어 까막눈이 되었지만 회화는 자신있게 말할 수 있다.  
+  생긴것 처럼 중국 유학생이다, 한국 온지 4년이 넘어 까막눈이 되었지만 중국어 회화는 자신있게 말할 수 있다.  
 <br>
 * **한국IT전문학교 - 학사취득**   
   꿈을 찾아 IT로 오게되었다~~(사실 북경대 시험 떨어짐)~~ 보안을 배우고 졸업작품으로 간단한 백신을 만들어 보았다.  
@@ -37,45 +37,16 @@ toc: true
 
 # Project
 
-## 0. Strike
-
-학교 졸업 작품으로 만든 백신, C/C++, Qt 프레임워크를 사용해 개발하였다.  
-
-![process]({{ "/assets/project/strike/process.png" | absolute_url }}){: .shadow}{: width="400"}
-![job]({{ "/assets/project/strike/job.png" | absolute_url }}){: .shadow}{: width="400"}
-
-
-### 실행화면
-
-<video src="https://kouzie.github.io/assets/project/strike/media1.mp4" controls="controls" style="width: 900px">
-  이 브라우저에서는 재생 불가능합니다.  
-</video>
-
-
-
-### 간단한 설명
-
-이진 검색을 통한 바이러스 MD5 해시탐지(해시는 Virus Total에서 제공)  
-
-Yara의 PE구조를 분석을 이용한 바이러스 패턴탐지  
-
-실시간 탐지 - WindowSDK에서 제공하는 오픈소스 사용.  
-> https://github.com/pauldotknopf/WindowsSDK7-Samples/tree/master/winui/shell/appplatform/ChangeNotifyWatcher   
-
-dll인젝션을 통한 후킹 - 프로그램 실행전 시그니처를 통해 안전한 실행파일인지 검사, 시그니처가 없다면 후킹을 통해 제한된 권한으로 실행(MinHook Hooking Library 사용)  
->https://www.codeproject.com/Articles/44326/MinHook-The-Minimalistic-x-x-API-Hooking-Libra?msg=4843828#xx4843828xx  
-
-> 후기: 오픈소스가 아니였다면 구현조차 안됐던 프로젝트, 실시간 탐지를 위한 필터 드라이버를 적용시키지 못한게 가장 아쉬웠다...
 
 
 ## 1. 테니스 계수기 출력 프로젝트
 
-자바 문법수업 끝나고 객체지향적 설계 밑 코딩 실력을 배양하기 위한 프로젝트  
+6주간의 자바 `Structure` 끝나고 객체지향적 설계 밑 코딩 실력을 배양하기 위한 프로젝트  
 
 ![image3]({{ "/assets/project/tennis/image3.png" | absolute_url }}){: .shadow}{: width="400"}
 ![image1]({{ "/assets/project/tennis/image1.png" | absolute_url }}){: .shadow}{: width="400"} 
 
-`jfiglet` 라이브러리를 사용해 테니스 계수기 출력
+파일 저장을 이용한 경기 재생, `jfiglet` 라이브러리를 사용해 콘솔에 테니스 계수기 출력  
 
 > 상세설명: <a href="https://kouzie.github.io/java/project/java-테니스-프로젝트!/">https://kouzie.github.io/java/project/java-테니스-프로젝트!/</a>
 
@@ -85,8 +56,9 @@ Java 소켓, 멀티스레드 파트를 마치고 시작한 개인 프로젝트.
 javaFX, Scene빌더를 사용해 UI 구현  
 방을 만들어 여러명이서 채팅 가능.
 
-![image1]({{ "/assets/project/chatting/image1.png" | absolute_url }})
-![image3]({{ "/assets/project/chatting/image3.png" | absolute_url }})
+![image1]({{ "/assets/project/chatting/image1.png" | absolute_url }}){: width="200"} 
+![image3]({{ "/assets/project/chatting/image3.png" | absolute_url }}){: width="250"}  
+
 ![image2]({{ "/assets/project/chatting/image2.png" | absolute_url }})  
 
 > 상세설명: <a>https://kouzie.github.io/java/project/java-채팅-프로그램!/</a>
@@ -97,6 +69,9 @@ javaFX, Scene빌더를 사용해 UI 구현
 Oracle DB sql, pl/sql 수업을 마치고 DB 개념적, 논리적 모델링 밑 SQL 실력향상을 위해 진행한 프로젝트  
 
 ![concetp]({{ "/assets/project/dbproject/modeling_concept.png" | absolute_url }}){: .shadow}{: width="700"}    
+
+<br>
+
 ![logic]({{ "/assets/project/dbproject/modeling_logic.png" | absolute_url }}){: .shadow}  
 
 > 상세설명 : <a href="https://prezi.com/mofotqxheo6s/db/">https://prezi.com/mofotqxheo6s/db/</a>  
@@ -129,6 +104,34 @@ JSP/Servlet 수업이 끝나고 MVC Model2 패턴으로 웹 어플리케이션 �
 > 소스코드 : <a href="https://github.com/Kouzie/Poing">https://github.com/Kouzie/Poing</a>
 
 
+
+## 0. Strike
+
+학교 졸업 작품으로 만든 백신, C/C++, Qt 프레임워크를 사용해 개발하였다.  
+
+![process]({{ "/assets/project/strike/process.png" | absolute_url }}){: .shadow}{: width="400"}
+![job]({{ "/assets/project/strike/job.png" | absolute_url }}){: .shadow}{: width="400"}
+
+### 간단한 설명
+
+이진 검색을 통한 바이러스 MD5 해시탐지(해시는 Virus Total에서 제공)  
+
+Yara의 PE구조를 분석을 이용한 바이러스 패턴탐지  
+
+실시간 탐지 - WindowSDK에서 제공하는 오픈소스 사용.  
+> https://github.com/pauldotknopf/WindowsSDK7-Samples/tree/master/winui/shell/appplatform/ChangeNotifyWatcher   
+
+dll인젝션을 통한 후킹 - 프로그램 실행전 시그니처를 통해 안전한 실행파일인지 검사, 시그니처가 없다면 후킹을 통해 제한된 권한으로 실행(MinHook Hooking Library 사용)  
+>https://www.codeproject.com/Articles/44326/MinHook-The-Minimalistic-x-x-API-Hooking-Libra?msg=4843828#xx4843828xx  
+
+### 실행화면
+
+<video src="https://kouzie.github.io/assets/project/strike/media1.mp4" controls="controls" style="width: 900px">
+  이 브라우저에서는 재생 불가능합니다.  
+</video>
+
+
+> 후기: 오픈소스가 아니였다면 구현조차 안됐던 프로젝트, 실시간 탐지를 위한 필터 드라이버를 적용시키지 못한게 가장 아쉬웠다...
 ---
 <!-- 
 ## 간단한 소개  

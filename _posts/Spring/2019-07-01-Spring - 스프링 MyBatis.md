@@ -329,7 +329,7 @@ public interface NoticeDao{
 
 ### 알아두면 좋을내용
 
-> type alias
+
 ```xml
 <!-- XML설정파일에서 -->
 <typeAlias type="com.someapp.model.User" alias="User"/>
