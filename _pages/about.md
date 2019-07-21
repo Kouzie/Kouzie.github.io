@@ -133,7 +133,7 @@ JSP/Servlet 수업이 끝나고 MVC Model2 패턴으로 웹 어플리케이션 �
 ![이메일전송]({{ "/assets/project/survey/이메일전송.gif" | absolute_url }}){: .shadow}   
 
 **관리자**  
-![관리자]({{ "/assets/project/survey/관리자.gif" | absolute_url }}){: .shadow}   
+![관리자]({{ "/assets/project/survey/관리자2.gif" | absolute_url }}){: .shadow}   
 
 **결과출력**  
 ![결과]({{ "/assets/project/survey/결과.gif" | absolute_url }}){: .shadow}   

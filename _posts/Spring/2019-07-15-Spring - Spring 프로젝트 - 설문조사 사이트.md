@@ -160,7 +160,7 @@ END;
 
 ### 관리자
 
-![관리자]({{ "/assets/project/survey/관리자.gif" | absolute_url }}){: .shadow} 
+![관리자]({{ "/assets/project/survey/관리자2.gif" | absolute_url }}){: .shadow} 
 
 ### 결과출력
 
