@@ -10,9 +10,9 @@ toc: true
 # profile
 
 <br><br>
-<img src="https://kouzie.github.io/assets/about/profile.jpg" alt="profile" style="border-radius: 50%;display: block;margin: 0 auto;">
+<img src="https://kouzie.github.io/assets/about/profile.jpg" alt="profile" style="border-radius: 50%;display: block;width: 250px;">
 
-고지용 (1996.9 18)   
+고지용 (1996.9 18)   with
 평범한 가정에서 자란 보통사람.  
 
 그래도 개발이 제일 재밌다고 생각하는 초보 개발자  
