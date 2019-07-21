@@ -12,6 +12,7 @@ categories:
 tags:
   - Spring
   - java
+  - project
 
 toc: true
 
@@ -179,3 +180,4 @@ END;
 알림 테이블 트리거는 금방 었지만 설문을 삭제하면 설문참여, 댓글 등록 알림도 삭제되어야 했는데 계속 `Trigger Mutating Error`가 발생하였다.  
 트리거가 `DELETE CACADE` 를 감지 못하는 것을 알았다....  
 결론적으론 DB구조를 바꾸어 해결하였고 바꾸지 않고 진행하려면 복합트리거를 만들어야한다.   
+ 
