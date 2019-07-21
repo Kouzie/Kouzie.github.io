@@ -3,14 +3,15 @@ permalink: /about/
 title: "About"
 excerpt: "About Me!."
 classes: wide
-last_modified_at: 2019-07-05T15:15:09-04:00
+last_modified_at: 2019-07-21T15:15:09-04:00
 toc: true
+toc_sticky: true
 ---
       
 # profile
 
 <br><br>
-<img src="https://kouzie.github.io/assets/about/profile.jpg" alt="profile" style="border-radius: 50%;display: block;width: 250px;">
+<img src="https://kouzie.github.io/assets/about/profile.jpg" alt="profile" class="shadow" style="border-radius: 50%;display: block;width: 250px;">
 
 고지용 (1996.9 18)   with
 평범한 가정에서 자란 보통사람.  
