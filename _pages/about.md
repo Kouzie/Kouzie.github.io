@@ -146,8 +146,9 @@ JSP/Servlet 수업이 끝나고 MVC Model2 패턴으로 웹 어플리케이션 �
 * 스프링 시큐리티 부분을 배우며 간단한 수정을 하려해도 내부 구조를 어느정도 파악해야 진행 가능한점이 시간을 잡아먹는다.  
 
 
-> 자세한 설명: https://kouzie.github.io/spring/Spring-Spring-프로젝트-설문조사-사이트/
-> 소스코드: https://github.com/Kouzie/SpringSurvey
+> 자세한 설명: <a href="https://kouzie.github.io/spring/Spring-Spring-프로젝트-설문조사-사이트/">https://kouzie.github.io/spring/Spring-Spring-프로젝트-설문조사-사이트/</a>  
+
+> 소스코드: <a href="https://github.com/Kouzie/SpringSurvey">https://github.com/Kouzie/SpringSurvey</a>
 
 ## 0. Strike
 
