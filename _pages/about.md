@@ -9,8 +9,8 @@ toc: true
       
 # profile
 
-
-<img src="https://kouzie.github.io/assets/about/profile.jpg" alt="profile" class="center" width="250" style="border-radius: 5%;">
+<br><br>
+<img src="https://kouzie.github.io/assets/about/profile.jpg" alt="profile" style="border-radius: 50%;display: block;margin: 0 auto;">
 
 고지용 (1996.9 18)   
 평범한 가정에서 자란 보통사람.  
