@@ -198,7 +198,7 @@ jquery로 AJAX를 사용하면 더 간단하게 처리 가능하다.
 `url`, `파라미터`, `callback함수`를 `load`의 매개변수로 등록과 동시에 호출한다.  
 
 
-위에는 url과 함수만 매개변수로 넘겼지만 두 번째 매개변수로 객체를 넘기면 POST방식으로 호출한다.
+위에는 url과 함수만 매개변수로 넘겼지만 두 번째 매개변수로 **객체를 넘기면 POST방식으로 호출**한다.
 `.load( "smaple.jsp", { limit: 25 }, function(){...} )`
 
 > $( "#new-projects" ).load( "/resources/load.html #projects li" );  
@@ -356,7 +356,7 @@ jsonData += "}";
 
 상당히 코드가 더러운데 JSON라이브러리를 사용하면 깔끔하게 처리 가능하다.
 
-### $.ajax() - ajax와 jquery
+## $.ajax() - ajax와 jquery
 
 json객체를 보내고 받을때 `httpRequest.open("GET", url, true)`, `httpRequest.send(null)`, `.load()` 등의 함수를 사용했는데  
 
@@ -589,3 +589,25 @@ $(document).ready(function() {
 ```
 
 > 참고: url과 파라미터를 요청하면 어떤 json객체가 오는지 보고 싶을때 아래 프로그램을 사용하자.  
+
+
+### $.getJSON
+
+URL하나만 사용해 JSON데이터를 가져와야 하는 상황이라면 `ajax`함수를 사용하기 보다 `getJSON`함수를 사용하면 더 수월하게 처리 가능하다.  
+
+```js
+$.getJSON("/replies/all/${param.bno}/"+page, function(data) {
+	console.log(data.list.length);
+	var str="";
+	$(data.list).each(function() {
+			str += "<li data-rno='"+this.rno+"' class='replyLi'>"
+				+ this.rno + ":" + this.replytext
+				+ "<button>mod</button></li>"
+		}
+	);
+	$("#replies").html(str);
+	printPaging(data.pageMaker);
+});
+```
+
+ajax를 위한 데이터객체를 별도로 정희할 필요 없이 url만 쓰면된다.  
