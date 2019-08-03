@@ -17,7 +17,7 @@ toc: true
 
 ---
 
-## AOP
+## AOP 
 
 `AOP`는 `Aspect Oriented Programming` (관점 지향적 프로그래밍 기법)의 약자이다.  
 
@@ -52,8 +52,8 @@ toc: true
 
 **Advice명** | **설명** | **사용 클래스**
 |--|--|--|
-`Before Advice` | 핵심기능 전에 수행하는 공통 기능 (로그인 체크) | `MethodBeforeAdvice`
-`Around Advice` | 핵심기능 수행 전 후에 수행하는 고통 기능 (시간 체크) | `MethodInterceptor` 
+`Before Advice` | 핵심기능 전에 수행하는 공통 기능 (로그인 체크 등) | `MethodBeforeAdvice`
+`Around Advice` | 핵심기능 수행 전 후에 수행하는 고통 기능 (시간 체크 등) | `MethodInterceptor` 
 `After Returning Advice` | 예외 발생이 없을 경우 수행하는 기능 | `AfterReturningAdvice`
 `After Throwing Advice` | 예외 발생할 경우 수행하는 기능 | `ThrowsAdvice` 
 `After Advice` | 예외 발생 상관없이 핵심기능 수행 후 수행하는 공통 기능 | 
