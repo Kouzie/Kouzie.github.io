@@ -23,7 +23,7 @@ toc: true
 
 우리가 게시판을 만들때 글쓰기, 혹은 댓글쓰기 기능을 수행하기 전에 로그인 인증과정을 거쳐야 가능하도록 설정하는데 이런 기능 관점으로 프로그래밍 하는 것을 뜻한다.  
 
-`jsp/servlet` 글쓰기 작업을 하기 전에 로그인 인증과정을 거치려면 필터를 사용하거나 핸들러에서 로그인 인증과정을 거치는 코딩을 처음에 위치하도록 해야한다.  
+`jsp/servlet`에선 글쓰기 작업을 하기 전에 로그인 인증과정을 거치려면 **필터**를 사용하거나 핸들러에서 로그인 인증과정을 거치는 코딩을 처음에 위치하도록 해야한다.  
 
 로그인 인증과정을 거치는 과정이 글쓰기 하나뿐이면 상관없지만 계속 늘어난다면 필터를 쓰지 않고는 중복코드가 계속 늘어난다.  
 
@@ -52,11 +52,11 @@ toc: true
 
 **Advice명** | **설명** | **사용 클래스**
 |--|--|--|
-`Before Advice` | 핵심기능 전에 수행하는 공통 기능 (로그인 체크 등) | `MethodBeforeAdvice`
-`Around Advice` | 핵심기능 수행 전 후에 수행하는 고통 기능 (시간 체크 등) | `MethodInterceptor` 
-`After Returning Advice` | 예외 발생이 없을 경우 수행하는 기능 | `AfterReturningAdvice`
-`After Throwing Advice` | 예외 발생할 경우 수행하는 기능 | `ThrowsAdvice` 
-`After Advice` | 예외 발생 상관없이 핵심기능 수행 후 수행하는 공통 기능 | 
+`Before Advice` | **핵심기능 전에 수행**하는 공통 기능 (로그인 체크 등) | `MethodBeforeAdvice`
+`Around Advice` | **핵심기능 수행 전 후에 수행**하는 고통 기능 (시간 체크 등) | `MethodInterceptor` 
+`After Returning Advice` | **예외 발생이 없을 경우 수행**하는 기능 | `AfterReturningAdvice`
+`After Throwing Advice` | **예외 발생할 경우 수행**하는 기능 | `ThrowsAdvice` 
+`After Advice` | 예외 발생 상관없이 **핵심기능 수행 후 수행**하는 공통 기능 | 
 
 공통기능이 핵심기능 어느시점에 실행 되는지에 따라 위 5가지 Advice를 택해야 한다.  
 
@@ -78,7 +78,7 @@ AOP는 꼭 스프링에서만 사용하는 개념이 아니며 다음 3가지 �
 `coreConcern`: 핵심 기능  
 
 핵심 기능을 하는 클래스, 보조(공통)기능을 하는 클래스가 있으면 따로 2개의 클래스가 올라가고   
-가상으로 만들어진 프로그래머가 설정한 대로 위의 2클래스까 짬뽕(`Weaving`)된 Proxy(가짜)클래스가 만들어진다.   
+가상으로 만들어진 프로그래머가 설정한 대로 위의 여러 클래스(핵심, 보조 클래스들)가 짬뽕(`Weaving`)된 **Proxy(가짜)클래스**가 만들어진다.   
 
 이러한 Proxy 클래스를 만드는 방법은 다음 3가지가 있다.  
 
@@ -127,6 +127,7 @@ public class CaculatorImpl implements Calculator {
 }
 
 ```
+> `@Component` 어노테이션은 당연히 스프링 빈으로 등록하기 위한 설정...
 
 ```java
 public static void main(String[] args) {
@@ -187,9 +188,11 @@ public int sub(int x, int y) {
 정보: sub() 처리시간: 0
 2
 ```
-모든 함수에 위와 같은 코드를 추가시키는 것이 부담스럽다... 로그출력같은 **공통적인 보조업무**를 빼서 Proxy 클래스를 만들어 보자
+모든 함수에 위와 같은 코드를 추가시키는 것이 부담스럽다...  
+로그출력같은 **공통적인 보조업무**를 빼서 Proxy 클래스를 만들어 보자
 
-`InvocationHandler` 인터페이스를 상속한 `LogPrintHandler`클래스를 정의해 공통 기능을 구현한 보조클래스와 핵심 기능이 합쳐진 proxy 클래스를 만들어보자.  
+`InvocationHandler` 인터페이스를 상속한 `LogPrintHandler`클래스를 정의해 공통 기능을 구현한 보조클래스와 핵심 기능이 합쳐진 **proxy 클래스**를 만들어보자.  
+
 ```java
 public class LogPrintHandler implements InvocationHandler {
 	private Object target;
@@ -210,7 +213,8 @@ public class LogPrintHandler implements InvocationHandler {
 	}
 }
 ```
-Spring AOP과정에서 위와같은 `LogPrintHandler`와 같은 **Proxy클래스**가 생기게 된다.  
+
+`Spring AOP`과정에서 위와같은 `LogPrintHandler`와 같은 **Proxy클래스**가 생기게 된다 보면 된다.  
 
 ```java
 public static void main(String[] args) {
@@ -232,9 +236,7 @@ public static void main(String[] args) {
 3
 ```
 
-이제 스프링 프레임워크를 사용해서 `Proxy` 클래스를 만들어보자.  
-
-### 스프링라이브러리를 사용하지 않고 Proxy객체 생성
+### 스프링 라이브러리를 사용해 Proxy객체 생성
 
 스프링의 AOP기능을 사용하기 위해 먼저 다음 jar파일을 `build path`에 추가하자.  
 `C:\Class\SpringClass\spring-framework-3.0.2.RELEASE-dependencies\org.aopalliance\com.springsource.org.aopalliance\1.0.0\com.springsource.org.aopalliance-1.0.0.jar`  
@@ -242,7 +244,8 @@ public static void main(String[] args) {
 목표는 `add`메서드 **실행 전** 로그기록, **실행 후** 로그기록, 소요시간 로그 기록이다.  
 즉 **핵심 기능 전 후** 에 실행되는 공통 기능인 `Around Advice`클래스를 만들자.
 
-**`Around Advice`기능을 가진 Proxy클래스를 정의하려면** 먼저 공통기능 클래스를 정의하기 위한 **`MethodInterceptor` 인터페이스를 구현**해야한다.  
+**`Around Advice`기능을 가진 Proxy클래스를 정의하려면** 먼저 공통기능 클래스를 정의하기 위한 **`MethodInterceptor` 인터페이스를 구현**해야한다.   
+
 ```java
 @Component
 public class LogPrintAroundAdvice implements MethodInterceptor{
@@ -297,7 +300,7 @@ public class LogPrintAfterReturningAdvice implements AfterReturningAdvice{
 }
 ```
 
-위와 같이 AOP 기법을 사용한 공통 기능 클래스를 모두 정의하였으면 xml을 통해 핵심기능 클래스와 공통기능 클래스를 하나의 Proxy클래스로 만들어주면 된다.  
+위와 같이 AOP 기법을 사용한 공통 기능 클래스를 모두 정의하였으면 **xml을 통해 핵심기능 클래스와 공통기능 클래스를 하나의 Proxy클래스**로 만들어주면 된다.  
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -331,12 +334,14 @@ public class LogPrintAfterReturningAdvice implements AfterReturningAdvice{
 </beans>
 ```
 
+이제 스프링 프레임워크를 사용해서 `Proxy` 클래스를 만들어보자.  
 
-## 스프링 AOP
 
-스프링AOP를 사용하지 않고 AOP기법을 사용하기 위해 각각 `MethodBeforeAdvice`, `AfterReturningAdvice`, `MethodInterceptor` 3개의 인터페이스를 구현한 클래스를 정의하였지만  
+## 스프링 프레임워크 AOP
 
-스프링AOP를 사용하면 태그를 사용하면 하나의 클래스로 모두 구현할 수 있다.  
+오직 스프링 라이브러리를 사용해 AOP기법을 사용하기 위해 각각 `MethodBeforeAdvice`, `AfterReturningAdvice`, `MethodInterceptor` 3개의 인터페이스를 구현한 클래스를 정의하였지만  
+
+스프링 프레임워크의 AOP를 사용하면 태그를 사용해 하나의 클래스로 모두 구현할 수 있다.  
 
 AOP스프링 프레임웤 안에선 **메서드 단위로 Advice를 정의**할 수 있기 때문에 상관 3개의 역할을 가지는 메서드를 가지고 있는 클래스 하나만 정의하면 된다.
 
@@ -354,20 +359,16 @@ AOP스프링 프레임웤 안에선 **메서드 단위로 Advice를 정의**할 
 	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
 	>
 	<context:component-scan base-package="aop"/>	
-	<!-- Calculator proxy = (Calculator)Proxy.newProxyInstance(
-				target.getClass().getClassLoader(),
-				target.getClass().getInterfaces(),
-				new LogPrintHandler(target)); 이 과정과 같다.-->
 	<bean id="proxy" class="org.springframework.aop.framework.ProxyFactoryBean">
-		<property name="target"><!-- ProxyFactoryBean의 setTarget() 메서드 호출 -->
+		<property name="target">
 			<ref bean="calc"/>
 		</property>
-		<property name="proxyInterfaces"><!-- ProxyFactoryBean의 setProxyInterfaces() 메서드 호출 -->
+		<property name="proxyInterfaces">
 			<list>
 				<value>aop.Calculator</value>
 			</list>
 		</property>
-		<property name="interceptorNames"><!-- ProxyFactoryBean의 setInterceptorNames() 메서드 호출 -->
+		<property name="interceptorNames">
 			<list>
 				<value>logPrintAroundAdvice</value>
 				<value>logPrintBeforeAdvice</value>
@@ -383,6 +384,10 @@ AOP스프링 프레임웤 안에선 **메서드 단위로 Advice를 정의**할 
 먼저 aop네임스페이스를 사용하기 위해 `<beans>` 태그에 다음 속성 추가  
 `xmlns:aop="http://www.springframework.org/schema/aop"`,   
 `xsi:schemaLocation=http://www.springframework.org/schema/aop`    
+
+그리고 위에서 Around, Before, AfterReturningAdvice를 구현하기 위해 3개의 클래스를 정의한 반면
+
+우리는 아래처럼 하나의 클래스에 위의 3가지 Advice역할을 하는 메서드를 정의할 것이다.  
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -403,7 +408,7 @@ AOP스프링 프레임웤 안에선 **메서드 단위로 Advice를 정의**할 
 	<bean id="logPrintProfiler" class="aop.LogPrintProfiler"></bean>
 	<aop:config>
 		<aop:aspect id="traceAspect" ref="logPrintProfiler">
-			<aop:pointcut expression="execution(public * aop..*(*,*))" id="publicMethod"/>  <!-- pointcut의 id는 마음대로 -->
+			<aop:pointcut expression="execution(public * aop..*(*,*))" id="publicMethod"/>
 			<aop:around pointcut-ref="publicMethod" method="trace"/>
 			<aop:before pointcut-ref="publicMethod" method="before"/>
 			<aop:after pointcut-ref="publicMethod" method="afterFinally"/>
@@ -411,6 +416,7 @@ AOP스프링 프레임웤 안에선 **메서드 단위로 Advice를 정의**할 
 	</aop:config>
 </beans>
 ```
+
 코드를 보면 `<bean>`태그를 사용해 `logPrintProfiler` 스프링 빈 객체를 생성.  
 
 `<aop:config>` 태그를 통해 스프링 AOP기법을 사용한 **Proxy객체를 정의**한다.
@@ -457,7 +463,7 @@ public class LogPrintProfiler {
 	}
 	
 	// Around Advice
-	public Object trace(ProceedingJoinPoint joinPoint) throws Throwable {
+	public void trace(ProceedingJoinPoint joinPoint) throws Throwable {
 		String signatureString = joinPoint.getSignature().toShortString();
 		System.out.println(signatureString + " 시작");
 		long start = System.currentTimeMillis();
@@ -481,7 +487,8 @@ AOP에선 `JoinPoint`인터페이스를 구현한 객체를 항상 첫번째 파
 
 `Object getTarget( )` - 대상 객체를 구함  
 
-`Object[ ] getArgs( )`- 파라미터 목록을 구함  
+`Object[ ] getArgs( )` - 파라미터 목록을 구함  
+
 
 
 <br><br>
@@ -494,7 +501,6 @@ AOP에선 `JoinPoint`인터페이스를 구현한 객체를 항상 첫번째 파
 
 `String toShortName( )` - 메서드를 축약해서 표현한 문장을 구함(메서드의 이름만 구함)  
 
-<br>
 ### 기타정보
 
 만약 `After Returning Advice`에서 반환된 값을 가지고 공통기능을 수행하고 싶다면 `Object` 타입의 매개변수를 추가하자.
@@ -509,24 +515,16 @@ public void afterReturning(Object ref) {
 특정 타입의 반환값만 공통 기능으로 수행시키고 싶다면 `Object` 타입 대신 별도의 타입을 주어도 된다.  
 
 만약 호출 메서드의 정보나 전달되는 파라미터값도 알아야 한다면 `JoinPoint`객체와 `Object` 총 2개의 매개변수를 사용
-
+```java
+public void afterReturning(JoinPoint joinPoint, Object ref) {...}
+```
 <br><br>
 
-`getArgs( )`메서드를 통해 파라미터 목록을 구할 수 있지만 xml설정을 통해 매개변수로 전달받을 수 도 있다.  
-
-```xml
-<aop:config>
-	<aop:aspect id="traceAspect" ref="logPrintProfiler">
-		<aop:pointcut expression="execution(public * aop..*(*,*))" id="publicMethod"/>
-		<aop:around pointcut-ref="publicMethod" method="trace"/>
-		<aop:before pointcut-ref="publicMethod" method="before"/>
-		<aop:after pointcut-ref="publicMethod" method="afterFinally"/>
-	</aop:aspect>
-</aop:config>
-```
+`JoinPoint`의 `getArgs( )`메서드를 통해 파라미터 목록을 구할 있다.
 
 ### Arround Advice
 
+위에서 보다싶이 `Arround Advice`는 좀 특별하다.  
 
 `Around Advice`로 `Before`, `After`, `After Returning`, `After Throwing Advice`들을 모두 구현할 수 있으며 다른 `Advice`과는 다르게 첫번째 매개변수로 `ProceedingJoinPoint`를 사용한다.  
 `ProceedingJoinPoint`는 `JoinPoint`의 자식 클래스로 `Signature`, 타겟, 파라미터 목록을 구할수 있을 뿐 아니라  
@@ -631,7 +629,7 @@ public class LogPrintProfiler {
 </beans>
 ```
 
-xml설정이 아닌 `@Configuration`을 통한 자바 설정 파일을 사용할 경우 `<aop:aspectj-autoproxy/>`대신 `@EnableAspectJAutoProxy` 어노테이션을 사용  
+xml설정이 아닌 `@Configuration`을 통한 **자바 설정 파일을 사용할 경우** `<aop:aspectj-autoproxy/>`대신 `@EnableAspectJAutoProxy` 어노테이션을 사용  
 
 ```java
 @Aspect
@@ -793,7 +791,8 @@ xml문서에선 `||`표시하려면 &#124;&#124;를 사용해야 하는데 번�
 
 ### Advice 적용 순서
 
-한 `JoinPoint`에 한 개 이상의 `Advice`가 적용될 경우, 순서를 명시적으로 저장할 수 있다.  
+하나의 `JoinPoint`에 여러개의 `Advice`가 적용될 경우, 순서를 명시적으로 저장할 수 있다.  
+아래 2가지 방법을 통해 순서를 지정 가능하다.  
 
 1. `@Order` 애노테이션 적용  
 ```java
@@ -816,3 +815,80 @@ public class LogginAspect implements Ordered {
 XML 스키마 사용 시, `<aop:aspect>` 태그의 `order` 속성을 사용해서 `Advice` 순서 지정
 
 `order`는 값이 낮을수록 높은 우선순위의 `Advice`
+
+## 스프링 프레임워크 AOP 실습
+
+스프링 AOP에 대해 어느정도 배웠으니 실제 스프링 프레임워크에서 AOP를 사용해보자.  
+먼저 `pom.xml`에 다음 3개 `dependency` 추가
+
+```xml
+<dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-tx</artifactId>
+	<version>${org.springframework-version}</version>
+</dependency>
+<dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-aop</artifactId>
+	<version>${org.springframework-version}</version>
+</dependency>
+<dependency>
+		<groupId>org.aspectj</groupId>
+		<artifactId>aspectjweaver</artifactId>
+		<version>1.6.11</version>
+</dependency>
+```
+
+그리고 root-context.xml에 aop설정의 위해 `aop`, `tx` `namespace`추가하고 아래태그를 추가한다.   
+```xml
+<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+<aop:config></aop:config>
+``` 
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	...
+	xsi:schemaLocation="
+		...
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop-4.1.xsd
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+	...
+	...
+	<!-- root-context.xml 수정 -->
+	<context:component-scan base-package="org.zerock"/>
+	<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+	<aop:config></aop:config>
+</beans>
+```
+
+```java
+@Component
+@Aspect
+public class SampleAdvice {
+	private static final Logger logger = LoggerFactory.getLogger(SampleAdvice.class);
+	
+	@Before("AspactJ 표현식")
+	public void startLog(JoinPoint jp) {
+		logger.info("------------------");
+		logger.info("------------------");
+		logger.info(Arrays.toString(jp.getArgs()));
+	}
+	
+	@Around("AspactJ 표현식")
+	public Object timeLog(ProceedingJoinPoint pjp) throws Throwable {
+		// Throwable -> Exception객체의 상위 객체
+		long startTime = System.currentTimeMillis();
+		logger.info(Arrays.toString(pjp.getArgs()));
+		Object result = pjp.proceed();
+		long endTime = System.currentTimeMillis();
+		logger.info(pjp.getSignature().getName() + ": " + (endTime - startTime));
+		logger.info("=============================");
+		return result;
+	}
+}
+```
