@@ -839,7 +839,7 @@ XML 스키마 사용 시, `<aop:aspect>` 태그의 `order` 속성을 사용해�
 </dependency>
 ```
 
-그리고 root-context.xml에 aop설정의 위해 `aop`, `tx` `namespace`추가하고 아래태그를 추가한다.   
+그리고 `servlet-context.xml`에 aop설정의 위해 `aop`, `tx` `namespace`추가하고 아래태그를 추가한다.   
 ```xml
 <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
 <aop:config></aop:config>
@@ -891,4 +891,14 @@ public class SampleAdvice {
 		return result;
 	}
 }
+```
+
+`info`메서드를 통해 콘솔에 로그가 출력되지 않는다면 `log4j.xml`에 다음과 같이 추가
+
+```xml
+<!-- Root Logger -->
+<root>
+	<priority value="info warn" />
+	<appender-ref ref="console" />
+</root>
 ```
