@@ -251,3 +251,38 @@ DelayedEvent [id=9, name=user9, activationDateTime=2019-08-13T13:55:49.091]
 DelayedEvent [id=10, name=user10, activationDateTime=2019-08-13T13:55:50.091]
 ```
 
+일반적으로 Delay큐는 스레드와 같이 사용한다.  
+
+```java
+public class TestDelayQueue implements InitializingBean {
+	private DelayQueue<DelayedEvent> delayQueue = new DelayQueue<DelayedEvent>();
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		init();
+	}
+
+    public void init() {
+		new DelayQueueConsumeThread().start();
+	}
+
+    class DelayQueueConsumeThread extends Thread {
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    if (delayQueue.isEmpty() == false) {
+                            DelayedEvent message = delayQueue.take();
+                            ...
+                            ...
+                        } else {
+                            Thread.sleep(50);
+                        }
+                } else {
+                    Thread.sleep(50);
+                }
+            } 
+        }
+    }
+}
+```
