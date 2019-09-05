@@ -122,6 +122,29 @@ Calender라는 클래스가 위의 방식으로 코딩되어있다.
 ```Calender cal = new Calender();``` <-- 이거 오류난다.  
 ```Calender cal = Calender.getInstance();``` <-- 이렇게 쓰라고 설명문에 쓰여있다.  
 
+싱글톤 패턴은 멀티스레드 환경에서 문제가 발생할 수 있다, `synchronized` 키워드를 사용하면 쉽게 해결 가능하겠지만 성능은 포기해야 한다.  
+
+https://medium.com/@joongwon/multi-thread-환경에서의-올바른-singleton-578d9511fd42
+
+```java
+public class Singleton {
+  private Singleton() {}
+  public static Singleton getInstance() {
+    return LazyHolder.INSTANCE;
+  }
+  
+  private static class LazyHolder {
+    private static final Singleton INSTANCE = new Singleton();  
+  }
+}
+```
+LazyHolder기법을 사용하면 멀티스레드 환경에서도 안전하고 빠르게 사용가능하다 한다.  
+
+기존에는 static 키워드를 사용해 싱글톤으로 생성할 객체를 코드가 메모리에 올라감과 동시에 생성하였는데 위 코드대로라면 `getInstance`메서드 호출시 생성된다.  
+
+JVMd에서 객체를 사용시에 생성하기 때문에 메모리관점에서도 이득이고 JVMd에서 `Thread Safe`하게 객체를 관리한다고 한다.  
+
+
 ----------------------------------------------------------------------------------------------------
 
 ## 상속  -  객체지향 필수 아이템
