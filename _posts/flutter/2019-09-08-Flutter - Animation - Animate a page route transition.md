@@ -1,5 +1,5 @@
 ---
-title:  "Flutter - Animate a page route transition!"
+title:  "Flutter - Animation - Animate a page route transition!"
 
 read_time: false
 share: false
@@ -7,12 +7,10 @@ author_profile: false
 classes: wide
 
 categories:
-  - Spring
+  - flutter
 
 tags:
-  - Spring
-  - jpa
-  - java
+  - flutter
 
 toc: true
 
@@ -24,6 +22,8 @@ toc: true
 
 flutter 홈페이지의 cookbook을 따라서 코딩할 계획  
 모르는 문법(물론 처음 하다 보니 다 모르지만 정말 이해안되는)을 찾아 설명
+
+모든 코드는 cookbook에서 사용하였습니다.
 
 ```js
 import 'package:flutter/material.dart';
@@ -77,16 +77,13 @@ go버튼을 클릭하면 아래 사진으로 이동
 
 ![flutter2]({{ "/assets/flutter/flutter2.png" | absolute_url }})     
 
-위의 코드를 이해하기 위한 정리글입니다.  
-
-
 ## Widget
 
 > https://flutter.dev/docs/development/ui/widgets-intro  
 
 
-React에서 영감을 받았다고 한다. Flutter에선 모든것이 위젯으로 이루어져 있고 위젯 상태가 변경되면 rebuild함으로 변경됨을 표시한다.  
-텍스트 하나까지 위젯으로 이루어져 있기 때문에 렌더링 트리에서 최소한의 변경으로 상태를 변경할 수 있다.  
+React에서 영감을 받았다고 한다. Flutter에선 모든것이 위젯으로 이루어져 있고 위젯 상태가 변경되면 rebuild함으로 변경되었음을 표시한다.  
+텍스트 하나까지 위젯으로 이루어져 있기 때문에 렌더링 트리에서 최소한의 변경으로 상태를 변경할 수 있다(성능UP).  
 
 ```js
 import 'package:flutter/material.dart';

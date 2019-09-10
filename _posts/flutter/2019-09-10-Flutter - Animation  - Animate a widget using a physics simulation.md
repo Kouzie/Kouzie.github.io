@@ -1,5 +1,5 @@
 ---
-title:  "Flutter - Animate a page route transition!"
+title:  "Flutter - Animation - Animate a page route transition!"
 
 read_time: false
 share: false
@@ -7,12 +7,11 @@ author_profile: false
 classes: wide
 
 categories:
-  - Spring
+  - flutter
 
 tags:
-  - Spring
-  - jpa
-  - java
+  - flutter
+
 
 toc: true
 
