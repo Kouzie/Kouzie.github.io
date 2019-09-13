@@ -11,6 +11,7 @@ categories:
 
 tags:
   - flutter
+  - cookbook
 
 toc: true
 
@@ -246,7 +247,7 @@ class Frog extends StatelessWidget {
 ```
 ![flutter4]({{ "/assets/flutter/flutter4.png" | absolute_url }})    
 
-화면에 표시하고 싶은 컨테이너(Widget)을 생성, 
+화면에 표시하고 싶은 컨테이너(`Widget`)을 생성, 
 컨테이너의 생성자는 아래처럼 생겼다.  
 ```js
 Container({
@@ -362,11 +363,13 @@ Route _createRoute() {
 
 상속구조  
 `Object > Route<T> > OverlayRoute<T> > TransitionRoute<T> > ModalRoute<T> > PageRoute<T> > PageRouteBuilder`  
-Widget을 상속하지 않는다.  
+`Widget`을 상속하지 않는다.  
 
-즉 페이지, 스크린과 같은 위젯을 관리하려면 이를 가리키는 Route객체가 필요하고 Navigator의 pop, push 메서드로 메모리에 올렸다 내린다.  
+즉 페이지, 스크린과 같은 위젯을 관리하려면 이를 가리키는 Route객체가 필요하고 Navigator의 `pop`, `push` 메서드로 메모리에 올렸다 내린다.  
 
-PageRouteBuilder의 생성자가 왜 이따구로 생겼는지 모르겠지만 `pageBuilder`, `transitionsBuilder`속성에 익명 메서드를 정의, pageBuilder는 만들 페이지의 객체를 반환, transitionsBuilder은 애니메이션 설정이다.  
+`PageRouteBuilder`의 생성자로 2개의 속성을 초기화한다. 모두 메서드 정의를 가지는 속성이다.  
+`pageBuilder`, `transitionsBuilder`속성에 익명 메서드를 정의, `pageBuilder`는 만들 페이지의 객체를 반환, `transitionsBuilder`은 애니메이션 설정이다.  
+
 
 > https://medium.com/flutter-community/everything-you-need-to-know-about-flutter-page-route-transition-9ef5c1b32823
 

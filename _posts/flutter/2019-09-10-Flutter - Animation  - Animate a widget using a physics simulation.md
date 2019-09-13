@@ -11,6 +11,7 @@ categories:
 
 tags:
   - flutter
+  - cookbook
 
 
 toc: true
