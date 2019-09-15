@@ -197,7 +197,7 @@ class ListPage extends StatelessWidget {
 }
 ```
 
-![flutter6]({{ "/assets/flutter/flutter6.png" | absolute_url }})  
+![flutter6]({{ "/assets/flutter/flutter6.png" | absolute_url }}){: width="400" }  
 
 
 다시 `Drawer`로 돌아와서 `Scaffold`의 `drawer`속성 정의를 보자.  

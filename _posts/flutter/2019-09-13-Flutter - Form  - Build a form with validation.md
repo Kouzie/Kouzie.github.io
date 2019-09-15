@@ -104,7 +104,7 @@ TextFormField(
 생성자로 `validator`속성을 초기화 하고 value가 매개변수로 들어가는 익명클래스를 지정한다.  
 데이터가 비어있다면 아래같이 경고문구를 출력하는 역할을 수행하도록 하기 위한 메서드.  
 
-![flutter11]({{ "/assets/flutter/flutter11.png" | absolute_url }})  
+![flutter11]({{ "/assets/flutter/flutter11.png" | absolute_url }}){: width="400" }  
 
 단순히 값이 있다면 null을, 없다면 경고문구르 반환하는 익명메서드이다.  
 

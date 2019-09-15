@@ -88,7 +88,7 @@ I/flutter ( 6281): First text field: test
 ```
 
 
-![flutter12]({{ "/assets/flutter/flutter12.png" | absolute_url }})  
+![flutter12]({{ "/assets/flutter/flutter12.png" | absolute_url }}){: width="400" }  
 
 ### TextEditingController  
 
@@ -268,9 +268,9 @@ builder: (BuildContext context) {
 
 사진을 통해 간단한 차이를 알아보자.  
 
-![flutter13]({{ "/assets/flutter/flutter13.png" | absolute_url }})  
+![flutter13]({{ "/assets/flutter/flutter13.png" | absolute_url }}){: width="400" }  
 
-![flutter14]({{ "/assets/flutter/flutter14.png" | absolute_url }})  
+![flutter14]({{ "/assets/flutter/flutter14.png" | absolute_url }}){: width="400" }  
 
 우리의 목적은 `Dialog`(팝업)창에 `TextField`의 value를 출력하는 것이다.  
 
@@ -343,4 +343,4 @@ class _MyCustomFormState extends State<MyCustomForm> {
 }
 ```
 
-![flutter15]({{ "/assets/flutter/flutter15.png" | absolute_url }})  
+![flutter15]({{ "/assets/flutter/flutter15.png" | absolute_url }}){: width="400" }  

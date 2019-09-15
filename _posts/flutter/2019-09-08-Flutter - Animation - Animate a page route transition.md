@@ -72,11 +72,11 @@ Route _createRoute() {
 
 ```
 
-![flutter1]({{ "/assets/flutter/flutter1.png" | absolute_url }})    
+![flutter1]({{ "/assets/flutter/flutter1.png" | absolute_url }}){: width="400" }    
 
 go버튼을 클릭하면 아래 사진으로 이동  
 
-![flutter2]({{ "/assets/flutter/flutter2.png" | absolute_url }})     
+![flutter2]({{ "/assets/flutter/flutter2.png" | absolute_url }}){: width="400" }     
 
 ## Widget
 
@@ -103,7 +103,7 @@ void main() {
 
 아주 간단한 app
 
-![flutter0]({{ "/assets/flutter/flutter0.png" | absolute_url }})    
+![flutter0]({{ "/assets/flutter/flutter0.png" | absolute_url }}){: width="400" }    
 
 시꺼먼 화면에 `hello world`만 출력된다.  
 
@@ -151,7 +151,7 @@ class GreenFrog extends StatelessWidget {
 }
 ```
 
-![flutter3]({{ "/assets/flutter/flutter3.png" | absolute_url }})    
+![flutter3]({{ "/assets/flutter/flutter3.png" | absolute_url }}){: width="400" }    
 
 그냥 초록색 창을 출력한다.  
 
@@ -245,7 +245,7 @@ class Frog extends StatelessWidget {
   }
 }
 ```
-![flutter4]({{ "/assets/flutter/flutter4.png" | absolute_url }})    
+![flutter4]({{ "/assets/flutter/flutter4.png" | absolute_url }}){: width="400" }    
 
 화면에 표시하고 싶은 컨테이너(`Widget`)을 생성, 
 컨테이너의 생성자는 아래처럼 생겼다.  

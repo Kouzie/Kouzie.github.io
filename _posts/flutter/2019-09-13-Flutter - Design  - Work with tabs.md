@@ -65,7 +65,7 @@ DefaultTabController(
 그리고 `bottom`에 `TabBar`설정   
 
 
-![flutter9]({{ "/assets/flutter/flutter9.png" | absolute_url }})  
+![flutter9]({{ "/assets/flutter/flutter9.png" | absolute_url }}){: width="400" }  
 
 `TabController`가 우리가 클릭한 텝의 순번에 따라 지정한 탭뷰로 이동시켜주는 역할은 한다.(기본 애니메이션 처리는 덤 - 왼쪽 오른쪽 이동)  
 
@@ -94,7 +94,7 @@ body: TabBarView(
 ),
 ```
 
-![flutter10]({{ "/assets/flutter/flutter10.png" | absolute_url }})  
+![flutter10]({{ "/assets/flutter/flutter10.png" | absolute_url }}){: width="400" }  
 
 
 #### TabBarView

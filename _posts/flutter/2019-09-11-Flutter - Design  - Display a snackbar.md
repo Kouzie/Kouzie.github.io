@@ -22,7 +22,7 @@ toc: true
 
 이렇게 생긴놈  
 
-![flutter7]({{ "/assets/flutter/flutter7.png" | absolute_url }})  
+![flutter7]({{ "/assets/flutter/flutter7.png" | absolute_url }}){: width="400" }  
 
 상속구조  
 `Object > Diagnosticable > DiagnosticableTree > Widget > StatelessWidget > SnackBar`
@@ -170,7 +170,7 @@ class GridPage extends StatelessWidget {
 }
 ```
 
-![flutter8]({{ "/assets/flutter/flutter8.png" | absolute_url }})  
+![flutter8]({{ "/assets/flutter/flutter8.png" | absolute_url }}){: width="400" }  
 
 * primary: false, - 스크롤 관련 속성, false의 경우 충분한 content가 있어야 스크롤 가능, true의 경우 스크롤 가능
 * crossAxisSpacing: 10, - 좌우 사이 공백

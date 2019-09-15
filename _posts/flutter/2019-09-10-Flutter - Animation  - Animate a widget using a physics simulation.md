@@ -88,7 +88,7 @@ class _DraggableCardState extends State<DraggableCard> {
 
 그리고 `State<DraggableCard>` 를 반환하는 `createState()`를 정의하는데 상태변화가 가능한 위젯 답게 변화된 상태를 관리하는 객체를 따로 생성하는 듯 하다.  
 
-![flutter5]({{ "/assets/flutter/flutter5.png" | absolute_url }})  
+![flutter5]({{ "/assets/flutter/flutter5.png" | absolute_url }}){: width="400" }  
 
 아직은 어떠한 동작도 하지 않는다.  
 
@@ -212,7 +212,7 @@ class _DraggableCardState extends State<DraggableCard> with SingleTickerProvider
 >   `Alignment _dragAlignment = Alignment.center;` 위에서 봤던 Align 클래스의 alignment속성으로 들어간 값이다.  
 >   내부적으로 `static const Alignment center = Alignment(0.0, 0.0);` 정의되어 있고 0. 0은 사각형의 정 중앙, 좌/하 는 백분율로 -1, 우/상은 +1의 값을 지정하면 된다.  
 
-GestureDetector를 초기화 할떄 사용되는 생성자 매개변수는 아래와 같다.  
+`GestureDetector`를 초기화 할떄 사용되는 생성자 매개변수는 아래와 같다.  
 ```js
 GestureDetector({Key key, Widget child, GestureTapDownCallback onTapDown, GestureTapUpCallback onTapUp, GestureTapCallback onTap, GestureTapCancelCallback onTapCancel, GestureTapDownCallback onSecondaryTapDown, GestureTapUpCallback onSecondaryTapUp, GestureTapCancelCallback onSecondaryTapCancel, GestureTapCallback onDoubleTap, GestureLongPressCallback onLongPress, GestureLongPressStartCallback onLongPressStart, GestureLongPressMoveUpdateCallback onLongPressMoveUpdate, GestureLongPressUpCallback onLongPressUp, GestureLongPressEndCallback onLongPressEnd, GestureDragDownCallback onVerticalDragDown, GestureDragStartCallback onVerticalDragStart, GestureDragUpdateCallback onVerticalDragUpdate, GestureDragEndCallback onVerticalDragEnd, GestureDragCancelCallback onVerticalDragCancel, GestureDragDownCallback onHorizontalDragDown, GestureDragStartCallback onHorizontalDragStart, GestureDragUpdateCallback onHorizontalDragUpdate, GestureDragEndCallback onHorizontalDragEnd, GestureDragCancelCallback onHorizontalDragCancel, GestureForcePressStartCallback onForcePressStart, GestureForcePressPeakCallback onForcePressPeak, GestureForcePressUpdateCallback onForcePressUpdate, GestureForcePressEndCallback onForcePressEnd, GestureDragDownCallback onPanDown, GestureDragStartCallback onPanStart, GestureDragUpdateCallback onPanUpdate, GestureDragEndCallback onPanEnd, GestureDragCancelCallback onPanCancel, GestureScaleStartCallback onScaleStart, GestureScaleUpdateCallback onScaleUpdate, GestureScaleEndCallback onScaleEnd, HitTestBehavior behavior, bool excludeFromSemantics: false, DragStartBehavior dragStartBehavior: DragStartBehavior.start })
 ```
@@ -234,6 +234,11 @@ GestureDetector({Key key, Widget child, GestureTapDownCallback onTapDown, Gestur
 위젯에서 손을 때면 호출
 
 위의 코드를 보면 `onPanUpdate`가 발생할때 마다 `setState()`를 호출해 `_dragAlignment`를 수정한다. 밑의 child속성으로 있던 Card 객체가  Align 위젯에 의해 `_dragAlignment` 로 정렬되어 있기 때문에 드래그 효과가 발생한다.  
+
+제스처 추가설명
+> https://flutter.dev/docs/cookbook/gestures  
+> https://api.flutter.dev/flutter/widgets/GestureDetector-class.html  
+
 
 ### 스프링 처럼 원래대로 돌아가는 효과
 
