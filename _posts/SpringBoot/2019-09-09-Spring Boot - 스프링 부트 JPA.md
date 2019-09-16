@@ -58,7 +58,7 @@ JPA에서 엔티티는 `사원` 테이블을 만들기 위한 일종의 객체�
 스프링 부트에서 지원하는 기능으로 엔티티가 DB와 연동되어 데이터를 가져오고 수정되고 저장되고 삭제되는 과정을 담당하는 객체이다.  
 
 
-![springboot2_1]({{ "/assets/2019/springboot2_1.png" | absolute_url }}){: .shadow}  
+![springboot2_1]({{ "/assets/springboot/springboot2_1.png" | absolute_url }}){: .shadow}  
 
 엔티티 매니저가 위 사진에 있는 여러 기능을 호출하면서 실제 java객체를 DB에 연동하고 CRUD작업을 처리한다.  
 
@@ -152,7 +152,7 @@ public interface BoardRepository extends CrudRepository<Board, Long> {
 
 `CrudRepository` 인터페이스를 상속하는데 `CrudRepository`에는 기본적인 CRUD를 위한 가상메서드가 정의되어 있다.  
 
-![springboot2_2]({{ "/assets/2019/springboot2_2.png" | absolute_url }}){: .shadow}  
+![springboot2_2]({{ "/assets/springboot/springboot2_2.png" | absolute_url }}){: .shadow}  
 
 save 메서드를 통해 update, insert가 가능하다.  
 
@@ -196,7 +196,7 @@ count..by..
 
 위와같은 패턴으로 JPA가 자동으로 만들어주는 쿼리메서드를 사용해 여러가지 조건문을 추가할 수 있다.  
 
-![springboot2_3]({{ "/assets/2019/springboot2_3.png" | absolute_url }}){: .shadow}  
+![springboot2_3]({{ "/assets/springboot/springboot2_3.png" | absolute_url }}){: .shadow}  
 
 
 > https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#jpa.query-methods.query-creation
@@ -594,7 +594,7 @@ public class PDSBoardTest {
 
 Intellij의 경우 pom.xml에 우클릭후 아래 그림처럼 클릭
 
-![springboot2_4]({{ "/assets/2019/springboot2_4.png" | absolute_url }}){: .shadow}  
+![springboot2_4]({{ "/assets/springboot/springboot2_4.png" | absolute_url }}){: .shadow}  
 
 그럼 pom.xml에 지정했던 대로 `/generated-sources/java` 패키지에 새로 클래스가 정의된다.  
 
