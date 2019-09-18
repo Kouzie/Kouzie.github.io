@@ -209,7 +209,7 @@ public class SampleControllerTest {
 
 
 
-아래처럼 `andExpect`와 `MockMvcResultMatchers`를 사용해 결과값 테스트를 틀릴경우(없는 url주소 요청)  
+아래처럼 `andExpect`와 `MockMvcResultMatchers`를 사용해 결과값 테스트를 틀릴경우(없는 url주소 요청, OK가 아니 404 에러, content가 hello world가 아닐경우)  
 
 `MvcResult result = mock.perform(MockMvcRequestBuilders.get("/hello2"))`  
 

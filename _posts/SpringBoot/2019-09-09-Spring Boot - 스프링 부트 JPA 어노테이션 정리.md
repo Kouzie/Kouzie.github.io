@@ -1,5 +1,5 @@
 ---
-title:  "Spring Boot - 스프링 부트 JPA!"
+title:  "Spring Boot - 스프링 부트 어노테이션!"
 
 read_time: false
 share: false
@@ -277,3 +277,7 @@ Spring REST API를 사용하면 반환값이 JSON형식으로 변경되는데 �
 `rollbackFor` - 특정 `Exception` 발생 시 `rollback` 하도록 설정
 
 `noRollbackFor` - 특정 `Exception` 발생 시 `rollback` 하지 않도록 설정
+
+
+## @CacheConfig, @CachePut, @Cacheable, @CacheEvict  
+

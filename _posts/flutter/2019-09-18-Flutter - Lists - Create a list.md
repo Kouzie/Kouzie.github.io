@@ -199,3 +199,161 @@ class MyApp extends StatelessWidget {
 ```
 
 ## Create a horizontal list
+
+> https://flutter.dev/docs/cookbook/lists/horizontal-list
+
+기존의 리스트 뷰에서 `scrollDirection: Axis.horizontal` 속성을 추가하면 된다.  
+
+`ListTile`은 `horizontal` 속성을 지원하지 않음으로 `Container`로 대체  
+
+```js
+import 'package:flutter/material.dart';
+
+abstract class ListItem {}
+
+class HeadingItem implements ListItem {
+  final String heading;
+  HeadingItem(this.heading);
+}
+
+class MessageItem implements ListItem {
+  final String sender;
+  final String body;
+  MessageItem(this.sender, this.body);
+}
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  final List<ListItem> items = List<ListItem>.generate(
+    1200,
+        (i) => i % 6 == 0
+        ? HeadingItem("Heading $i")
+        : MessageItem("Sender $i", "Message body $i"),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final title = 'Mixed List';
+
+    return MaterialApp(
+      title: title,
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text(title),
+        ),
+        body: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: items.length,
+          itemBuilder: (context, index) {
+            final item = items[index];
+
+            if (item is HeadingItem) {
+              return Container(
+                child: Text(
+                  item.heading,
+                  style: Theme.of(context).textTheme.headline,
+                ),
+              );
+            } else if (item is MessageItem) {
+              return Container(
+                child: Text(item.sender),
+              );
+            }
+            return null;
+          },
+        ),
+      ),
+    );
+  }
+}
+```
+
+![flutter20]({{ "/assets/flutter/flutter20.png" | absolute_url }})  
+
+
+## Create a CustomScrollView
+
+일반적으로 `material`디자인을 위해 `Scaffold` 위젯을 생성하면 `appBar property`를 사용한다.  
+
+일반적인 `ListView`는 스크롤하면 `appBar`는 상단에 그대로 남아있지만 `CustomScrollView`는 `appBar`까지 스크롤 가능하다.  
+
+```js
+Scaffold(
+  body: CustomScrollView(
+    slivers: <Widget>[]
+  ),
+);
+```
+
+`slivers`속성에 `Widget`배열을 요구하는데 `appBar`역할을 하는 `SliverAppBar`,  
+내용물로 사용할 `List`역하을 하는 `SliverList` 를 요구한다.  
+> 자매품으로 `SliverGrid`기 있다.  
+
+```js
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  MyApp({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final title = 'Floating App Bar';
+
+    return MaterialApp(
+      title: title,
+      home: Scaffold(
+        body: CustomScrollView(
+          slivers: <Widget>[
+            SliverAppBar(
+              title: Text(title),
+              floating: true,
+              flexibleSpace: Placeholder(),
+              expandedHeight: 200,
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) ListTile(title: Text('Item #$index')),
+                childCount: 1000,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+} 
+```
+
+![flutter21]({{ "/assets/flutter/flutter21.png" | absolute_url }})  
+
+`SliverAppBar`의 `floating` 속성은 아래 url을 참고하면 쉽게 알 수 있다.  
+
+> https://api.flutter.dev/flutter/material/SliverAppBar-class.html
+
+`pinned`, `snap`속성도 알려주니 꼭 참고!  
+
+`SliverList`의 `delegate`속성으로 리스트 아이템들을 설정할 수 있다.  
+
+`SilverList` 경우 `SliverChildBuilderDelegate`안에 ListTile을  
+`SliverGrid` 경우 `SliverChildBuilderDelegate`안에 컨테이너들을 만들면 된다.  
+
+> https://youtu.be/ORiTTaVY6mM
+
+
+### Placeholder class
+
+> A widget that draws a box that represents where other widgets will one day be added.
+This widget is useful during development to indicate that the interface is not yet complete.  
+
+
+개발시에 도움되는 클래스로 박스형태의 그림을 그려준다고 한다.  
+
+위 그림 appBar부분의 x표시 출력된 이유가 Placeholder 설정떄문  
+
+
