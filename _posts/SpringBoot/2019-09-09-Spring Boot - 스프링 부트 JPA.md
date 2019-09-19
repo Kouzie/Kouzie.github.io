@@ -77,7 +77,7 @@ Removed : 더이상 사용하지 않아 영속 컨텍스트에서 쫓겨난 상�
 ## Spring Boot DB연결
 
 
-![springboot1_0]({{ "/assets/Spring/springboot1_0.png" | absolute_url }}){: .shadow}   
+![springboot1_0]({{ "/assets/springboot/springboot1_0.png" | absolute_url }}){: .shadow}   
 
 위의 라이브러리를 추가했다면 DB연동을 위한 Datasource설정을 진행한다.  
 ```properties
