@@ -58,7 +58,7 @@ class MyApp extends StatelessWidget {
 }
 ```
 
-![flutter18]({{ "/assets/flutter/flutter18.png" | absolute_url }})  
+![flutter18]({{ "/assets/flutter/flutter18.png" | absolute_url }}){: width="400" }  
 
 ## Create lists with different types of items
 
@@ -271,7 +271,7 @@ class MyApp extends StatelessWidget {
 }
 ```
 
-![flutter20]({{ "/assets/flutter/flutter20.png" | absolute_url }})  
+![flutter20]({{ "/assets/flutter/flutter20.png" | absolute_url }}){: width="400" }  
 
 
 ## Create a CustomScrollView
@@ -330,7 +330,7 @@ class MyApp extends StatelessWidget {
 } 
 ```
 
-![flutter21]({{ "/assets/flutter/flutter21.png" | absolute_url }})  
+![flutter21]({{ "/assets/flutter/flutter21.png" | absolute_url }}){: width="400" }  
 
 `SliverAppBar`의 `floating` 속성은 아래 url을 참고하면 쉽게 알 수 있다.  
 

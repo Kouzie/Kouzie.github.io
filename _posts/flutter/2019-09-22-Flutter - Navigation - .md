@@ -28,7 +28,7 @@ toc: true
 
 먼저 2개의 `StatelessWidget`을 생성   
 
-```py
+```js
 class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -77,7 +77,7 @@ class DetailScreen extends StatelessWidget {
 
 이미지는 Hero위젯의 생성자 매개변수로 전달  
 
-```py
+```js
 Hero(
   tag: 'imageHero',
   child: Image.network(
@@ -87,7 +87,7 @@ Hero(
 ```
 tag명이 같아야 매칭되어 애니메이션 처리가 된다.  
 
-```py
+```js
 import 'package:flutter/material.dart';
 
 void main() => runApp(HeroApp());
@@ -155,7 +155,7 @@ class DetailScreen extends StatelessWidget {
 
 `Navigator.push(context, _createRoute());`
 
-```py
+```js
 Route _createRoute() {
   return PageRouteBuilder(
     pageBuilder: (context, animation, secondaryAnimation) {
@@ -172,7 +172,7 @@ Route _createRoute() {
 
 애니메이션 생략하고 그냥 밑에서 올라오는 페이지를 Navigator로 push하고 싶다면 `MaterialPageRoute` 사용 
 
-```py
+```js
 onPressed: () {
   Navigator.push(
     context,
@@ -191,7 +191,7 @@ onPressed: () {
 
 main함수쯤 되는 `MaterialApp`의 `initialRoute`, `routes` 속성을 설정하자.  
 
-```py
+```js
 MaterialApp(
   initialRoute: '/',
   routes: {
@@ -203,7 +203,7 @@ MaterialApp(
 
 기존엔 아래와 같이 `home` 속성을 통해 처음 어플에 출력할 페이지를 지정하였는데 `initialRoute` 속성으로 지정할 수 있다.  
 
-```py
+```js
 return MaterialApp(
   title: 'Transition Demo',
   //home: MainScreen(),
@@ -220,7 +220,7 @@ return MaterialApp(
 해당 페이지를 이름으로 push하고 싶다면 `pushNamed` 메서드를 호출하면 된다.  
 `Navigator.pushNamed(context, '/second');`
 
-```py
+```js
 import 'package:flutter/material.dart';
 
 void main() {
@@ -286,7 +286,7 @@ class SecondScreen extends StatelessWidget {
 
 전달하고 싶은 `arguments`(데이터 클래스)정의, `title`은 제목, `message`는 내용으로 할용할 것이다.  
 
-```py
+```js
 class ScreenArguments {
   final String title;
   final String message;
@@ -301,7 +301,7 @@ class ScreenArguments {
 출력할 페이지 정의 - `ExtractArgumentsScreen`,  
 `arguments`를 넘겨받기 위해 `ModalRoute.of(context).` 메서드를 사용하는데 `route`가 설정한 `arguments`를 가져올 수 있다.  
 
-```py
+```js
 class ExtractArgumentsScreen extends StatelessWidget {
   static const routeName = '/extractArguments';
 
@@ -324,7 +324,7 @@ class ExtractArgumentsScreen extends StatelessWidget {
 `Navigator.push()`메서드를 통해 해당 페이지를 오픈하고 `arguments`를 넘겨보자.  
 홈으로 사용할 버튼이 있는 페이지 위젯 정의, 버튼을 누르면 위의 정의한 페이지 위젯을 연다.  
 
-```py
+```js
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -371,7 +371,7 @@ class HomeScreen extends StatelessWidget {
 
 전체 코드
 
-```py
+```js
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
@@ -408,7 +408,7 @@ class ScreenArguments {
 당연히 `Navigator.pushNamed()`도 `argument`와 같이 사용할 수 있다.  
 
 먼저 이름등록을 위해 `routes`속성에 페이지를 오픈하기 위해 사용할 이름 등록
-```py
+```js
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -427,7 +427,7 @@ class MyApp extends StatelessWidget {
 
 반면 `Navigator.pushNamed()`의 경우 이름만 지정하면 알아서 `PageRoute`객체가 만들기 때문에 바로 밑에 `arguments`속성을 지정해 데이터 전달이 가능하다.  
 
-```py
+```js
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -480,7 +480,7 @@ class HomeScreen extends StatelessWidget {
 
 페이지 클래스를 정의하자.  
 
-```py
+```js
 class PassArgumentsScreen extends StatelessWidget {
   static const routeName = '/passArguments';
 
@@ -507,7 +507,7 @@ class PassArgumentsScreen extends StatelessWidget {
 }
 ```
 `ExtractArgumentsScreen`의 경우 `build`메서드 안에 아래처럼 `PageRoute`로부터 `ScreenArguments` 객체를 받는 코딩이 있었는데 `PassArgumentsScreen`는 없다.  
-```py
+```js
 class ExtractArgumentsScreen extends StatelessWidget {
   static const routeName = '/extractArguments';
 
@@ -521,7 +521,7 @@ class ExtractArgumentsScreen extends StatelessWidget {
 
 하지만 `HomeScreen`에서는 똑같이 `Navigator.pushNamed()`매소드를 통해 `ScreenArguments`객체를 넘길것이다.  
 
-```py
+```js
 class HomeScreen extends StatelessWidget {
   ...
     ...
@@ -545,7 +545,7 @@ class HomeScreen extends StatelessWidget {
 
 물론 `routes`속성에서 `ModalRoute.of()`를 사용해 `PassArgumentsScreen`생성에 필요한 `ScreenArguments`객체를 받아 초기화 할 수 있다.  
 
-```py
+```js
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -569,7 +569,7 @@ class MyApp extends StatelessWidget {
 
 `onGenerateRoute`속은은 `RouteFactory` 클래스타입의 `MaterialApp`의 필드인데 `RouteSettings`를 필드로 가지고있다..  
 
-```py
+```js
 final RouteFactory onGenerateRoute
 ...
 Route RouteFactory (
@@ -578,7 +578,7 @@ Route RouteFactory (
 ```
 즉 `onGenerateRoute`속성을 통해 바로 `settings`을 가져올 수 있다는 뜻이다.  
 
-```py
+```js
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -604,7 +604,7 @@ class MyApp extends StatelessWidget {
 ```
 그럼 `onGenerateRoute`는 `PageRoute`가 생성되는 `Navigator.pus..()`메서드가 호출되면 무조건 호출되는지 궁금해 하나는 `routes: {}`속성에 하나는 `onGenerateRoute`속성을 통해 페이지를 생성해 보았는데 이미 매핑된 pageRoute는 `onGenerateRoute`를 호출하지 않는다.  
 
-```py
+```js
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
