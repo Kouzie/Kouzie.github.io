@@ -29,13 +29,13 @@ scaffold 의 edge에서 슬라이드 형식으로 위젯,
 다음 절차대로 Drawer를 만들수 있다함  
 
 ## 1. Create a Scaffold.     
-```js
+```dart
 Scaffold(
   drawer: // Add a Drawer here in the next step.
 );
 ```
 ## 2. Add a drawer.  
-```js
+```dart
 Scaffold(
   drawer: Drawer(
     child: // Populate the Drawer in the next step.
@@ -44,7 +44,7 @@ Scaffold(
 ```
 ## 3. Populate the drawer with items.  4. Close the drawer programmatically.  
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
@@ -117,7 +117,7 @@ class MyHomePage extends StatelessWidget {
 
 > ListTile: A single fixed-height row that typically contains some text as well as a leading or trailing icon.
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 void main() {

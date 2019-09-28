@@ -26,7 +26,7 @@ flutter 홈페이지의 cookbook을 따라서 코딩할 계획
 
 모든 코드는 cookbook에서 사용하였습니다.
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 main() {
@@ -86,7 +86,7 @@ go버튼을 클릭하면 아래 사진으로 이동
 React에서 영감을 받았다고 한다. Flutter에선 모든것이 위젯으로 이루어져 있고 위젯 상태가 변경되면 rebuild함으로 변경되었음을 표시한다.  
 텍스트 하나까지 위젯으로 이루어져 있기 때문에 렌더링 트리에서 최소한의 변경으로 상태를 변경할 수 있다(성능UP).  
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 void main() {
@@ -133,7 +133,7 @@ https://api.flutter.dev/flutter/widgets/StatelessWidget-class.html
 
 어디에도 의존관계가 없고 단순 정보 출력을 위해 사용되는 고정된 위젯이다.  
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 main() {
@@ -171,7 +171,7 @@ class GreenFrog extends StatelessWidget {
 
 `const` 생성자는 body를 가질 수 없다.  
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 main() {
@@ -211,7 +211,7 @@ Container 상속관계
 
 컨테이너는 이런 녀석이다.  
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 main() {
@@ -249,7 +249,7 @@ class Frog extends StatelessWidget {
 
 화면에 표시하고 싶은 컨테이너(`Widget`)을 생성, 
 컨테이너의 생성자는 아래처럼 생겼다.  
-```js
+```dart
 Container({
   Key key,
   this.alignment,
@@ -286,7 +286,7 @@ Container({
 `Container`에 대해 알았지만 Cookbook의 코드에서 반환하는 것은 `Container`가 아닌 `Scaffold`이다.
 
 
-```js
+```dart
 ...
 return Scaffold(
   appBar: AppBar(),
@@ -327,7 +327,7 @@ these elements는 스크린 혹은 페이지 를 뜻한다.
 
 즉 `Navigator`는 `push`, `pop`메서드를 사용해서 `Route` 객체를 스택처럼 관리한다.  
 
-```js
+```dart
 ...
 onPressed: () {
   //Navigator.of(context).push(_createRoute());
@@ -347,7 +347,7 @@ onPressed: () {
 `Navigator`에게 관리당하는 추상적 객체, 
 
 위의 `Route`객체를 반환하는 `_createRoute()`전역 메서드를 보자.  
-```js
+```dart
 Route _createRoute() {
   return PageRouteBuilder(
     pageBuilder: (context, animation, secondaryAnimation) {

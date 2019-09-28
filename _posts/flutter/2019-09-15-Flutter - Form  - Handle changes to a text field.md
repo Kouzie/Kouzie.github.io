@@ -23,7 +23,7 @@ toc: true
 
 TextField가 변경되었을 때 호출되는 콜백함수를 사용.  
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
@@ -98,7 +98,7 @@ I/flutter ( 6281): First text field: test
 
 그리고 이 컨트롤러를 `TextField`의 컨트롤러로 등록하면된다.  
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
@@ -186,7 +186,7 @@ I/flutter ( 6281): Second text field: test
 
 우선 이벤트를 위한 `FloatingButton`을 생성  
 
-```js
+```dart
 FloatingActionButton(
   onPressed: () {
     return showDialog(
@@ -205,7 +205,7 @@ FloatingActionButton(
 
 `onPressed` 속성을 보면 Dialog(모달)를 출력하는 `showDialog` 라는 전역? 함수가 있다.  
 
-```js
+```dart
 Future<T> showDialog <T>({
 @required BuildContext context,
 bool barrierDismissible: true,
@@ -226,7 +226,7 @@ WidgetBuilder builder
 
 버튼을 가지는 `AlertDialog`, 옵션을 가지는 `SimpleDialog` 이다.  
 
-```js
+```dart
 builder: (context) {
   return AlertDialog(
     // Retrieve the text the that user has entered by using the
@@ -244,7 +244,7 @@ builder: (context) {
   );
 },
 ```
-```js
+```dart
 builder: (BuildContext context) {
   return SimpleDialog(
     title: const Text('Select assignment'),
@@ -278,7 +278,7 @@ builder: (BuildContext context) {
 `content: Text(myController.text),`
 
 전체 코드  
-```js
+```dart
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());

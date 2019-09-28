@@ -35,7 +35,7 @@ toc: true
 
 사실 1, 2단계만 거쳐도 만들어지는 매우 간단한 위젯  
 
-```js
+```dart
 void main() => runApp(SnackBarDemo());
 
 class SnackBarDemo extends StatelessWidget {
@@ -56,7 +56,7 @@ class SnackBarDemo extends StatelessWidget {
 
 별도로 MyApp같은걸 만들지 말고 바로 Scaffold생성자로 home에 생성한다.  
 
-```js
+```dart
 class SnackBarPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -102,7 +102,7 @@ Scaffold 페이지 body부분은 위와같다.
 `Object > Diagnosticable > DiagnosticableTree > Widget > StatelessWidget > ScrollView > BoxScrollView > GridView`  
 
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 void main() {
@@ -180,7 +180,7 @@ class GridPage extends StatelessWidget {
 ## OrientationBuilder
 
 스크린 출력 모드에 따라 양식을 UI를 변경하려면 `OrientationBuilder`로 `GridView`를 만들어야 한다.
-```js
+```dart
 OrientationBuilder(
   builder: (context, orientation) {
     return GridView.count(
@@ -197,7 +197,7 @@ OrientationBuilder(
 
 다른 속성또한 이런식으로 변경이 가능.  
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 void main() {

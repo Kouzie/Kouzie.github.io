@@ -28,7 +28,7 @@ toc: true
 
 일단 제일 처음 제공되는 소스를 실행
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 main() {
@@ -121,7 +121,7 @@ class _DraggableCardState extends State<DraggableCard> {
 이를 위해 `State` 클래스에 `SingleTickerProviderStateMixin`를 추가하라고 한다.  
 `SingleTickerProviderStateMixin` 클래스는 애니메이션을 처리하기 위한 헬퍼 클래스이다.  
 
-```js
+```dart
 mixin SingleTickerProviderStateMixin<T extends StatefulWidget> on State<T> implements TickerProvider {
   ...
   ...
@@ -130,7 +130,7 @@ mixin SingleTickerProviderStateMixin<T extends StatefulWidget> on State<T> imple
 `SingleTickerProviderStateMixin`는 Dart의 `mixin`이라는 데이터 타입을 갖고있는데 코드 재사용을 위해 `extends`한 메서드에 `mixin`에 정의된 기능을 추가한다 생각하면 된다.  
 
 아래 코드를 보면 `State<DraggableCard>`에 mixin 객체가 추가된것을 볼 수 있다.  
-```js
+```dart
 class _DraggableCardState extends State<DraggableCard> with SingleTickerProviderStateMixin {
   AnimationController _controller;
 
@@ -173,7 +173,7 @@ Ticker는 매 Frame마다 콜백함수를 호출하고 그럼 함수를 등록�
 제스처를 통해 위젯을 움직이려면 `GestureDetector`가 필요하다.  
 
 
-```js
+```dart
 
 class _DraggableCardState extends State<DraggableCard> with SingleTickerProviderStateMixin {
   AnimationController _controller;
@@ -213,7 +213,7 @@ class _DraggableCardState extends State<DraggableCard> with SingleTickerProvider
 >   내부적으로 `static const Alignment center = Alignment(0.0, 0.0);` 정의되어 있고 0. 0은 사각형의 정 중앙, 좌/하 는 백분율로 -1, 우/상은 +1의 값을 지정하면 된다.  
 
 `GestureDetector`를 초기화 할떄 사용되는 생성자 매개변수는 아래와 같다.  
-```js
+```dart
 GestureDetector({Key key, Widget child, GestureTapDownCallback onTapDown, GestureTapUpCallback onTapUp, GestureTapCallback onTap, GestureTapCancelCallback onTapCancel, GestureTapDownCallback onSecondaryTapDown, GestureTapUpCallback onSecondaryTapUp, GestureTapCancelCallback onSecondaryTapCancel, GestureTapCallback onDoubleTap, GestureLongPressCallback onLongPress, GestureLongPressStartCallback onLongPressStart, GestureLongPressMoveUpdateCallback onLongPressMoveUpdate, GestureLongPressUpCallback onLongPressUp, GestureLongPressEndCallback onLongPressEnd, GestureDragDownCallback onVerticalDragDown, GestureDragStartCallback onVerticalDragStart, GestureDragUpdateCallback onVerticalDragUpdate, GestureDragEndCallback onVerticalDragEnd, GestureDragCancelCallback onVerticalDragCancel, GestureDragDownCallback onHorizontalDragDown, GestureDragStartCallback onHorizontalDragStart, GestureDragUpdateCallback onHorizontalDragUpdate, GestureDragEndCallback onHorizontalDragEnd, GestureDragCancelCallback onHorizontalDragCancel, GestureForcePressStartCallback onForcePressStart, GestureForcePressPeakCallback onForcePressPeak, GestureForcePressUpdateCallback onForcePressUpdate, GestureForcePressEndCallback onForcePressEnd, GestureDragDownCallback onPanDown, GestureDragStartCallback onPanStart, GestureDragUpdateCallback onPanUpdate, GestureDragEndCallback onPanEnd, GestureDragCancelCallback onPanCancel, GestureScaleStartCallback onScaleStart, GestureScaleUpdateCallback onScaleUpdate, GestureScaleEndCallback onScaleEnd, HitTestBehavior behavior, bool excludeFromSemantics: false, DragStartBehavior dragStartBehavior: DragStartBehavior.start })
 ```
 

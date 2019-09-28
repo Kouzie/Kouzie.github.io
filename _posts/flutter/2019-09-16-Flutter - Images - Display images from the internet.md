@@ -36,7 +36,7 @@ Text를 위한 여러 위젯이 있듯이 Image를 위한 위젯역시 많다.
 
 이미지를 Url로 네트워크로 가져오기 위한 생성자, 
 
-```js
+```dart
 Image.network(
   'https://picsum.photos/250?image=9',
 )
@@ -44,7 +44,7 @@ Image.network(
 
 `Image.network()`로 만들어진 이미지는 단순 출력용으로 사용되는 경우가 많다(애니메이션 처리가 안되고 캐싱을 통한 빠른 로딩 역시 안된다고 함)  
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
@@ -77,7 +77,7 @@ class MyApp extends StatelessWidget {
 이미지가 띄어지기 전 placeholder(로딩 효과)를 적용해보자.  
 
 
-```js
+```dart
 FadeInImage.memoryNetwork(
   placeholder: kTransparentImage,
   image: 'https://picsum.photos/250?image=9',
@@ -123,7 +123,7 @@ dev_dependencies:
 `placeholder: kTransparentImage`의 역할은 이미지가 띄어지기 전에 loading 표시를 하기위한 설정  
 
 메모리상에 `kTransparentImage`배열을 올려두고 사용하기 때문에 `FadeInImage.memoryNetwork`로 이미지 위젯을 만들고 `placeholder`속성을 처리하는 듯 하다.  
-```js
+```dart
 import 'package:flutter/material.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -183,7 +183,7 @@ assets:
 > `FadeInImage.assetNetwork`사용
 
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 void main() {

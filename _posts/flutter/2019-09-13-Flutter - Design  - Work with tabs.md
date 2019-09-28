@@ -44,7 +44,7 @@ toc: true
 
 ### 1. Create a TabController, Create the tabs.   
 
-```js
+```dart
 DefaultTabController(
   length: 3,
   child: Scaffold(
@@ -84,7 +84,7 @@ DefaultTabController(
 
 탭에 맞는 `TabBarView`(탭 뷰들)를 생성한다.  
 
-```js
+```dart
 body: TabBarView(
   children: [
     Icon(Icons.directions_car),
@@ -108,7 +108,7 @@ body: TabBarView(
 
 위에선 Icon 위젯을 View로 지정하였지만 아래처럼 `StatelessWidget` 클래스를 지정해도 된다.  
 
-```js
+```dart
 body: TabBarView(
   children:[
     Page1(),

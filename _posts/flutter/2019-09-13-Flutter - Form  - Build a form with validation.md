@@ -27,7 +27,7 @@ toc: true
 2. Add a TextFormField with validation logic.  
 3. Create a button to validate and submit the form.  
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 void main() {
@@ -88,7 +88,7 @@ class MyCustomFormState extends State<MyCustomForm> {
 
 Form을 만드는 것 까지는 위와 같고 안에 TextField를 넣으려면 `TextFormField`를 사용한다.  
 
-```js
+```dart
 TextFormField(
   decoration: InputDecoration(
       labelText: 'Enter your username'
@@ -112,7 +112,7 @@ TextFormField(
 
 이제 버튼을 만들고 버튼을 누르면 Form의 상태를 확인해 반환받은 경고문구를 출력할지, 해당 문구를 Submit할지 지정하는 코드를 작성하면 된다.  
 
-```js
+```dart
 RaisedButton(
   onPressed: () {
     if (_formKey.currentState.validate()) {
@@ -135,7 +135,7 @@ Form의 모든 필드값의 `validate`를 호출하여 값이 모든 필드의 �
 
 이제 Form, Textfield, Button을 각각 만들었다, 이 3개를 Form에 합쳐주기만 하면 된다.  
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 void main() {
@@ -223,7 +223,7 @@ Flutter는 2가지 텍스트 입력 폼을 제공한다.
 `TextField`에서 `decoration`속성을 통해 border난 기본 표시값등을 설정 가능하다.  
 > https://api.flutter.dev/flutter/material/TextField-class.html
 
-```js
+```dart
 TextField(
   obscureText: true,
   decoration: InputDecoration(
@@ -244,7 +244,7 @@ TextField(
 
 만약 단순히 TextField가 화면에 표시됨가 동시에 포커스를 맞추고 싶다면 생성시 `autofocus` 속성을 true로 초기화 하자.  
 
-```js
+```dart
 TextField(
   autofocus: true,
 );
@@ -256,7 +256,7 @@ TextField(
 
 포커스를 관리하고 싶은 `TextField`를 위한 `FocusNode`를 생성하고 `TextField`생성시에 `focusNode`속성으로 초기화 하면 된다.  
 
-```js
+```dart
 TextField(
   focusNode: myFocusNode,
 );
@@ -272,7 +272,7 @@ TextField(
 > https://flutter.dev/docs/cookbook/forms/focus
 
 위 사이트에서 제공하는 플로팅 버튼을 클릭하면 아래의 `TextField`로 포커싱 되도록 설정해보자.  
-```js
+```dart
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());

@@ -25,7 +25,7 @@ toc: true
 GridView를 사용하여 화면에 여러 위젯을 타일형태로 출력하였다.  
 `<Widget>[...]` 위젯 배열을 통해 `GridView`를 구성하였는데 `List.generate`를 통해서 위젯 배열을 생성가능하다.  
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 void main() {
@@ -68,7 +68,7 @@ class MyApp extends StatelessWidget {
 
 먼저 위젯으로 사용할 서로 다른 타입의 2개 클래스를 정의한다.  
 
-```js
+```dart
 // The base class for the different types of items the list can contain.
 abstract class ListItem {
   //아무것도 없음
@@ -86,7 +86,7 @@ class MessageItem implements ListItem {
 ```
 그리고 `List.generate(...)`메서드를 통해 `ListItem`배열을 생성하는데 
 
-```js
+```dart
 final items = List<ListItem>.generate(
   1200,
   (i) => i % 6 == 0
@@ -108,7 +108,7 @@ Flutter에서도 제너릭처럼 사용할 수 있다.
 기존에는 `ListView` 생성자를 통해 `children`속성에 `<Widget>[...]`을 지정하여 사용하였는데  
 `List.generate(...)`를 사용하려면 `ListView.builder()`를 사용하여 ListView에 사용할 `ListTile`(위젯) 배열을 만든다.  
 
-```js
+```dart
 ListView.builder(
   itemCount: items.length,
   itemBuilder: (context, index) {
@@ -133,7 +133,7 @@ ListView.builder(
 
 통합 코드  
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 abstract class ListItem {}
@@ -206,7 +206,7 @@ class MyApp extends StatelessWidget {
 
 `ListTile`은 `horizontal` 속성을 지원하지 않음으로 `Container`로 대체  
 
-```js
+```dart
 import 'package:flutter/material.dart';
 
 abstract class ListItem {}
@@ -280,7 +280,7 @@ class MyApp extends StatelessWidget {
 
 일반적인 `ListView`는 스크롤하면 `appBar`는 상단에 그대로 남아있지만 `CustomScrollView`는 `appBar`까지 스크롤 가능하다.  
 
-```js
+```dart
 Scaffold(
   body: CustomScrollView(
     slivers: <Widget>[]
@@ -292,7 +292,7 @@ Scaffold(
 내용물로 사용할 `List`역하을 하는 `SliverList` 를 요구한다.  
 > 자매품으로 `SliverGrid`기 있다.  
 
-```js
+```dart
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
