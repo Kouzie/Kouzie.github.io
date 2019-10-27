@@ -24,28 +24,29 @@ toc: true
 > https://shiro.apache.org/
 
 
-## Subject, SecurityManage, Realm
+## `Subject`, `SecurityManage`, `Realm`
 
 여기서부터는 Shiro 프레임워크에 중요한 세 가지 개념. `Subject`, `SecurityManage`, `Realm` 이라는 인터페이스로 제공된다.  
-스프링 시큐리티에도 Provider, Authentication, UserDetailManager 등과 같은 기능이 있듯 아파치 시로에도 비슷한 역할을 한다 생각하면 된다.  
+스프링 시큐리티에도 `Provider`, `Authentication`, `UserDetailManager` 등과 같은 기능이 있듯 아파치 시로에도 비슷한 역할을 한다 생각하면 된다.  
 
-> 출처: https://dololak.tistory.com/629, https://www.infoq.com/articles/apache-shiro/
+> 출처: https://dololak.tistory.com/629,  
+> https://www.infoq.com/articles/apache-shiro/
 
-### Subject
+### `Subject`
 
 현재 응용프로그램에 접속된 사용자(주체)를 뜻한다.  
-Session과 비슷한 객체로 Session을 기반으로 Subject를 만들고 더 많은 정보를 내포한다.  
+`Session`과 비슷한 객체로 `Session`을 기반으로 `Subject`를 만들고 더 많은 정보를 내포한다.  
 
 
-### SecurityManage
+### `SecurityManager`
 
-SecurityManager는 어플리케이션에 접속해 있는 모든 사용자를 관리하는 역할.  
+`SecurityManager`는 어플리케이션에 접속해 있는 모든 사용자를 관리하는 역할.  
 
-Subject를 만들고 관리하고 Shiro를 사용하기 위해 SecurityManage 우선 설정해야한다.  
+`Subject`를 만들고 관리하고 아파치 시로를 사용하기 위해 SecurityManage 우선 설정해야한다.  
 
 ### Realm
 
-shiro와 사용자 데이터 사이의 연결고리 역할, 사용자 데이터를 Realm에 설정하고 Realm을 통해 로그인 처리가 가능하다.  
+아파치 시로와 사용자 데이터 사이의 연결고리 역할, 사용자 데이터를 Realm에 설정하고 Realm을 통해 로그인 처리가 가능하다.  
 
 ## 전체적인 구조
 
@@ -55,26 +56,30 @@ shiro와 사용자 데이터 사이의 연결고리 역할, 사용자 데이터�
 실제 사용자가 로그인 요청(application code)을 하고 서버에선 `Subject`의 `login`메서드를 호출한다.  
 내부적으론 `SecurityManager`에 로직에 따라 진행되며 로그인에 필요한 정보는 `Realm`을 통해 얻는다.  
 
+`Realm`을 생성하기 위해선 DB, LDAP등에서 사용자 정보를 가져와야 하는데 이를 위해서 `Realm`의 여러 구현체를 사용하면 된다.  
+
+<br>  
+
 ![shiro2]({{ "/assets/2019/shiro2.png" | absolute_url }}){: .shadow}  
 
-그림과 같이 Security Manager는 시로의 핵심 기능 구현체로 Realm뿐 아니라 인증, 인가 구현체 또한 관리한다.
+그림과 같이 `SecurityManager`는 시로의 핵심 기능 구현체로 `Realm`뿐 아니라 **인증, 인가** 구현체 또한 관리한다.
 
 ### Authenticator (org.apache.shiro.authc.Authenticator) (인증)
 
-로그인과 같은 사용자 인증을 진행하는 구현체로 로그인 로직은 Authenticator에 의해 실행된다.  
+로그인과 같은 **사용자 인증**을 진행하는 구현체로, 로그인 로직은 `Authenticator`에 의해 실행된다.  
 `Realms`과 협력하여 사용자 데이터를 가져와 인증을 진행한다.  
 
 ### Authentication Strategy
 
-만약 로그인 과정이 여러단계(여러 Realm)을 통해 진행된다면 하나만 통과해도 진행 시킬것인지, 무조건 모두 통과해야 진행시킬 것인지 결정 가능하다.  
+만약 로그인 과정이 `Realm`구현체를 통해 가져온 데이터로 계정/비밀번호 인증 뿐 아니라 여러 단계로 진행된다면 하나만 통과해도 인증 할 것인지, 모두 통과해야 인증 할 것인지 결정 가능하다.  
 
 ### Authorizer (org.apache.shiro.authz.Authorizer) (인가)
 
-사용자 접근 제어를 관리하는 구현체, `Authenticator` 처럼 다른 구현체와 협력해 role, permission 정보를 가져와 작업한다.  
+사용자 접근 제어를 관리하는 구현체, 인증을 통과하면 해당 사용자를 접근허용할 API를 `Authenticator` 를 사용해  `role`, `permission` 정보를 가져와 작업한다. 이 과정에서 `Authorizer`를 비롯한 여러 다른 구현체와 협력하여 진행된다.  
 
-## shiro - pom.xml 설정
+## 아파치 시로 - pom.xml 설정
 
-스프링 부트에서 shiro를 사용하기위해 밑의 `dependency`추가
+스프링 부트에서 아파치 시로를 사용하기위해 밑의 `dependency`추가하자  
 
 
 ```xml
