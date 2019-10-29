@@ -31,19 +31,19 @@ toc: true
 
 `spring.profiles.active`속성을 통해 `java -jar`명령으로 쉽고 빠르게 다른 설정을 불러올 수 있도록 설정하자.  
 
-> 참고사항: Spring Boot 버전 -> 2.1.8.RELEASE, Spring Cloud 버전 -> Greenwich.SR3
+> 참고사항: Spring Boot 버전 -> `2.1.8.RELEASE`, Spring Cloud 버전 -> `Greenwich.SR3`
 
 ### 유레카 서버 설정
 
-3개의 서버가 공통적으로 사용하는 설정은 application.properties에 지정,  
-각 3개의 서버가 별도로 사용할 설정을 위한 설정파일을 3개 만들자.  
+3개의 유레카 서버가 공통적으로 사용하는 설정은 `application.properties`에 지정,  
+각 3개의 유레카 서버가 별도로 사용할 설정을 위한 설정파일을 3개 만들자.  
 
 `application-peer1.properties`  
 `application-peer2.properties`  
 `application-peer3.properties`  
 
 ```properties
-# application.properties 설정 내용
+# application.properties 설정 내용 - peer 공통 설정
 spring.application.name=demo_eureka_server
 spring.profiles.active=peer1
 # 유레가 서버의 보호모드를 off해 90초동안 인스턴스 유지를 없애고 eviction-interval-timer 기본값인 60초 동안기다리도록 설정
@@ -95,7 +95,7 @@ java -jar -Dspring.profiles.active=peer3 target/eurekaserver-0.0.1-SNAPSHOT.jar
 
 ### 유레카 클라이언트 설정
 
-클라이언트도 마찬가지로 3개 생성하기 때문에 공통적인 설정은 `application.properties`에, 별도 설정은 3개의 설정파일을 생성해 각각 지정한다.  
+유레카 클라이언트도 마찬가지로 3개 생성하기 때문에 공통적인 설정은 `application.properties`에, 별도 설정은 3개의 설정파일을 생성해 각각 지정한다.  
 ```properties
 # application.properties 설정 내용
 # default profile을 zone1로 지정
