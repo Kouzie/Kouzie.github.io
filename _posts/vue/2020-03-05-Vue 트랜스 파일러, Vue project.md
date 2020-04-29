@@ -19,7 +19,7 @@ toc: true
 
 ## 트랜스 파일러  
 
-대규모 에플리케이션을 개발하려면 단순 vue.js 라이브러리 참조가 아닌 `SPA(Single Page Application)` 구조의 프로젝트를 구축해야 한다.  
+대규모 에플리케이션을 개발하려면 단순 `vue.js` 라이브러리 참조가 아닌 `SPA(Single Page Application)` 구조의 프로젝트를 구축해야 한다.  
 
 `Vue Router`, `Vuex` 등 다양한 요소가 포함되는데 이를 사용하려면 `ES2015` 혹은 `Typescript`를 사용해야 한다.  
 
@@ -93,7 +93,7 @@ $ vue create test1
 자유롭게 플러그인 선택을 원한다면 `Manually select features` 를 선택  
 
 > `eslint`: `EcmaScript + Lint`입니다. `Lint`는 보푸라기라는 뜻인데 프로그래밍 쪽에서는 에러가 있는 코드에 표시를 달아놓는 것을 의미합니다.  
-> 즉 ESLint는 자바스크립트 문법 중 에러가 있는 곳에 표시를 달아놓는 도구를 의미합니다.  
+> 즉 `eslint`는 자바스크립트 문법 중 에러가 있는 곳에 표시를 달아놓는 도구를 의미합니다.  
 > https://www.zerocho.com/category/JavaScript/post/583231719a87ec001834a0f2  
 
 
@@ -112,7 +112,7 @@ Vue 프로젝트는 크게 3가지로 구성된다.
 `@vue/cli`, `@vue/cli-service`, `CLI 플러그인`
 
 
-### @vue/cli
+<!-- ### @vue/cli -->
 
 
 ### @vue/cli-service
@@ -133,6 +133,7 @@ cli 서비스는 프로젝트 생성시 개발 의존성으로 설치되는 구�
   ...
 }
 ```
+
 모두 `vue-cli-service`를 사용한다.  
 
 `yarn`, `npm` 과 같은 패키저를 통해 해당 명령을 포함시켜 수행한다.  
@@ -198,10 +199,10 @@ $ vue add router - @vue/cli-plugin-router 설치
 
 ## 단일파일 컴포넌트  
 
-이전장에서 `vue.js` 라이브러리를 통해 html팡리에서 Vue 컴포넌트를 사용하였는데 이는 전역 컴포넌트로 대규모 웹을 구성하기엔 부적절하다.  
+이전장에서 `vue.js` 라이브러리를 통해 `html` 파일에서 Vue 컴포넌트를 사용하였는데 이는 전역 컴포넌트로 대규모 웹을 구성하기엔 부적절하다.  
 
-이미 복잡한 html 파일에 `script`, `style`, `template` 태그가 범벅되는 것은 정신건강에 매우 해롭다.  
-또한 빌드과정이 없음으로 구형 브라우저에서 최신 ECMA스크립트를 사용할 수 없다. 
+이미 복잡한 `html` 파일에 `script`, `style`, `template` 태그가 범벅되는 것은 정신건강에 매우 해롭다.  
+또한 빌드과정이 없음으로 구형 브라우저에션 최신 ECMA스크립트를 사용할 수 없다. 
 
 Vue 프로젝트를 생성하고 어떤식으로 단일파일 컴포넌트가 구성되는지 간단히 알아보자.  
 
@@ -213,7 +214,7 @@ $ vue create todolistapp
 
 ![vue11]({{ "/assets/vue/vue11.png" | absolute_url }}){: .shadow}     
 
-크게 `<template>`, `<script>`. `<style>` 로 구성된다.  
+크게 `<template>`, `<script>`. `<style>` (머리 가슴 배)로 구성된다.  
 
 `Vue.component("id", {...})` 같은 Vue 컴포넌트 객체 생성코드도, `<templtae id="...">` 탬플릿 태그에 id 속성도 사용되지 않는다.  
 
@@ -228,11 +229,9 @@ export default {
 
 `components/HelloWorld.vue` 파일을 살펴보면 비슷하다.  
 
-![vue12]({{ "/assets/vue/vue12.png" | absolute_url }}){: .shadow}   
-
 똑같이 머리 가슴 배로 이루어지며 탬플릿에 외부에서 전달받은 `msg` 를 출력하는 컴포넌트이다.  
 
-그리고 서버가 최종적으로 실행하는 main.js 를 보면 Vue 인스턴스 생성후 `App.vue` 에 정의된 `App` 컴포넌트를 랜더링한다.  
+그리고 서버가 최종적으로 실행하는 `main.js` 를 보면 Vue 인스턴스 생성후 `App.vue` 에 정의된 `App` 컴포넌트를 랜더링한다.  
 
 ```js
 import Vue from 'vue'
