@@ -3,7 +3,7 @@ cache: bundler
 gemfile: Gemfile
 script:
   - bundle exec jekyll new --force --skip-bundle .
-  - bundle install
+  # - bundle install
 branches:
   only:
     # Change this to gh-pages if you're deploying using the gh-pages branch
