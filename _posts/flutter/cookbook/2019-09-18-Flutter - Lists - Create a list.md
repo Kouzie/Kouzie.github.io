@@ -72,7 +72,7 @@ Scaffold(
 )
 ```
 
-![flutter33]({{ "/assets/flutter/flutter33.png" | absolute_url }}){: width="400" }  
+![flutter33](/assets/flutter/flutter33.png){: width="400" }  
 
 
 # Create a horizontal list
@@ -176,7 +176,7 @@ List.generate(100, (index) {
 }
 ```
 
-![flutter18]({{ "/assets/flutter/flutter18.png" | absolute_url }}){: width="400" }  
+![flutter18](/assets/flutter/flutter18.png){: width="400" }  
 
 ## Create lists with different types of items
 
@@ -274,7 +274,7 @@ class MyApp extends StatelessWidget {
 } 
 ```
 
-![flutter21]({{ "/assets/flutter/flutter21.png" | absolute_url }}){: width="400" }  
+![flutter21](/assets/flutter/flutter21.png){: width="400" }  
 
 `SliverList`의 `delegate`속성으로 리스트 아이템들을 설정할 수 있다.  
 

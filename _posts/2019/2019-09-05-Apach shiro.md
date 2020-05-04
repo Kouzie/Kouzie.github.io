@@ -50,7 +50,7 @@ toc: true
 
 ## 전체적인 구조
 
-![shiro1]({{ "/assets/2019/shiro1.png" | absolute_url }}){: .shadow}  
+![shiro1](/assets/2019/shiro1.png){: .shadow}  
 
 전체적인 구조는 위 사진과 같다.  
 실제 사용자가 로그인 요청(application code)을 하고 서버에선 `Subject`의 `login`메서드를 호출한다.  
@@ -60,7 +60,7 @@ toc: true
 
 <br>  
 
-![shiro2]({{ "/assets/2019/shiro2.png" | absolute_url }}){: .shadow}  
+![shiro2](/assets/2019/shiro2.png){: .shadow}  
 
 그림과 같이 `SecurityManager`는 시로의 핵심 기능 구현체로 `Realm`뿐 아니라 **인증, 인가** 구현체 또한 관리한다.
 

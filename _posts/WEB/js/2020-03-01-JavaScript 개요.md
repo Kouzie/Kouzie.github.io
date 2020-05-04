@@ -361,11 +361,11 @@ JavaScript에선 이 프로토타입 객체를 통해 객체지향은 지원한�
 
 그렇다면 `function Person` 으로 생성된 인스턴스 `hong` 의 `proto` 객체는 어떤걸 가리키고 있는지 알아보자.  
 
-![js14-1]({{ "/assets/web/js/js14-1.png" | absolute_url }}){: .shadow}  
+![js14-1](/assets/web/js/js14-1.png){: .shadow}  
 
 `Person` 메서드 객체의 `prototype`객체를 `hong`의 `__proto__` 객체가 가리킨다.  
 
-![js14]({{ "/assets/web/js/js14.png" | absolute_url }}){: .shadow}  
+![js14](/assets/web/js/js14.png){: .shadow}  
 
 즉 `function Person(...) {...}` 이라는 메서드를 정의하면 위와 같은 그림이 형성된다.  
 그리고 `new Person(...)` 으로 생성된 모든 인스턴스는 `Person` 메서드 객체의 `prototype`을 `__proto__` 객체를 통해 공유하게 된다.  
@@ -387,7 +387,7 @@ var kim = {
 }
 console.log(kim.__proto__);
 ```
-![js15]({{ "/assets/web/js/js15.png" | absolute_url }}){: .shadow}  
+![js15](/assets/web/js/js15.png){: .shadow}  
 
 리터럴로 생성된 `kim`객체또한 `Object()`함수를 통해 만들어진 것이기 때문에 `__proto__`는 `Object` 생성자 메서드의 `prototype`을 가리킨다.  
 

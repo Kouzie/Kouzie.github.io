@@ -24,7 +24,7 @@ toc: true
 
 ## SnackBar
 
-![flutter7]({{ "/assets/flutter/flutter7.png" | absolute_url }}){: width="400" }  
+![flutter7](/assets/flutter/flutter7.png){: width="400" }  
 
 이렇게 생긴놈  
 
@@ -200,13 +200,13 @@ class GridPage extends StatelessWidget {
 }
 ```
 
-![flutter8]({{ "/assets/flutter/flutter8.png" | absolute_url }}){: width="400" }  
+![flutter8](/assets/flutter/flutter8.png){: width="400" }  
 
 * `crossAxisSp acing`: **좌우** 사이 공백
 * `mainAxisSpacing`: **상하** 사이 공백
 * `crossAxisCount`: 하나의 리스트에 표시할 **블럭 개수**
 
-![flutter29]({{ "/assets/flutter/flutter29.png" | absolute_url }}){: width="400" }  
+![flutter29](/assets/flutter/flutter29.png){: width="400" }  
 > https://developpaper.com/flutter-grid-layout-gridview/
 
 ## OrientationBuilder
@@ -308,4 +308,4 @@ class GridPage extends StatelessWidget {
 }
 ```
 
-![flutter30]({{ "/assets/flutter/flutter30.png" | absolute_url }}){: width="400" }  
+![flutter30](/assets/flutter/flutter30.png){: width="400" }  

@@ -86,7 +86,7 @@ class _DraggableCardState extends State<DraggableCard> {
 `PhysicsCardDragDemo`라는 `StatelessWidget`하위 클래스의 `body`속성으로 들어가고 생성자로 `FlutterLogo`를 넘긴다.
 
 
-![flutter5]({{ "/assets/flutter/flutter5.png" | absolute_url }}){: width="400" }  
+![flutter5](/assets/flutter/flutter5.png){: width="400" }  
 
 아직은 어떠한 동작도 하지 않는다.  
 

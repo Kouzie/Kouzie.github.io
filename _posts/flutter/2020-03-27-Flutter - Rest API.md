@@ -60,7 +60,7 @@ url을 입력하면 `Future<Response>` 데이터 타입을 반환한다.
 `Future<T>` class가 등장하는데 데이터를 위한 작은 선물상자로 생각하면 된다.  
 안에는 특정 `value`혹은 `error`가 있을 수 있다.  
 
-![flutter26]({{ "/assets/flutter/flutter26.png" | absolute_url }}){: width="400" }  
+![flutter26](/assets/flutter/flutter26.png){: width="400" }  
 
 `Future`는 위 3가지 상태를 가지며 코드가 아직 실행되지 않은 Uncompleted상태, 코드가 실행된 Complete상태가 있다.  
 

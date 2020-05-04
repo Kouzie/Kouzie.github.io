@@ -449,7 +449,7 @@ var optionObj = new Option("red", "red");
 bgcolor.options[1] = optionObj;
 ```
 
-![js4]({{ "/assets/web/js/js4.png" | absolute_url }}){: .shadow}  
+![js4](/assets/web/js/js4.png){: .shadow}  
 
 `bgcolor`의 두번째 `option`으로 red를 추가.  
 만약 삭제하고 싶다면 해당 `options[i]`를 `null`로 설정하면 된다.  

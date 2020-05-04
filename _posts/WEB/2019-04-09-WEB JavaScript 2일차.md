@@ -238,7 +238,7 @@ function rrn6_keydown() {
 </script>
 ```
 
-![js3]({{ "/assets/web/js/js3.png" | absolute_url }}){: .shadow}  
+![js3](/assets/web/js/js3.png){: .shadow}  
 
 out `div`가 자식으로 in `div`를 가지고 있다. 그리고 두 개의 `div`에 `click`이벤트 발생시 `alert`되도록 설정하였다.  
 

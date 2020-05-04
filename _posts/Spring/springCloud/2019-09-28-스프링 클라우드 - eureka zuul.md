@@ -19,7 +19,7 @@ toc: true
 
 ## 복제와 고가용성
 
-![eureka_tbd]({{ "/assets/2019/eureka_tbd.png" | absolute_url }}){: .shadow}  
+![eureka_tbd](/assets/2019/eureka_tbd.png){: .shadow}  
 
 위 사진을 보면 유레카 서비스 등록을 위한 서버가 3개  
 실제 서비스가 동작하는 유레카 클라이언트가 2개있다.  
@@ -202,7 +202,7 @@ public class EurekagatewayApplication {
 
 설정이 끝났으면 `java -jar` 명령으로 실행하며 된다. (설정파일이 하나기에 추가 속성은 없음)   
 
-![eureka_zuul]({{ "/assets/2019/eureka_zuul.png" | absolute_url }}){: .shadow}  
+![eureka_zuul](/assets/2019/eureka_zuul.png){: .shadow}  
 
 유레카 서버 대쉬보드로 접속하면 위와같이 3개의 server, 3개의 client가 동작중임을 알 수 있다.  
 > 8761, 8762, 8763 어디로 접속하던 상관 없음, http://localhost:8761/eureka/apps/ url로 접속하면 현재 어떤 서비스가 어디 IP에서 동작중임을 알 수 있음  
@@ -210,7 +210,7 @@ public class EurekagatewayApplication {
 
 `http://localhost:8765/api/client/ping` 에 접속하여 어떤 3개중 어떤 서비스가 호출되는지 확인한다.  
 
-![eureka_zuul2]({{ "/assets/2019/eureka_zuul2.gif" | absolute_url }}){: .shadow}  
+![eureka_zuul2](/assets/2019/eureka_zuul2.gif){: .shadow}  
 
 #### 서비스 라우팅 옵션
 

@@ -139,7 +139,7 @@ public class Socket {
 간단한 툴로 테스트해보자.  
 > `Advanced REST Client` : https://chrome.google.com/webstore/detail/advanced-rest-client/hgmloofddffdnphfgcellkdfbfbjeloo
 
-![springboot_websocket1]({{ "/assets/springboot/springboot_websocket1.png" | absolute_url }})
+![springboot_websocket1](/assets/springboot/springboot_websocket1.png)
 
 ```
 // log 출력물

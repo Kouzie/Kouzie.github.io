@@ -19,3 +19,10 @@ toc: true
 
 # gradle 
 
+
+> https://gradle.org/
+
+## dsl
+
+> https://docs.gradle.org/current/dsl/
+

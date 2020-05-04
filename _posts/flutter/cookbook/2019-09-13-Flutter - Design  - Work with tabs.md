@@ -89,7 +89,7 @@ Widget _buildAppBar() {
 > 생성자 매개변수로 `@required List<Widget> tabs` 를 요구하며 `controller` 속성를 통해 애니메이션 설정도 가능하다.  
 > https://api.flutter.dev/flutter/material/TabBar-class.html
 
-![flutter9]({{ "/assets/flutter/flutter9.png" | absolute_url }}){: width="400" }  
+![flutter9](/assets/flutter/flutter9.png){: width="400" }  
 
 `TabBar` 위젯 내부에 `onPressed()` 와 같은 별도의 이벤트 처리 속성, 메서드를 정의하지 않는다.
 
@@ -112,7 +112,7 @@ Widget _buildBody() {
 }
 ```
 
-![flutter10]({{ "/assets/flutter/flutter10.png" | absolute_url }}){: width="400" }  
+![flutter10](/assets/flutter/flutter10.png){: width="400" }  
 
 
 ### TabBarView

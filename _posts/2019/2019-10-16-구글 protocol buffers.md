@@ -101,7 +101,7 @@ https://stackoverflow.com/questions/31029675/protoc-not-generating-service-stub-
 
 ## grpc
 
-![grpc1]({{ "/assets/2019/grpc1.png" | absolute_url }}){: .shadow}  
+![grpc1](/assets/2019/grpc1.png){: .shadow}  
 
 위에서 `protoc`를 사용해 생성한 java 코드를 사용해 `grpc`라이브러를 사용해 데이터를 전송하기만 하면 된다.  
 
@@ -344,7 +344,7 @@ rpc RouteChat(stream RouteNote) returns (stream RouteNote) {}
 
 
 이상태에서 `target/generated-sources`폴더에 proto파일에 해당하는 java파일이 자동으로 생성되었는지 확인, 안됐다면 `mvn package`와 같은 명령을 실행하면 생길것이다.  
-![grpc2]({{ "/assets/2019/grpc2.png" | absolute_url }}){: .shadow}  
+![grpc2](/assets/2019/grpc2.png){: .shadow}  
 
 이제 서버는 클라이언트가 전송하는 값을 조작해 반환하고  
 클라이언트는 서버의 어떤 메서드를 호출하는지 지정하면 된다.  

@@ -21,11 +21,11 @@ toc: true
 
 서버에서 클라이언트에게 데이터를 전송하는 과정은 다음과 같다.  
 
-![image16]({{ "/assets/jsp/image16.png" | absolute_url }}){: .shadow}{: width="500px"}  
+![image16](/assets/jsp/image16.png){: .shadow}{: width="500px"}  
 
 클라이언트의 요청이 일어나면 jsp에서 만들어진 서블릿 객체가 `out.print()`메서드를 통해 버퍼에 출력할 값들을 저장한다.  
 
-![image15]({{ "/assets/jsp/image15.png" | absolute_url }}){: .shadow}{: width="500px"}    
+![image15](/assets/jsp/image15.png){: .shadow}{: width="500px"}    
 
 일정이상의 버퍼가 모두 차면 클라이언트의 브라우저로 전송되며 출력되게 된다.  
 
@@ -460,7 +460,7 @@ jsp에선 일반적으로 예외처리를 `try, catch`로 하지 않고 다른 *
 ...
 ```
 
-![image17]({{ "/assets/jsp/image17.png" | absolute_url }}){: .shadow}{: width="500px"}    
+![image17](/assets/jsp/image17.png){: .shadow}{: width="500px"}    
 
 `<jsp:include>`액션태그를 통해 `top.jsp`, `left.jsp`, `right.jsp`, `bottom.jsp` 그리고 현재 페이지인 `template.jsp`까지 출력값을 한데 모아 클라이언트에게 전송하게 된다.  
 

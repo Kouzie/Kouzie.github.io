@@ -26,7 +26,7 @@ toc: true
 
 ### DB구조
 
-![image1]({{ "/assets/project/survey/image1.png" | absolute_url }}){: .shadow}  
+![image1](/assets/project/survey/image1.png){: .shadow}  
 
 기본적으로 `DELETE ON CASCADE` 속성을 통해 자동 삭제 되도록 구성하였다.  
 
@@ -140,31 +140,31 @@ END;
 
 ### 회원가입
 
-![회원가입]({{ "/assets/project/survey/회원가입.gif" | absolute_url }}){: .shadow} 
+![회원가입](/assets/project/survey/회원가입.gif){: .shadow} 
 
 ### 설문등록
 
-![회원가입]({{ "/assets/project/survey/회원가입.gif" | absolute_url }}){: .shadow} 
+![회원가입](/assets/project/survey/회원가입.gif){: .shadow} 
 
 ### 댓글
 
-![댓글]({{ "/assets/project/survey/댓글.gif" | absolute_url }}){: .shadow} 
+![댓글](/assets/project/survey/댓글.gif){: .shadow} 
 
 ### 알림
 
-![알림]({{ "/assets/project/survey/알림.gif" | absolute_url }}){: .shadow} 
+![알림](/assets/project/survey/알림.gif){: .shadow} 
 
 ### 이메일로 비밀번호 변경
 
-![이메일전송]({{ "/assets/project/survey/이메일전송.gif" | absolute_url }}){: .shadow} 
+![이메일전송](/assets/project/survey/이메일전송.gif){: .shadow} 
 
 ### 관리자
 
-![관리자]({{ "/assets/project/survey/관리자2.gif" | absolute_url }}){: .shadow} 
+![관리자](/assets/project/survey/관리자2.gif){: .shadow} 
 
 ### 결과출력
 
-![결과]({{ "/assets/project/survey/결과.gif" | absolute_url }}){: .shadow} 
+![결과](/assets/project/survey/결과.gif){: .shadow} 
 
 
 

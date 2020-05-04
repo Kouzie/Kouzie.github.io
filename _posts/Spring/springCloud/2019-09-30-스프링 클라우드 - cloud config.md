@@ -70,7 +70,7 @@ public class CloudconfigApplication {
 
 우선 실행하기 전에 `cloud config`를 위한 `git repository`부터 생성   
 
-![cloud-config1]({{ "/assets/2019/cloud-config1.png" | absolute_url }}){: .shadow}  
+![cloud-config1](/assets/2019/cloud-config1.png){: .shadow}  
 
 총 6개의 서비스를 위한 설정파일을 생성하였다.  
 
@@ -143,9 +143,9 @@ server.port=8761
 
 유레카 서버를 실행하고 `cloud config`서버를 실행하면 유레카 서버에 서비스가 등록되고 다음 url을 통해 여러 설정정보를 가져올 수 있다.  
 
-![cloud-config2]({{ "/assets/2019/cloud-config2.png" | absolute_url }}){: .shadow}  
-![cloud-config3]({{ "/assets/2019/cloud-config3.png" | absolute_url }}){: .shadow}  
-![cloud-config4]({{ "/assets/2019/cloud-config4.png" | absolute_url }}){: .shadow}  
+![cloud-config2](/assets/2019/cloud-config2.png){: .shadow}  
+![cloud-config3](/assets/2019/cloud-config3.png){: .shadow}  
+![cloud-config4](/assets/2019/cloud-config4.png){: .shadow}  
 
 여기서 한가지 딜레마에 빠지게 되는데 `유레카 서버를 위한 설정은 어디서 가져오느냐` 이다.  
 만약 유레카 서버설정을 `cloud config`에서 가져오고 싶다면 `cloud config`를 유레카 클라이언트로 등록하지 않아야 한다.  

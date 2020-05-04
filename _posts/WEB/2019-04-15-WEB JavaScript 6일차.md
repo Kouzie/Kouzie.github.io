@@ -509,7 +509,7 @@ alert(counter2.value()); /* 0 */
 <button id="btn3">진행</button>
 ```
 
-![js10]({{ "/assets/web/js/js10.png" | absolute_url }}){: .shadow}{: .align-right}
+![js10](/assets/web/js/js10.png){: .shadow}{: .align-right}
 
 
 `setTimeout`메서드와 클로저를 사용해 각각의 프그레스바가 각각의 변수를 가지고 증가되도록 설정해보자.  
@@ -539,7 +539,7 @@ function progressBar(myBar) {
   }
 }
 ```
-![js11]({{ "/assets/web/js/js11.png" | absolute_url }}){: .shadow}{: .align-right}
+![js11](/assets/web/js/js11.png){: .shadow}{: .align-right}
 
 ## 프로토타입 ( Prototype )
 
@@ -577,7 +577,7 @@ hong.print();
 
 `__proto__`를 통해 만들어진 객체 또한 생성자 함수의 멤버 `prototype`객체에 접근 가능하다.  
 
-![js14]({{ "/assets/web/js/js14.png" | absolute_url }}){: .shadow}  
+![js14](/assets/web/js/js14.png){: .shadow}  
 
 ### Prototype Link
 
@@ -600,7 +600,7 @@ var kim = {
 }
 console.log(kim.__proto__);
 ```
-![js15]({{ "/assets/web/js/js15.png" | absolute_url }}){: .shadow}  
+![js15](/assets/web/js/js15.png){: .shadow}  
 
 리터럴로 생성된 `kim`객체또한 `Object()`함수를 통해 만들어진 것이기 때문에 `__proto__`는 Object의 `prototype`을 가리킨다.  
 

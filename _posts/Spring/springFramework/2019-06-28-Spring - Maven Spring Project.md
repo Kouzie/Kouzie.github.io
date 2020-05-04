@@ -31,14 +31,14 @@ toc: true
 이제 그럴필요 없이 **메이븐 웹 프로젝트**로 만들어보자.  
 
 프로젝트명은 `stsMVC1`로 설정  
-![image10]({{ "/assets/Spring/image10.png" | absolute_url }}){: .shadow}   
+![image10](/assets/Spring/image10.png){: .shadow}   
 
-![image11]({{ "/assets/Spring/image11.png" | absolute_url }}){: .shadow}   
+![image11](/assets/Spring/image11.png){: .shadow}   
 
 `Spring MVC Project` 선택후 진행,  
 
 그리고 최상위 패키지명을 적으라 하는데 도메인 명을 사용하는게 일반적이다. (도메인은 겹치지 않으니까...)
-![image12]({{ "/assets/Spring/image12.png" | absolute_url }}){: .shadow}   
+![image12](/assets/Spring/image12.png){: .shadow}   
 
 패키지명은 `org.sist.web`으로 설정  
 
@@ -57,9 +57,9 @@ toc: true
 
 프로젝트 완성이 끝나면 밑의 프로그레스 바에서 `중앙 Repository`에서 jar파일을 다운받고 있는 상황을 알 수 있다.  
 
-![image13]({{ "/assets/Spring/image13.png" | absolute_url }}){: .shadow}   
+![image13](/assets/Spring/image13.png){: .shadow}   
 
-![image14]({{ "/assets/Spring/image14.png" | absolute_url }}){: .shadow}   
+![image14](/assets/Spring/image14.png){: .shadow}   
 
 프로젝트 명 앞에 작게 `m` 알파벳이 붙어 있고  
 폴더 앞에 `s` 알바펫이 붙어있다.  
@@ -110,7 +110,7 @@ toc: true
 `<java-version>1.8</java-version>` 기존에 1.6이었던 자바 버전을 1.8로 변경후  
 프로젝트 -> 우클릭 -> properties에서 java버전을 변경 다음 사진과 같이 변경  
 
-![image15]({{ "/assets/Spring/image15.png" | absolute_url }}){: .shadow}   
+![image15](/assets/Spring/image15.png){: .shadow}   
 
 > `<org.springframework-version>`태그에 `3.1.1.RELEASE`로 설정된 정보를  `4.0.4.RELEASE`로 변경하면 jar파일들도 자동으로 `4.0.4`버전으로 변경된다.  
 
@@ -214,8 +214,8 @@ toc: true
 
 압축을 풀고 환경변수에 `maven` 실행 파일 위치를 환경변수로 등록
 
-![image16]({{ "/assets/Spring/image16.png" | absolute_url }}){: .shadow}    
-![image17]({{ "/assets/Spring/image17.png" | absolute_url }}){: .shadow}    
+![image16](/assets/Spring/image16.png){: .shadow}    
+![image17](/assets/Spring/image17.png){: .shadow}    
 
 경로설정이 잘 됐는지 확인을 위해 `mvn -version`명령어를 cmd에서 실행  
 ```
@@ -421,7 +421,7 @@ Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
 </dependency>
 ```
 
-![image18]({{ "/assets/Spring/image18.png" | absolute_url }}){: .shadow}   
+![image18](/assets/Spring/image18.png){: .shadow}   
 
 자동 추가됬다!  
 
@@ -500,9 +500,9 @@ Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
 
 `프로젝트 우클릭 -> Maven -> Add Dependency`를 통해서도 추가 가능하다.  
 
-![image19]({{ "/assets/Spring/image19.png" | absolute_url }}){: .shadow}  
+![image19](/assets/Spring/image19.png){: .shadow}  
 
-![image20]({{ "/assets/Spring/image19.png" | absolute_url }}){: .shadow}   
+![image20](/assets/Spring/image19.png){: .shadow}   
 
 
 ## 자주사용하는 어노테이션 목록

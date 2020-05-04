@@ -46,7 +46,7 @@ Using generated security password: 60e8b37d-147a-4174-9003-3ca02800aada
 컨트롤러와 뷰페이지 하나 생성후 접근해보자.   
 아래의 이미지처럼 로그인 페이지가 생성된다.  
 
-![springboot_security1]({{ "/assets/springboot/springboot_security1.png" | absolute_url }}){: .shadow}  
+![springboot_security1](/assets/springboot/springboot_security1.png){: .shadow}  
 
 아이디에는 `user`, 비밀번호에는 위에 출력된 `security password` 를 입력해야한다.  
 
@@ -383,7 +383,7 @@ public void list(
 
 ```
 
-![springboot_security2]({{ "/assets/springboot/springboot_security2.png" | absolute_url }}){: .shadow}  
+![springboot_security2](/assets/springboot/springboot_security2.png){: .shadow}  
 
 
 > `Role`(역할) 과 `Authority`(권한): 스프링 프레임워크에선 둘의 기능은 같다. 하지만 다른 프레임워크에선 다르게 쓰이는 용어일 수 있다. 
@@ -687,7 +687,7 @@ Rest API 를 사용하는 클라이언트가 `Session`/`Cookie` 시스템을 갖
 
 ### JWT 구조
 
-![jwt1]({{ "/assets/2019/jwt1.png" | absolute_url }}){: .shadow}  
+![jwt1](/assets/2019/jwt1.png){: .shadow}  
 
 그림처럼 3부분으로 나뉜다.  
 
@@ -696,7 +696,7 @@ Rest API 를 사용하는 클라이언트가 `Session`/`Cookie` 시스템을 갖
 `Header`와 `Payload`는 단순 `Base64`로 인코딩된 문자열로 아래같은 사이트에서 디코딩하면 확인할 수 있다.  
 > https://www.base64decode.org/  
 
-![jwt2]({{ "/assets/2019/jwt2.png" | absolute_url }}){: .shadow}  
+![jwt2](/assets/2019/jwt2.png){: .shadow}  
 
 최종적인 결과 : `Header + "." + Payload + "." + Signature`
 
@@ -713,7 +713,7 @@ Rest API 를 사용하는 클라이언트가 `Session`/`Cookie` 시스템을 갖
 
 전체적은 구조는 아래 사진과 같다.  
 
-![springboot_security3]({{ "/assets/springboot/springboot_security3.png" | absolute_url }}){: .shadow}  
+![springboot_security3](/assets/springboot/springboot_security3.png){: .shadow}  
 
 1. `/authenticate` url 로 `username`, `password` 정보와 함께 `jwt` 토큰 요청  
 2. `username`, `password` 검사후 `jwt` 토큰 생성 및 전달  
@@ -734,7 +734,7 @@ Rest API 를 사용하는 클라이언트가 `Session`/`Cookie` 시스템을 갖
 
 로그인시 jwt 토큰을 생성 및 반환하는 구조는 아래 사진과 같다.   
 
-![springboot_security4]({{ "/assets/springboot/springboot_security4.png" | absolute_url }}){: .shadow}   
+![springboot_security4](/assets/springboot/springboot_security4.png){: .shadow}   
 
 1. `/authenticate` url 로 `username`, `password` 정보와 함께 `jwt` 토큰 요청  
 2. 이미 토큰 데이터를 가지고 있지 않은지 확인 

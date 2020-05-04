@@ -42,7 +42,7 @@ $ docker run -d -p 8080:8080 -p 50000:50000 --name myjenkins jenkins/jenkins
 
 다음과 같이 `docker`가 실행중인지 확인 후  
 
-![jenkins1]({{ "/assets/2019/jenkins1.png" | absolute_url }})   
+![jenkins1](/assets/2019/jenkins1.png)   
 
 ```
 $ docker exec -it -u root myjenkins /bin/bash
@@ -89,7 +89,7 @@ jenkins설정에서 ssh를 등록하면 빌드 결과물 뿐만 아니라 기존
 
 `jenkins관리 -> 시스템 관리`에서 다음과 같이 ssh 서버 설정  
 
-![jenkinsssh]({{ "/assets/2019/jenkins_ssh.png" | absolute_url }}){: .shadow}  
+![jenkinsssh](/assets/2019/jenkins_ssh.png){: .shadow}  
 
 id/pw로 접속이 가능하고 Remote Directory는 원격서버의 기본 디렉토리 위치를 지정할 수 있다. 
 
@@ -98,10 +98,10 @@ id/pw로 접속이 가능하고 Remote Directory는 원격서버의 기본 디�
 이제 Git에 설정한 프로젝트를 기준으로 자동 빌드할 item만 추가하면 된다.  
 
 좌측의 새로운 item 선택후 이름 설정  
-![jenkins_add1]({{ "/assets/2019/jenkins_add1.png" | absolute_url }}){: .shadow}  
+![jenkins_add1](/assets/2019/jenkins_add1.png){: .shadow}  
 
 general부분은 굳이 적을 필요없다(단순 설명)  
-![jenkins_add2]({{ "/assets/2019/jenkins_add2.png" | absolute_url }}){: .shadow}  
+![jenkins_add2](/assets/2019/jenkins_add2.png){: .shadow}  
 
 소스코드 관리에서 깃허브 주소와 계정(id와 pw가 설정된) 정보를 지정하고 진행하면 된다.  
 
@@ -110,11 +110,11 @@ general부분은 굳이 적을 필요없다(단순 설명)
 젠킨스 재실행 명령은 웹브라우저에서 `http://localhost:8080/restart` 처럼 주소 바로 뒤에 `/restart` 입력  
 
 
-![jenkins_add3]({{ "/assets/2019/jenkins_add3.png" | absolute_url }}){: .shadow}  
+![jenkins_add3](/assets/2019/jenkins_add3.png){: .shadow}  
 
-![jenkins_add4]({{ "/assets/2019/jenkins_add4.png" | absolute_url }}){: .shadow}  
+![jenkins_add4](/assets/2019/jenkins_add4.png){: .shadow}  
 
-![jenkins_add5]({{ "/assets/2019/jenkins_add5.png" | absolute_url }}){: .shadow}  
+![jenkins_add5](/assets/2019/jenkins_add5.png){: .shadow}  
 
 
 ## yona

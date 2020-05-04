@@ -61,7 +61,7 @@ class MyApp extends StatelessWidget {
 }
 ```
 
-![flutter16]({{ "/assets/flutter/flutter16.png" | absolute_url }}){: width="400" }  
+![flutter16](/assets/flutter/flutter16.png){: width="400" }  
 
 
 # Fade in images with a placeholder

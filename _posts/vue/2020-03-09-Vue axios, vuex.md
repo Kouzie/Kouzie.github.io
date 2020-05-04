@@ -39,7 +39,7 @@ $ yarn add axios
 
 일반적으로 vue 같은 클라이언트 서버는 단독으로 데이터를 출력하기 보단 별도의 서비스 제공자와 협력하여 클라이언트에게 데이터를 뿌리기 때문에 `CORS` 에러가 발생할 수 있다.  
 
-![vue15]({{ "/assets/vue/vue15.png" | absolute_url }}){: .shadow}   
+![vue15](/assets/vue/vue15.png){: .shadow}   
 
 > `Cross Origin Resource Sharing`(교차 출처 리소스 공유): 한 출처에서 실행 중인 웹 애플리케이션이 다른 출처의 선택한 자원에 접근할 수 있는 권한을 부여하도록 브라우저에 알려주는 체제. 
 > https://developer.mozilla.org/ko/docs/Web/HTTP/CORS
@@ -199,7 +199,7 @@ $ yarn add vuex
 
 `Vuex`의 아키텍처  
 
-![vue14]({{ "/assets/vue/vue14.png" | absolute_url }}){: .shadow}   
+![vue14](/assets/vue/vue14.png){: .shadow}   
 
 이벤트 발생에서 데이터 흐름을 보면 모두 한방향으로만 흐른다.  
 
@@ -443,7 +443,7 @@ methods: {
 
 정의된 `mutations` 내부 메서드들은 `actions` 에서 호출된다.
 
-![vue16]({{ "/assets/vue/vue16.png" | absolute_url }}){: .shadow}   
+![vue16](/assets/vue/vue16.png){: .shadow}   
 
 최종적으로 위와 같은 형식을 갖춘다.  
 
@@ -603,7 +603,7 @@ methods: {
 
 ### Module
 
-![vue17]({{ "/assets/vue/vue17.png" | absolute_url }}){: .shadow}   
+![vue17](/assets/vue/vue17.png){: .shadow}   
 
 > https://vuex.vuejs.org/kr/guide/modules.html
 

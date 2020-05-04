@@ -301,7 +301,7 @@ $ htpasswd -Bbn newid newpw > htpasswd
 > https://cloud.google.com/container-registry/docs/pushing-and-pulling?hl=ko
 
 gcp에서 프로젝트를 하나 생성해보자.  
-![docker14]({{ "/assets/2019/docker14.png" | absolute_url }}){: .shadow}  
+![docker14](/assets/2019/docker14.png){: .shadow}  
 
 gcp에서 프로젝트를 생성하면 다음과 같이 projectID가 랜덤으로 생성되는데 gcp에 올릴때 도커 이미지 명명규칙으로 저 문자열을 사용해야한다.    
 
@@ -715,7 +715,7 @@ CMD ["python", "/opt/imageview/app.py"]
 
 `docker-compose up` 실행, 실행하는 주소로 접속해보면 그림처럼 출력된다.  
 
-![docker13]({{ "/assets/2019/docker13.png" | absolute_url }}){: .shadow}  
+![docker13](/assets/2019/docker13.png){: .shadow}  
 
 ## docker-compose 상태 확인  
 
@@ -820,7 +820,7 @@ ubuntu:14.04 \
 /bin/sh -c "while true; do echo hello world; sleep 2; done"
 ```
 
-![dockercompose1]({{ "/assets/2019/dockercompose1.png" | absolute_url }}){: .shadow}  
+![dockercompose1](/assets/2019/dockercompose1.png){: .shadow}  
 
 
 각 `swarm-worker`와 `swarm-manager`위에서 동작하는 ubuntu서비스와 모니터링 서비스가 동작중임을 알 수 있다.  
@@ -855,7 +855,7 @@ docker service create --name myweb \
 nginx:1.10
 ```
 
-![dockercompose2]({{ "/assets/2019/dockercompose2.png" | absolute_url }}){: .shadow}  
+![dockercompose2](/assets/2019/dockercompose2.png){: .shadow}  
 
 실행은 `swarm-manager`에서 했지만 실제 동작은 `worker`에서 동작된다.  
 컨테이너 수에 맞게 각각 하나씩 실행된다.  
@@ -863,7 +863,7 @@ nginx:1.10
 서비스 유지 개수를 2개에서 5개로 늘려보자.  
 `$ docker service scale myweb=5`
 
-![dockercompose3]({{ "/assets/2019/dockercompose3.png" | absolute_url }}){: .shadow}  
+![dockercompose3](/assets/2019/dockercompose3.png){: .shadow}  
 
 myweb을 5개 띄우게 되면 기존 2개에 3개가 추가로 더 가동된다.  
 
@@ -880,7 +880,7 @@ docker service create --name global_myweb \
 nginx
 ```
 기존 myweb 5개에 global_myweb이 3개 추가로 실행되었다.  
-![dockercompose4]({{ "/assets/2019/dockercompose4.png" | absolute_url }}){: .shadow}  
+![dockercompose4](/assets/2019/dockercompose4.png){: .shadow}  
 
 (`docker service rm global_myweb` 으로 다시 삭제하자 )
 
@@ -888,7 +888,7 @@ nginx
 위에서 이미 myweb서비스의 scale을 최소 5개로 설정하였는데 이상황에서 `swarm-worker1`을 멈춰보자.  
 
 자동으로 하나씩 추가된다.   
-![dockercompose5]({{ "/assets/2019/dockercompose5.png" | absolute_url }}){: .shadow}  
+![dockercompose5](/assets/2019/dockercompose5.png){: .shadow}  
 
 ## docker swarm - Rolling update  
 

@@ -46,7 +46,7 @@ class HomeScreen extends StatelessWidget {
   }
 }
 ```
-![flutter25]({{ "/assets/flutter/flutter25.png" | absolute_url }}){: width="400" }  
+![flutter25](/assets/flutter/flutter25.png){: width="400" }  
 
 ## 2. Add a button that launches the selection screen
 
@@ -80,7 +80,7 @@ class SelectionButton extends StatelessWidget {
 
 ## 3. Show the selection screen with two buttons
 
-![flutter24]({{ "/assets/flutter/flutter24.png" | absolute_url }}){: width="400" }  
+![flutter24](/assets/flutter/flutter24.png){: width="400" }  
 
 `SelectionScreen`는 위처럼 버튼 2개를 가진 페이지.  
 

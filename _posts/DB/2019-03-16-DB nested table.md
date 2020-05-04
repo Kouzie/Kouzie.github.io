@@ -130,16 +130,16 @@ type으로 정의한 collection을 사용할 때에는 아무리 안에 들어�
 > <a href="http://www.juso.go.kr/addrlink/addressBuildDevNew.do?menu=geodata">http://www.juso.go.kr/addrlink/addressBuildDevNew.do?menu=geodata</a>
 
 `nested table Collection`을 위한 type정의    
-![image21]({{ "/assets/project/dbproject/image21.png" | absolute_url }}){: .shadow}  
+![image21](/assets/project/dbproject/image21.png){: .shadow}  
 
 검색 기준 위치를 같는 `Collection` 객체 생성  
-![image22]({{ "/assets/project/dbproject/image22.png" | absolute_url }}){: .shadow}  
-![image24]({{ "/assets/project/dbproject/image24.png" | absolute_url }}){: .shadow}  
+![image22](/assets/project/dbproject/image22.png){: .shadow}  
+![image24](/assets/project/dbproject/image24.png){: .shadow}  
 
 조회한 정보를 `Collection` 객체에 저장 및 출력  
-![image25]({{ "/assets/project/dbproject/image25.png" | absolute_url }}){: .shadow}  
-![image26]({{ "/assets/project/dbproject/image26.png" | absolute_url }}){: .shadow}  
-![image27]({{ "/assets/project/dbproject/image27.png" | absolute_url }}){: .shadow}  
+![image25](/assets/project/dbproject/image25.png){: .shadow}  
+![image26](/assets/project/dbproject/image26.png){: .shadow}  
+![image27](/assets/project/dbproject/image27.png){: .shadow}  
 
 
 

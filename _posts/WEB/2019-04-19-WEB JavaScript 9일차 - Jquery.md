@@ -879,7 +879,7 @@ span {
   </div>
 </div>
 ```
-![js16]({{ "/assets/web/js/js16.png" | absolute_url }}){: .shadow}{: width="300"}
+![js16](/assets/web/js/js16.png){: .shadow}{: width="300"}
 
 
 ### parent(), parents(), parentsUntil()
@@ -891,7 +891,7 @@ $("span").css("border-color", "red")
 	"border": "solid 2px blue"
 }) */
 ```
-![js17]({{ "/assets/web/js/js17.png" | absolute_url }}){: .shadow}{: width="300"}
+![js17](/assets/web/js/js17.png){: .shadow}{: width="300"}
 
 
 `parents()`메서드는 모든 부모(상위)태그를 가리킨다.  
@@ -901,7 +901,7 @@ $("span").css("border-color", "red")
 	"border": "solid 2px blue"
 })
 ```
-![js18]({{ "/assets/web/js/js18.png" | absolute_url }}){: .shadow}{: width="300"}
+![js18](/assets/web/js/js18.png){: .shadow}{: width="300"}
 
 
 `body`, `html`태그까지도 가리키기 때문에 조절이 필요하다.  
@@ -911,7 +911,7 @@ $("span").css("border-color", "red")
 	"border": "solid 2px blue"
 })
 ```
-![js19]({{ "/assets/web/js/js19.png" | absolute_url }}){: .shadow}{: width="300"}
+![js19](/assets/web/js/js19.png){: .shadow}{: width="300"}
 
 이런식으로 `parents(selector)` 매개변수에 선택자를 주어 해당 태그만 선택할 수 있다.  
 
@@ -924,7 +924,7 @@ $("span").css("border-color", "red")
   "border": "solid 2px blue"
 });
 ```
-![js20]({{ "/assets/web/js/js20.png" | absolute_url }}){: .shadow}{: width="300"}
+![js20](/assets/web/js/js20.png){: .shadow}{: width="300"}
 
 <br><br>
 
@@ -973,7 +973,7 @@ div *{
   <p>p</p>
 </div>
 ```
-![js21]({{ "/assets/web/js/js21.png" | absolute_url }}){: .shadow}{: width="300"}
+![js21](/assets/web/js/js21.png){: .shadow}{: width="300"}
 
 
 
@@ -983,7 +983,7 @@ $("h2").siblings().css({ //모든 형제객체 가져옴
   "border-color": "red"
 })
 ```
-![js22]({{ "/assets/web/js/js22.png" | absolute_url }}){: .shadow}{: width="300"}
+![js22](/assets/web/js/js22.png){: .shadow}{: width="300"}
 
 물론 매개변수로 선택자를 지정 가능하다.  
 ```js
@@ -1001,7 +1001,7 @@ $("h2").prev().css({ //앞의 형제
   "border-color": "blue"
 })
 ```
-![js23]({{ "/assets/web/js/js23.png" | absolute_url }}){: .shadow}{: width="300"}
+![js23](/assets/web/js/js23.png){: .shadow}{: width="300"}
 
 `nextAll()`과 `prevAll()`은 앞, 뒤의 모든 형제 객체를 선택한다.  
 ```js
@@ -1012,7 +1012,7 @@ $("h2").prevAll().css({ //앞의 모든 형제
   "border-color": "blue"
 })
 ```
-![js24]({{ "/assets/web/js/js24.png" | absolute_url }}){: .shadow}{: width="300"}
+![js24](/assets/web/js/js24.png){: .shadow}{: width="300"}
 
 `nextUntil()`과 `prevUntil()`메서드도 있으니 참고할 수 있도록 하자.  
 > https://api.jquery.com/category/traversing/tree-traversal/

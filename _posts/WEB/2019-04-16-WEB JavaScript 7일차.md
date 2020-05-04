@@ -149,7 +149,7 @@ jquery로 간단하게 구현할 수 있지만 JavaScript를 사용해 구현해
 </div>
 ```
 
-![js12]({{ "/assets/web/js/js12.png" | absolute_url }}){: .shadow}{: .align-right}
+![js12](/assets/web/js/js12.png){: .shadow}{: .align-right}
 
 위와같은 div 태그를 생성후 `myDivHeader`를 클릭후 드래그하면 그대로 이동시키는 함수를 만들자.  
 

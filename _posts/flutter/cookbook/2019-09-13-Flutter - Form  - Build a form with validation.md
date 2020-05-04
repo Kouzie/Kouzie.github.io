@@ -96,11 +96,11 @@ Widget buildFormBody(_formKey, context) {
 }
 ```
 
-![flutter11]({{ "/assets/flutter/flutter11.png" | absolute_url }}){: width="400" }  
+![flutter11](/assets/flutter/flutter11.png){: width="400" }  
 
 `validator` 반환값이 있다면 유효하지 않은것으로 간주하고 반환값으로 에러메세지를 출려한다.   
 
-![flutter31]({{ "/assets/flutter/flutter31.png" | absolute_url }}){: width="400" }  
+![flutter31](/assets/flutter/flutter31.png){: width="400" }  
 
 ## 3. Create a button to validate and submit the form.  
 
@@ -213,7 +213,7 @@ class _MyCustomFormState extends State<MyCustomForm> {
 
 `TextField`에 변화가 생길때 `onChanged`가 호출되고 `text`파라미터에 `TextField`의 `value`가 들어온다.  
 
-![flutter32]({{ "/assets/flutter/flutter32.png" | absolute_url }}){: width="400" }  
+![flutter32](/assets/flutter/flutter32.png){: width="400" }  
 
 
 `print` 함수로 아래 문구처럼 출력됨  

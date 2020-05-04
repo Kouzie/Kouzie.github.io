@@ -212,7 +212,7 @@ $ vue create todolistapp
 
 생성된 `App.vue` 확인  
 
-![vue11]({{ "/assets/vue/vue11.png" | absolute_url }}){: .shadow}     
+![vue11](/assets/vue/vue11.png){: .shadow}     
 
 크게 `<template>`, `<script>`. `<style>` (머리 가슴 배)로 구성된다.  
 

@@ -178,7 +178,7 @@ html출력해주는 내장객체, 함수 사용
 **브라우저 콘솔**에 출력(디버깅 용도로 자주 사용)
 `console.log("출력문자열")`처럼 사용한다.  
 
-![js1]({{ "/assets/web/js/js1.png" | absolute_url }}){: .shadow}  
+![js1](/assets/web/js/js1.png){: .shadow}  
 
 <br><br>
 

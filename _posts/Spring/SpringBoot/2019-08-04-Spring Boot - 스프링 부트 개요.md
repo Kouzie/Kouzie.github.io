@@ -29,7 +29,7 @@ toc: true
 
 자주 사용하는 다음 6개의 라이브러리는 추가하고 만들도록 하자.(메이븐으로 설정)  
 
-![springboot1_0]({{ "/assets/springboot/springboot1_0.png" | absolute_url }}){: .shadow}   
+![springboot1_0](/assets/springboot/springboot1_0.png){: .shadow}   
 
 `Spring Boot Devtools` 는 코드 변경과 동시에 톰켓 재실행을 설정할 수 있다. 
 

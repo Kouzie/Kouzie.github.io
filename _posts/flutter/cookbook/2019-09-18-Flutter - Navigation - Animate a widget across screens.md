@@ -365,7 +365,7 @@ Navigator.pushNamed(
 );
 ```
 
-![flutter23]({{ "/assets/flutter/flutter23.png" | absolute_url }}){: width="400" }  
+![flutter23](/assets/flutter/flutter23.png){: width="400" }  
 
 ### onGenerateRoute  
 

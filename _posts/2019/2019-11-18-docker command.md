@@ -23,7 +23,7 @@ toc: true
 리눅스에서 이를 설정하려면 이미지부터 직접만들고 힘들고 번거러움 설정 작업을 해야하는데 
 docker엔진이 이를 포함하고 있고 간단한 docker명령어 몇개로 조작 가능하다!   
 
-![docker3]({{ "/assets/2019/docker3.png" | absolute_url }}){: .shadow}  
+![docker3](/assets/2019/docker3.png){: .shadow}  
 
 도커와 기존 가상 서비스와의 차이는 `guestOS`필요 여부, 커널의 존재 여부이다.  
 
@@ -31,7 +31,7 @@ docker엔진이 이를 포함하고 있고 간단한 docker명령어 몇개로 �
 
 docker의 경우 **`hostOS`의 자원과 커널을 공유**하기에 별도의 `guest OS`를 설치할 필요가 업다.  
 
-![docker2]({{ "/assets/2019/docker2.png" | absolute_url }}){: .shadow}  
+![docker2](/assets/2019/docker2.png){: .shadow}  
 
 어쨋건 docker로 `db`, `webserver`, `elk`와 같은 서비스를 설치하던 `centOS`와 같은 같은 OS이미지를 설치하던 해당 컨테이너에서 동작하는  OS이미지가 있긴 있다.  
 단 해당 이미지의 kernal이 별도로 설치되는 것이 아닌 `hostOS`의 커널로 실행된다.  
@@ -93,7 +93,7 @@ Server: Docker Engine - Community
 
 docker의 `life cycle`은 아래와 같다.  
 
-![docker1]({{ "/assets/2019/docker1.png" | absolute_url }}){: .shadow}  
+![docker1](/assets/2019/docker1.png){: .shadow}  
 
 해당 기능을 모두 `docker command`로 수행할수 있다.  
 
@@ -188,7 +188,7 @@ $ docker image push kouzie/exam
   
 명령이 끝나면 `docker hub` 페이지에 아래와 같이 `repository`가 생성되었는지 확인  
 
-![docker6]({{ "/assets/2019/docker6.png" | absolute_url }}){: .shadow}  
+![docker6](/assets/2019/docker6.png){: .shadow}  
 
 
 ### docker container commit
@@ -485,7 +485,7 @@ google/cadvisor:latest
 
 아래와 같은 실시간 모니터링 화면이 출력된다.  
 
-![docker5]({{ "/assets/2019/docker5.png" | absolute_url }}){: .shadow}  
+![docker5](/assets/2019/docker5.png){: .shadow}  
 
 `80`포트로 계속 새로고침을 누르며 `webserver`컨테이너가 사용하는 `cpu`, `memory`, `network` 사용량 변화를 확인  
 
@@ -494,7 +494,7 @@ google/cadvisor:latest
 `docker engine`을 설치하면 가상 브릿지 네트워크가 생긴다(`docker0`).  
 `virtual ethernet bridge`라 칭한다.  
 
-![docker4]({{ "/assets/2019/docker4.png" | absolute_url }}){: .shadow}  
+![docker4](/assets/2019/docker4.png){: .shadow}  
 
 컨테이너를 가동하면 `vethxxxxxxx`형태의 컨테이너 내부의 인터페이스(`eth0`)와 통신하는 가상의 `peer`가 생성되고 게이트웨이와 통신하는 접점역할을 수행한다  
 (direct 케이블 연결 형식의 격리된 네트워크 공간을 제공).  
@@ -891,12 +891,12 @@ $ sudo iptraf-ng
 
 실행시키면 다음과 같은 화면이 출력
 
-![docker7]({{ "/assets/2019/docker7.png" | absolute_url }})  
+![docker7](/assets/2019/docker7.png)  
 
 
 `container -> 실제OS`(mac혹은 윈도우)로 ping 요청시 어떻게 출력되는지 확인  
 
-![docker8]({{ "/assets/2019/docker8.png" | absolute_url }})  
+![docker8](/assets/2019/docker8.png)  
 
 ### memory, cpu 모니터링, 제한  
 
@@ -947,7 +947,7 @@ cpu모니터링을 `htop`을 통해 진행하자.
 
 아무것도 실행하고 있지 않을때 cpu코어 2개와 4g만큼의 메모리를 할당한 우분투의 상태  
 
-![docker9]({{ "/assets/2019/docker9.png" | absolute_url }})  
+![docker9](/assets/2019/docker9.png)  
 
 
 `alicek106/stress`라는 테스트용 컨테이너를 설치해 다시한번 모니터링 해보자.  
@@ -977,11 +977,11 @@ kouzie      6446  0.0  0.0  22572   956 pts/8    S+   17:48   0:00  |           
 
 htop화면  
 
-![docker10]({{ "/assets/2019/docker10.png" | absolute_url }})  
+![docker10](/assets/2019/docker10.png)  
 
 google cadviser 화면  
 
-![docker11]({{ "/assets/2019/docker11.png" | absolute_url }})  
+![docker11](/assets/2019/docker11.png)  
 
 
 `--cpuset-cpus=0,3`: 0번째, 3번째 코어만 사용
@@ -1077,7 +1077,7 @@ hostOS의 전체용량인 50G가 출력된다.
 
 `docker run -v /home/kouzie/myvolume:/webapp -it ubuntu:16.04`  
 
-![docker12]({{ "/assets/2019/docker12.png" | absolute_url }}){: .shadow}  
+![docker12](/assets/2019/docker12.png){: .shadow}  
 
 설정댈로 `512MB` 크기의 용량을 갖는다.  
 

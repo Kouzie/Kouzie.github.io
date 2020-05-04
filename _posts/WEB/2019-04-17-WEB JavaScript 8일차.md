@@ -367,7 +367,7 @@ body {
   }
 ```
 
-![js13]({{ "/assets/web/js/js13.png" | absolute_url }}){: .shadow}
+![js13](/assets/web/js/js13.png){: .shadow}
 
 `scrollTop`: 스크롤 내린길이, 스크롤 위 내용의 높이값, 스크롤을 맨 위로 올리면 0.  
 `scrollHeight`: **문서 전체**의 길이값.  

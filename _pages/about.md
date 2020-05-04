@@ -41,8 +41,8 @@ toc_sticky:
 
 6주간의 자바 `Structure` 끝나고 객체지향적 설계 밑 코딩 실력을 배양하기 위한 프로젝트  
 
-![image3]({{ "/assets/project/tennis/image3.png" | absolute_url }}){: .shadow}{: width="400"}
-![image1]({{ "/assets/project/tennis/image1.png" | absolute_url }}){: .shadow}{: width="400"} 
+![image3](/assets/project/tennis/image3.png){: .shadow}{: width="400"}
+![image1](/assets/project/tennis/image1.png){: .shadow}{: width="400"} 
 
 파일 저장을 이용한 경기 재생, `jfiglet` 라이브러리를 사용해 콘솔에 테니스 계수기 출력  
 
@@ -54,10 +54,10 @@ Java 소켓, 멀티스레드 파트를 마치고 시작한 개인 프로젝트.
 javaFX, Scene빌더를 사용해 UI 구현  
 방을 만들어 여러명이서 채팅 가능.
 
-![image1]({{ "/assets/project/chatting/image1.png" | absolute_url }}){: width="200"} 
-![image3]({{ "/assets/project/chatting/image3.png" | absolute_url }}){: width="250"}  
+![image1](/assets/project/chatting/image1.png){: width="200"} 
+![image3](/assets/project/chatting/image3.png){: width="250"}  
 
-![image2]({{ "/assets/project/chatting/image2.png" | absolute_url }})  
+![image2](/assets/project/chatting/image2.png)  
 
 > 상세설명: <a>https://kouzie.github.io/java/project/java-채팅-프로그램!/</a>
 
@@ -66,11 +66,11 @@ javaFX, Scene빌더를 사용해 UI 구현
 
 Oracle DB sql, pl/sql 수업을 마치고 DB 개념적, 논리적 모델링 밑 SQL 실력향상을 위해 진행한 프로젝트  
 
-![concetp]({{ "/assets/project/dbproject/modeling_concept.png" | absolute_url }}){: .shadow}{: width="700"}    
+![concetp](/assets/project/dbproject/modeling_concept.png){: .shadow}{: width="700"}    
 
 <br>
 
-![logic]({{ "/assets/project/dbproject/modeling_logic.png" | absolute_url }}){: .shadow}  
+![logic](/assets/project/dbproject/modeling_logic.png){: .shadow}  
 
 > 상세설명 : <a href="https://prezi.com/mofotqxheo6s/db/">https://prezi.com/mofotqxheo6s/db/</a>  
 > 참고자료: <a href="https://kouzie.github.io/database/DB-nested-table/">https://kouzie.github.io/database/DB-nested-table/</a>  
@@ -82,21 +82,21 @@ JSP/Servlet 수업이 끝나고 MVC Model2 패턴으로 웹 어플리케이션 �
 
 기존 사이트 https://www.poing.co.kr/seoul 을 그대로 구현하는 프로젝트로 `JSP/Servlet`, `jQuery`, `Oracle` 사용
 
-![dbmodel_login]({{ "/assets/project/poing/dbmodel_login.png" | absolute_url }}){: .shadow}  
+![dbmodel_login](/assets/project/poing/dbmodel_login.png){: .shadow}  
 
 ### 실행화면  
 
 **사용자 정보 수정**  
-![image13]({{ "/assets/project/poing/image13.gif" | absolute_url }}){: .shadow}   
+![image13](/assets/project/poing/image13.gif){: .shadow}   
 
 **리뷰 출력, 좋아요 찜하기**  
-![image23]({{ "/assets/project/poing/image23.gif" | absolute_url }}){: .shadow}  
+![image23](/assets/project/poing/image23.gif){: .shadow}  
 
 **GoogleMap, 레스토랑 리스트출력**
-![image63]({{ "/assets/project/poing/image63.gif" | absolute_url }}){: .shadow}  
+![image63](/assets/project/poing/image63.gif){: .shadow}  
 
 **관리자 레스토랑 리뷰남기기**  
-![image70]({{ "/assets/project/poing/image70.gif" | absolute_url }}){: .shadow}  
+![image70](/assets/project/poing/image70.gif){: .shadow}  
 
 
 > 소스코드 : <a href="https://github.com/Kouzie/Poing">https://github.com/Kouzie/Poing</a>
@@ -116,25 +116,25 @@ JSP/Servlet 수업이 끝나고 MVC Model2 패턴으로 웹 어플리케이션 �
 
 
 **회원가입**  
-![회원가입]({{ "/assets/project/survey/회원가입.gif" | absolute_url }}){: .shadow}   
+![회원가입](/assets/project/survey/회원가입.gif){: .shadow}   
 
 **설문등록**  
-![회원가입]({{ "/assets/project/survey/회원가입.gif" | absolute_url }}){: .shadow}   
+![회원가입](/assets/project/survey/회원가입.gif){: .shadow}   
 
 **댓글**  
-![댓글]({{ "/assets/project/survey/댓글.gif" | absolute_url }}){: .shadow}   
+![댓글](/assets/project/survey/댓글.gif){: .shadow}   
 
 **알림**  
-![알림]({{ "/assets/project/survey/알림.gif" | absolute_url }}){: .shadow}   
+![알림](/assets/project/survey/알림.gif){: .shadow}   
 
 **이메일로 비밀번호 변경**  
-![이메일전송]({{ "/assets/project/survey/이메일전송.gif" | absolute_url }}){: .shadow}   
+![이메일전송](/assets/project/survey/이메일전송.gif){: .shadow}   
 
 **관리자**  
-![관리자]({{ "/assets/project/survey/관리자2.gif" | absolute_url }}){: .shadow}   
+![관리자](/assets/project/survey/관리자2.gif){: .shadow}   
 
 **결과출력**  
-![결과]({{ "/assets/project/survey/결과.gif" | absolute_url }}){: .shadow}   
+![결과](/assets/project/survey/결과.gif){: .shadow}   
 
 
 ### 느낀점
@@ -152,8 +152,8 @@ JSP/Servlet 수업이 끝나고 MVC Model2 패턴으로 웹 어플리케이션 �
 
 학교 졸업 작품으로 만든 백신, C/C++, Qt 프레임워크를 사용해 개발하였다.  
 
-![process]({{ "/assets/project/strike/process.png" | absolute_url }}){: .shadow}{: width="400"}
-![job]({{ "/assets/project/strike/job.png" | absolute_url }}){: .shadow}{: width="400"}
+![process](/assets/project/strike/process.png){: .shadow}{: width="400"}
+![job](/assets/project/strike/job.png){: .shadow}{: width="400"}
 
 ### 간단한 설명
 

@@ -35,7 +35,7 @@ toc: true
 
 이런 공통 기능을 AOP에서 어떻게 처리하는지 알아보자.  
 
-![image4]({{ "/assets/Spring/image4.png" | absolute_url }}){: .shadow}  
+![image4](/assets/Spring/image4.png){: .shadow}  
 
 
 ### AOP 주요 용어 
@@ -72,7 +72,7 @@ AOP는 꼭 스프링에서만 사용하는 개념이 아니며 다음 3가지 �
 
 스프링 프레임워크에선 3번째 방법인 런타임시에 `Weaving`할 수 있는데 **Proxy기반의 AOP**이다.  
 
-![image5]({{ "/assets/Spring/image5.png" | absolute_url }}){: .shadow}  
+![image5](/assets/Spring/image5.png){: .shadow}  
 
 `crossCuttingConcern`: 공통 관심사항   
 `coreConcern`: 핵심 기능  

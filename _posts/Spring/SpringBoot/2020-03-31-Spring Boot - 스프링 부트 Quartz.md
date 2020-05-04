@@ -72,13 +72,13 @@ toc: true
 
 `Scheduler` – 등록된 `Job` 과 `Trigger` 를 관리한다. 연관된 ​​`Trigger`의 발사시점을 보고있다가 관련 Job 을 실행시키는 역할을 한다.  
 
-![springboot_quartz1]({{ "/assets/springboot/springboot_quartz1.png" | absolute_url }})  
+![springboot_quartz1](/assets/springboot/springboot_quartz1.png)  
 
 `Quartz Scheduler` 는 `Job`, `Trigger`, `JobStore` 와 같은 리소스를 관리하며 `Trigger` 의 `fire` 시점에 따라 `ThreadPool` 에 있는 `Worker` 노드에게 해당 `Job` 을 실행하도록 명령한다.  
 
 Java 클래스 관계도는 아래와 같다.  
 
-![springboot_quartz2]({{ "/assets/springboot/springboot_quartz2.png" | absolute_url }})  
+![springboot_quartz2](/assets/springboot/springboot_quartz2.png)  
 
 
 ## 설정  

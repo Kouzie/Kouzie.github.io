@@ -24,7 +24,7 @@ toc: true
 
 > A material design panel that slides in horizontally from the edge of a Scaffold to show navigation links in an application.
 
-![flutter27]({{ "/assets/flutter/flutter27.png" | absolute_url }}){: width="400" }  
+![flutter27](/assets/flutter/flutter27.png){: width="400" }  
 
 서랍(`Drawer`) 모양의 icon 을 누르면 옆에서 슬라이드 형식으로 버튼이 출력된다.  
 버튼을 눌러 페이지 변경도 가능하다.  
@@ -206,4 +206,4 @@ class ListPage extends StatelessWidget {
 }
 ```
 
-![flutter6]({{ "/assets/flutter/flutter6.png" | absolute_url }}){: width="400" }  
+![flutter6](/assets/flutter/flutter6.png){: width="400" }  

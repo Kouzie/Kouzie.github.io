@@ -114,7 +114,7 @@ public class ProductControllerTest {
 
 테스트 코드를 실행하고 `target/generated-snippets`에 `rest doc` 로 인해 파일들이 자동생성 되는지 확인  
 
-![restdoc1]({{ "/assets/2020/restdoc1.png" | absolute_url }}){: .shadow}  
+![restdoc1](/assets/2020/restdoc1.png){: .shadow}  
 
 작성된 파일을 하나의 파일로 합칠수 있도록 `src/main/asciidoc` 아래에 생성된 `rest doc`들의 위치를 참조하는 문서 작성  
 Spring Rest Doc 에서 기본문서위치가 `src/main/asciidoc` 임으로 주의!  
@@ -150,7 +150,7 @@ include::{snippets}/product-controller-test/get-product/response-body.adoc[]
 이후 jar파일을 사용해 서버 실행 후 `localhost:8080/docs/product-controller.html` 요청
 
 아래처럼 출력되는지 확인  
-![restdoc2]({{ "/assets/2020/restdoc2.png" | absolute_url }}){: .shadow}  
+![restdoc2](/assets/2020/restdoc2.png){: .shadow}  
 
 ## 진행하면서 난감했던 상황들  
 

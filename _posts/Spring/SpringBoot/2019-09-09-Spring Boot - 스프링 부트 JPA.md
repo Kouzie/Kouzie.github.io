@@ -49,7 +49,7 @@ JPA를 개발하려면 기존엔 아래와 같은 코드가 필요했다.
 
 Spring으로 ORM을 사용해 개발시 단순 Hibernate를 사용해 개발할 일이 없다. JPA만을 사용할 일은 더더욱 없다.  
 
-![springboot_jpa_1]({{ "/assets/springboot/springboot_jpa_1.png" | absolute_url }}){: .shadow}   
+![springboot_jpa_1](/assets/springboot/springboot_jpa_1.png){: .shadow}   
 
 즉 Hibernate, Spring Boot JPA모두 JPA를 구현한 구현체이지만 `Spring Boot JPA` 가 훨씬 편하게 사용할 수 있음을 알 수 있다.  
 
@@ -71,7 +71,7 @@ JPA에서 엔티티는 `사원` 테이블을 만들기 위한 일종의 객체�
 스프링 부트에서 지원하는 기능으로 엔티티가 DB와 연동되어 데이터를 가져오고 수정되고 저장되고 삭제되는 과정을 담당하는 객체이다.  
 
 
-![springboot2_1]({{ "/assets/springboot/springboot2_1.png" | absolute_url }}){: .shadow}  
+![springboot2_1](/assets/springboot/springboot2_1.png){: .shadow}  
 
 엔티티 매니저가 위 사진에 있는 여러 기능을 호출하면서 실제 java객체를 DB에 연동하고 CRUD작업을 처리한다.  
 
@@ -90,7 +90,7 @@ JPA에서 엔티티는 `사원` 테이블을 만들기 위한 일종의 객체�
 ## Spring Boot DB연결
 
 
-![springboot1_0]({{ "/assets/springboot/springboot1_0.png" | absolute_url }}){: .shadow}   
+![springboot1_0](/assets/springboot/springboot1_0.png){: .shadow}   
 
 위의 라이브러리를 추가했다면 DB연동을 위한 Datasource설정을 진행한다.  
 
@@ -164,7 +164,7 @@ public class Board {
 위의 클래스로 `CRUD` 작업을 처리하게 되는데 이를 위한 `Repository` 인터페이스를 정의해야한다.  
 `CrudRepository` 인터페이스를 상속하는데 `CrudRepository`에는 기본적인 `CRUD` 를 위한 가상메서드가 정의되어 있다.  
 
-![springboot2_2]({{ "/assets/springboot/springboot2_2.png" | absolute_url }}){: .shadow}  
+![springboot2_2](/assets/springboot/springboot2_2.png){: .shadow}  
 
 `save` 메서드를 통해 `update`, `insert` 가 가능하다.  
 
@@ -208,7 +208,7 @@ count..by..
 
 위와같은 패턴으로 JPA가 자동으로 만들어주는 쿼리메서드를 사용해 여러가지 조건문을 추가할 수 있다.  
 
-![springboot2_3]({{ "/assets/springboot/springboot2_3.png" | absolute_url }}){: .shadow}  
+![springboot2_3](/assets/springboot/springboot2_3.png){: .shadow}  
 
 > https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#jpa.query-methods.query-creation
 

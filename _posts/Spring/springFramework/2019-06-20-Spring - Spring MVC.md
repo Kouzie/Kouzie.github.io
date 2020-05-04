@@ -32,7 +32,7 @@ toc: true
 
 ### 스프링 MVC 구성 요소
 
-![image6]({{ "/assets/Spring/image6.png" | absolute_url }}){: .shadow}  
+![image6](/assets/Spring/image6.png){: .shadow}  
 
 **요소**|**역할**
 :-----:|:-----:
@@ -967,7 +967,7 @@ DB연동 객체는 모든 `DispatcherServlet` 객체에서 접근 가능해야 �
 컨테이너에 설정되는 컨텍스트 파라미터 `contextConfigLocation`에 `<param-value>` 태그안의 적혀있는 xml파일들을 집어넣어 공용으로 사용할 빈객체들을 생성한다.  
 
 
-![image9]({{ "/assets/Spring/image9.png" | absolute_url }}){: .shadow}  
+![image9](/assets/Spring/image9.png){: .shadow}  
 
 위 xml 설정대로라면 지금은 총 2개의 `WebAppliactionContext`(스프링 컨테이너)가 생겼다.  
 

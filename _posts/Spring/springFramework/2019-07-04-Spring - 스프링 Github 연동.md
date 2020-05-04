@@ -33,7 +33,7 @@ ex) 로컬 리파지토리 위치를 지정하는 파일의 경우 사용자마�
 
 위 사이트에서 다음과 같이 검색
 
-![image26]({{ "/assets/Spring/image26.png" | absolute_url }}){: .shadow}  
+![image26](/assets/Spring/image26.png){: .shadow}  
 
 그럼 다음과 같은 설정파일이 자동으로 생성된다.  
 
@@ -192,7 +192,7 @@ $RECYCLE.BIN/
 ```
 
 이파일 내용을 .gitignore 파일로 다음과 같이 저장  
-![image27]({{ "/assets/Spring/image27.png" | absolute_url }}){: .shadow}  
+![image27](/assets/Spring/image27.png){: .shadow}  
 
 >.gitignore 파일 생성 시 .gitignore 파일명을 입력하면  
 파일 이름을 입력해야 합니다 라는 경고창과 함께 파일명 변경이 안된다.  
@@ -205,18 +205,18 @@ $RECYCLE.BIN/
 문제는 깃허브에 올라간 리파지토리를 다운받을 때 발생한다.   
 
 프로젝트 설정을 다 빼버려서 이클립스가 이를 프로젝트로 인식하지 않는다...  
-![image28]({{ "/assets/Spring/image28.png" | absolute_url }}){: .shadow}  
+![image28](/assets/Spring/image28.png){: .shadow}  
 
 우선 이전단계로 돌아가 3번째 라디오버튼을 클릭해 `general project`로 생성하자.  
-![image29]({{ "/assets/Spring/image29.png" | absolute_url }}){: .shadow}  
+![image29](/assets/Spring/image29.png){: .shadow}  
 
 만들어진 프로젝트를 보면 평소 우리가 알던 Spring maven프로젝트 형식이 아니다.   
 (소스코드 덩어리를 당연히 프로젝트로 인식할 일이 없음...)  
-![image30]({{ "/assets/Spring/image30.png" | absolute_url }}){: .shadow}  
+![image30](/assets/Spring/image30.png){: .shadow}  
 
 
 우클릭 `Configure->Convert to Maven Project` 클릭  
 
-![image31]({{ "/assets/Spring/image31.png" | absolute_url }}){: .shadow}  
+![image31](/assets/Spring/image31.png){: .shadow}  
 
 maven 형식으로 변경되었으면 설정 끝....

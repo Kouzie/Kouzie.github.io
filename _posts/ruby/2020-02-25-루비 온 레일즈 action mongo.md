@@ -202,7 +202,7 @@ physician.patients = patients
 patient.physicians = physicians
 ```
 
-![rails1]({{ "/assets/ruby/rails1.png" | absolute_url }}){: .shadow}  
+![rails1](/assets/ruby/rails1.png){: .shadow}  
 
 `N:1` 관계를 맺을때 사용  
 
@@ -222,7 +222,7 @@ class AccountHistory < ActiveRecord::Base
 end
 ```
 
-![rails2]({{ "/assets/ruby/rails2.png" | absolute_url }}){: .shadow}  
+![rails2](/assets/ruby/rails2.png){: .shadow}  
 
 
 ### embedded_in, embeds_many, embeds_one
