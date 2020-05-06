@@ -4,7 +4,7 @@ title:  "루비 온 레일즈, Action, Mongoid!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - linux
@@ -13,6 +13,7 @@ tags:
   - ruby on rails
 
 toc: true
+toc_sticky: true
 
 ---
 

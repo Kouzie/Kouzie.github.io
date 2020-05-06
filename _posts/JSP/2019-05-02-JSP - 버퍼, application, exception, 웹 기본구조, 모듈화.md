@@ -4,7 +4,7 @@ title:  "JSP/Servlet - 버퍼, application, exception, 웹 기본구조, 모듈�
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - JSP
@@ -14,6 +14,7 @@ tags:
   - servelt
 
 toc: true
+toc_sticky: true
 
 ---
 

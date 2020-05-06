@@ -4,7 +4,7 @@ title:  "Spring - 스프링 MyBatis!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - Spring
@@ -14,6 +14,7 @@ tags:
   - java
 
 toc: true
+toc_sticky: true
 
 ---
 

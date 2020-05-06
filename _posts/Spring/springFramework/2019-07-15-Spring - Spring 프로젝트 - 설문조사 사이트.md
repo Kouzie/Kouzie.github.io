@@ -4,7 +4,7 @@ title:  "Spring - 프로젝트 - 설문조사 사이트!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - Spring
@@ -15,6 +15,7 @@ tags:
   - project
 
 toc: true
+toc_sticky: true
 
 ---
 

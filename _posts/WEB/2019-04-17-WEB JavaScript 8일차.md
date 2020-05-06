@@ -4,7 +4,7 @@ title:  "Web - JavaScript 8일차 - DOM, BOM, 쿠키!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - HTML
@@ -15,6 +15,7 @@ tags:
   - javascript
 
 toc: true
+toc_sticky: true
 
 ---
 

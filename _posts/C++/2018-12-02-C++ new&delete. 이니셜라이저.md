@@ -3,8 +3,9 @@ title:  "C++ new&delete, 생성자, 멤버 이니셜라이저!"
 read_time: false
 share: false
 toc: true
+toc_sticky: true
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - C++

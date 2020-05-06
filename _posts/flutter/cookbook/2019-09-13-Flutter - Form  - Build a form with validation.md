@@ -4,7 +4,7 @@ title:  "Flutter - Form  - Build a form with validation, Handle changes to a tex
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - flutter
@@ -15,6 +15,7 @@ tags:
 
 
 toc: true
+toc_sticky: true
 
 ---
 # Build a form with validation

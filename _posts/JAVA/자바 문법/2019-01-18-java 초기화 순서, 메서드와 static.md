@@ -3,9 +3,10 @@ title:  "java 초기화 순서, 메서드와 static!"
 read_time: false
 share: false
 toc: true
+toc_sticky: true
 author_profile: false
 
-classes: wide
+# classes: wide
 categories:
   - Java
 tags:

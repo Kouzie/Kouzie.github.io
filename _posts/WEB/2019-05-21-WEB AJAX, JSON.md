@@ -4,7 +4,7 @@ title:  "Web - AJAX, JSON!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - HTML
@@ -16,6 +16,7 @@ tags:
   - javascript
 
 toc: true
+toc_sticky: true
 
 ---
 

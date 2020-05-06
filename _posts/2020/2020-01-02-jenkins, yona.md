@@ -4,7 +4,7 @@ title:  "jenkins, yona!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - 잡담
@@ -13,6 +13,7 @@ tags:
   - 
 
 toc: true
+toc_sticky: true
 
 ---
 

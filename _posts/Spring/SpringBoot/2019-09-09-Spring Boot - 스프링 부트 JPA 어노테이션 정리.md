@@ -4,7 +4,7 @@ title:  "Spring Boot - 스프링 부트 어노테이션!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - Spring
@@ -15,6 +15,7 @@ tags:
   - java
 
 toc: true
+toc_sticky: true
 
 ---
 

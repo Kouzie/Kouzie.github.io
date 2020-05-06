@@ -4,7 +4,7 @@ title:  "java - DelayQueue!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - java
@@ -13,6 +13,7 @@ tags:
   - Collection
 
 toc: true
+toc_sticky: true
 
 ---
 

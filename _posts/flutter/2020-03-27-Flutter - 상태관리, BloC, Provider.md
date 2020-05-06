@@ -3,7 +3,7 @@ title:  "Flutter - 상태관리, BloC, Provider!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - flutter
@@ -14,6 +14,7 @@ tags:
 
 
 toc: true
+toc_sticky: true
 
 ---
 

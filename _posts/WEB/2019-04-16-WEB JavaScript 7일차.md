@@ -4,7 +4,7 @@ title:  "Web - JavaScript 7일차 - 마우스 이벤트, querySelector!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - HTML
@@ -15,6 +15,7 @@ tags:
   - javascript
 
 toc: true
+toc_sticky: true
 
 ---
 

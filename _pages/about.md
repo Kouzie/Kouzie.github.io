@@ -2,9 +2,10 @@
 permalink: /about/
 title: "About"
 excerpt: "About Me!."
-classes: wide
+# classes: wide
 last_modified_at: 2019-07-21T15:15:09-04:00
 toc: true
+toc_sticky: true
 toc_sticky: 
 ---
       

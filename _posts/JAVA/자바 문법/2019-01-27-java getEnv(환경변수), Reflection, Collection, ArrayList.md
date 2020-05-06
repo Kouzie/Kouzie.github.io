@@ -3,9 +3,10 @@ title:  "java getEnv(환경변수), Reflection, Collection, ArrayList!"
 read_time: false
 share: false
 toc: true
+toc_sticky: true
 author_profile: false
 
-classes: wide
+# classes: wide
 categories:
   - Java
 tags:

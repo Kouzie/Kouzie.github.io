@@ -4,7 +4,7 @@ title:  "Spring - 스프링 Github 연동!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - Spring
@@ -13,6 +13,7 @@ tags:
   - Spring
   - git
 toc: true
+toc_sticky: true
 
 ---
 

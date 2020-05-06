@@ -4,7 +4,7 @@ title:  "Vue - Vue 트랜스 파일러, Vue project!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - Vue
@@ -14,6 +14,7 @@ tags:
   - vue
 
 toc: true
+toc_sticky: true
 
 ---
 

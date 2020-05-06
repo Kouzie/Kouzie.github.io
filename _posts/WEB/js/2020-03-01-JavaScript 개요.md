@@ -4,7 +4,7 @@ title:  "JavaScript ES2015!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - HTML
@@ -15,6 +15,7 @@ tags:
   - JavaScript
 
 toc: true
+toc_sticky: true
 
 ---
 

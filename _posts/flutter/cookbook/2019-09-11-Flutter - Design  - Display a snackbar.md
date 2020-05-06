@@ -4,7 +4,7 @@ title:  "Flutter - Design  - Display a snackbar, Update the UI based on orientat
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - flutter
@@ -15,6 +15,7 @@ tags:
 
 
 toc: true
+toc_sticky: true
 
 ---
 

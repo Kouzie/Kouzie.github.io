@@ -4,7 +4,7 @@ title:  "spring cloud - eureka zuul!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - spring
@@ -14,6 +14,7 @@ tags:
   - spring-cloud
 
 toc: true
+toc_sticky: true
 
 ---
 

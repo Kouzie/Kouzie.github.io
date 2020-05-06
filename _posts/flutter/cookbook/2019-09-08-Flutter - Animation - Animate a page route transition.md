@@ -4,7 +4,7 @@ title:  "Flutter - Animation - Animate a page route transition!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - flutter
@@ -14,6 +14,7 @@ tags:
   - cookbook
 
 toc: true
+toc_sticky: true
 
 ---
 

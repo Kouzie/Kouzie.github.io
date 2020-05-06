@@ -4,7 +4,7 @@ title:  "Flutter - Navigation - Return data from a screen!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - flutter
@@ -15,6 +15,7 @@ tags:
 
 
 toc: true
+toc_sticky: true
 
 ---
 

@@ -4,7 +4,7 @@ title:  "Apach shiro!"
 read_time: false
 share: false
 author_profile: false
-classes: wide
+# classes: wide
 
 categories:
   - java
@@ -13,6 +13,7 @@ tags:
   - shiro
 
 toc: true
+toc_sticky: true
 
 ---
 
