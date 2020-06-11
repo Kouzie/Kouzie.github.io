@@ -18,23 +18,21 @@ toc_sticky: true
 
 ---
 
-## 복제와 고가용성
+# 복제와 고가용성
 
 ![eureka_tbd](/assets/2019/eureka_tbd.png){: .shadow}  
 
 위 사진을 보면 유레카 서비스 등록을 위한 서버가 3개  
 실제 서비스가 동작하는 유레카 클라이언트가 2개있다.  
 
-유연한 장애처리와 리소스 부하 분산을 위해 적어도 2개 이상의 유레카 서버와 `ribbon`(로드밸런싱), `zuul`(api gateway)이 필요하다.  
+유연한 장애처리와 리소스 부하 분산을 위해 적어도 2개 이상의 유레카 서버와 `ribbon`(로드밸런싱), `zuul`(`api gateway`)이 필요하다.  
 
-우리는 서버 3개, 클라이언트 3개를 만들고 각 클라이언트에 접근하기 위해 거치는 zuul을 사용해보자.  
+우리는 서버 3개, 클라이언트 3개를 만들고 각 클라이언트에 접근하기 위해 거치는 `zuul`을 사용해보자.  
 (`spring-cloud-starter-netflix-eureka-client` 의존성 안에 로드밸런싱을 위한 `ribbon`이 이미 포함되어있다.)
 
 `spring.profiles.active`속성을 통해 `java -jar`명령으로 쉽고 빠르게 다른 설정을 불러올 수 있도록 설정하자.  
 
-> 참고사항: Spring Boot 버전 -> `2.1.8.RELEASE`, Spring Cloud 버전 -> `Greenwich.SR3`
-
-### 유레카 서버 설정
+## 유레카 서버 설정
 
 3개의 유레카 서버가 공통적으로 사용하는 설정은 `application.properties`에 지정,  
 각 3개의 유레카 서버가 별도로 사용할 설정을 위한 설정파일을 3개 만들자.  
@@ -82,18 +80,18 @@ eureka.instance.metadata-map.zone=zone3
 eureka.client.service-url.defaultZone=http://localhost:8761/eureka, http://localhost:8762/eureka
 ```
 
-
 설정이 끝났으면 `mvn package`로 jar파일을 생성하고 아래 명령으로 서버를 3개 실행한다.   
 
 ```
-java -jar -Dspring.profiles.active=peer1 target/eurekaserver-0.0.1-SNAPSHOT.jar
-java -jar -Dspring.profiles.active=peer2 target/eurekaserver-0.0.1-SNAPSHOT.jar
-java -jar -Dspring.profiles.active=peer3 target/eurekaserver-0.0.1-SNAPSHOT.jar
+$ java -jar -Dspring.profiles.active=peer1 target/eurekaserver-0.0.1-SNAPSHOT.jar
+$ java -jar -Dspring.profiles.active=peer2 target/eurekaserver-0.0.1-SNAPSHOT.jar
+$ java -jar -Dspring.profiles.active=peer3 target/eurekaserver-0.0.1-SNAPSHOT.jar
 ```
 
-### 유레카 클라이언트 설정
+## 유레카 클라이언트 설정
 
 유레카 클라이언트도 마찬가지로 3개 생성하기 때문에 공통적인 설정은 `application.properties`에, 별도 설정은 3개의 설정파일을 생성해 각각 지정한다.  
+
 ```conf
 # application.properties 설정 내용
 # default profile을 zone1로 지정
@@ -144,15 +142,16 @@ public class ClientController {
 마찬가지로 설정이 끝났으면 `mvn package`로 jar파일을 생성하고 아래 명령으로 서버를 3개 실행.   
 
 ```
-java -jar -Dspring.profiles.active=zone1 -Xmx192m target/eurekaclient-0.0.1-SNAPSHOT.jar
-java -jar -Dspring.profiles.active=zone2 -Xmx192m target/eurekaclient-0.0.1-SNAPSHOT.jar
-java -jar -Dspring.profiles.active=zone3 -Xmx192m target/eurekaclient-0.0.1-SNAPSHOT.jar
+$ java -jar -Dspring.profiles.active=zone1 -Xmx192m target/eurekaclient-0.0.1-SNAPSHOT.jar
+$ java -jar -Dspring.profiles.active=zone2 -Xmx192m target/eurekaclient-0.0.1-SNAPSHOT.jar
+$ java -jar -Dspring.profiles.active=zone3 -Xmx192m target/eurekaclient-0.0.1-SNAPSHOT.jar
 ```
 
-### 유레카 zuul 설정  
+## 유레카 zuul 설정  
 
-이제 zuul을 통해 유레카 서버에 등록된 서비스들 중 가장 한적한 서버에게 api요청을 하면 되는데 `zuul`을 통해 진행할 수 있다.  
+이제 `zuul`을 통해 유레카 서버에 등록된 서비스들 중 가장 한적한 서버에게 api요청을 하면 되는데 `zuul`을 통해 진행할 수 있다.  
 우선 아래 2개 의존성 추가  
+
 ```xml
 <dependency>
     <groupId>org.springframework.cloud</groupId>
@@ -199,6 +198,7 @@ public class EurekagatewayApplication {
     }
 }
 ```
+
 스프링 어플리케이션 어노테이션과 함께 `zuul`, `Eureka Client` 어노테이션도 같이 추가해야한다.  
 
 설정이 끝났으면 `java -jar` 명령으로 실행하며 된다. (설정파일이 하나기에 추가 속성은 없음)   
@@ -213,7 +213,7 @@ public class EurekagatewayApplication {
 
 ![eureka_zuul2](/assets/2019/eureka_zuul2.gif){: .shadow}  
 
-#### 서비스 라우팅 옵션
+### 서비스 라우팅 옵션
 
 참고로 `zuul.routes.demo-client`속성을 통해 path와 service를 유레카 서버로부터 찾아내었는데  
 별도설정 없이도 자동으로 `localhost:8765/api/demo_eureka_client/**`형식으로 route경로가 등록된다.  
@@ -253,7 +253,7 @@ true일 경우 `/product`는 제외한 `/findById/1`만 보내진다.
 ```
 기타 설정까지 자세히 보고 싶다면 `/actuator/routes/details` 호출  
 
-#### zuul 필터
+### zuul 필터
 
 `/actuator/filter`
 
@@ -285,3 +285,5 @@ true일 경우 `/product`는 제외한 `/findById/1`만 보내진다.
     },...]
 }
 ```
+
+최근 스프링 클라우드가 netflix 에서 독립적인 프로젝트로 변화하려는 움직임에 따라 `zuul` 보단 `spring cloud gateway` 를 많이 사용하는 추세이다.  
