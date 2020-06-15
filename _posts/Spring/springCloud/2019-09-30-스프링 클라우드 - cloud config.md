@@ -106,6 +106,9 @@ eureka.client.service-url.defaultZone=http://admin:qwer@localhost:8761/eureka/
 > 만약 `git repo`를 사용하지 않고 바로 `cloud config`의 파일 시스템에서 설정파일을 서비스들에게 제공하고 싶다면 
 `spring.profiles.active=native` 설정을 사용하자.  
 
+> https://github.com/spring-cloud/spring-cloud-netflix/issues/2754
+> 유레카 서버에 안전한 접근을 위해 spring security 를 화성화 한 상태라면 csrf 기능때문에 다른 유레카 클라이언트들이 접근 안될 수 있다. 이를 해재해주자.  
+
 이제 유레카 서버를 실행시키고 `cloud config`서버를 유레카 클라이언트로 서버에 등록해보자.  
 
 아래는 유레카 서버에 대한 `application.properties`이다.
@@ -165,6 +168,8 @@ server.port=8761
 이젠 일반적인 유레카 클라이언트를 실행해 `cloud config`서버에 있는 설정 파일을 가져오기만 하면 된다.  
 서버 이름은 `client`, profiles는 `zone1`로 설정할 것이기 때문에 `cloud config`에 등록되어 있는 `client-zone1.properties` 설정파일을 읽어온다.  
 
+유레카 클라이언트의 `application.properties` 를 지우고 `bootstrap.properties` 이름으로 아래처럼 설정하자.  
+
 ```conf
 spring.application.name=client
 spring.profiles.active=zone1
@@ -200,7 +205,7 @@ spring.cloud.config.password=1234
 # git의 변경을 감지하는 메커니즘을 사용자 정의
 spring.cloud.config.server.monitor.github.enabled=true
 ```
-
+처음 서버 실행시 유레카 클라이언트로 등록하기 위한 제일 기본적인 설정 작성후  
 
 유레카 클라이언트를 실행하면 다음과 같이 서버에서 `cloud-config` 서비스를 찾아 등록했다는 메세지가 출력된다.  
 
