@@ -698,6 +698,28 @@ public void testPredicate() {
     list.forEach(b-> System.out.println(b));
     }
 ```
+### path, expression
+
+`alias` 와 표현식을 뜻함.  
+
+```java
+NumberExpression<Double> distanceExpression = 
+    acos(cos(radians(Expressions.constant(latitude)))
+        .multiply(cos(radians(qStore.latitude))
+            .multiply(cos(radians(qStore.longitude))
+                .subtract(radians(Expressions.constant(longitude)))
+                .add(sin(radians(Expressions.constant(latitude)))
+                    .multiply(sin(radians(qStore.latitude))))))).multiply(6371);
+
+NumberPath<Double> distancePath = Expressions.numberPath(Double.class, "distance");
+
+queryFactory.select(Expressions.as(distanceExpression, distancePath))
+    ...
+    ...
+    .having(Expressions.predicate(Ops.LOE, distancePath, Expressions.constant(distance)))
+```
+
+이런식으로 쿼리를 추가하고 조건식에 적용할 수 있음.  
 
 ## 객체간 연관관계
 
