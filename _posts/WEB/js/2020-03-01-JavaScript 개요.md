@@ -988,6 +988,18 @@ p.then(function (num) {
 }).catch(function (num) {
     console.log("reject invoked");
 })
+
+
+const promiseFirst = new Promise(resolve => resolve(1))
+    .then(result => `${result + 10}`) // 11 반환
+    .then(result => {console.log(result); return result + 1;}) // 11출력 111 반환
+
+const promiseSecond = new Promise(resolve => resolve(1))
+    .then(result => `${result + 20}`) // 21 반환
+    .then(result => {console.log(result); return result + 1;}) // 21 출력 211 반환
+
+
+Promise.all([promiseFirst, promiseSecond]).then(result => console.log(result)) // 111, 211 출력
 ```
 
 `Promise`에 설정한 함수 내부에서 `resolve`를 호출하면 외부의 `then`에 설정해둔 함수가 호출된다, 매개변수로 `resolve`가 전달한 데이터를 사용 가능.  
