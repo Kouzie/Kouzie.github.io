@@ -309,9 +309,11 @@ function Person(name, age, color) {
   this.age = age;
   this.color = color;
 }
+
 Person.prototype.print = function() {
   return this.name +" / "+ this.age +" / "+ this.color;
 }
+
 var hong = new Person("hong", 25, "red");
 console.log(hong.print());
 // hong / 25 / red
@@ -353,10 +355,9 @@ Person {name: "hong", age: 25, color: "red"}
 `constructor`는 `hong` 인스턴스 생성시 사용했던 생성자 함수가 저장되어있다.    
 `__proto__`는 출력된 내용으로 보아 `Object` 객체를 가리키는 것 같다.  
 
-JavaScript에선 이 프로토타입 객체를 통해 객체지향은 지원한다.  
+JavaScript 에선 이 프로토타입 객체를 통해 객체지향은 지원한다.  
 
 위에서도 모든 객체의 상위객체인 `Obejct`가 `hong.__proto__.__proto__` 를 통해 참조되고 있다.  
-
 
 ### Prototype Link, Prototype Chain
 
@@ -388,6 +389,7 @@ var kim = {
 }
 console.log(kim.__proto__);
 ```
+
 ![js15](/assets/web/js/js15.png){: .shadow}  
 
 리터럴로 생성된 `kim`객체또한 `Object()`함수를 통해 만들어진 것이기 때문에 `__proto__`는 `Object` 생성자 메서드의 `prototype`을 가리킨다.  
@@ -982,15 +984,14 @@ var p = new Promise(function (resolve, reject) {
   } else {
       reject(num);
   }
-}
+});
 p.then(function (num) {
-    console.log("resolve invoked");
+    console.log("resolve invoked, num:", num);
 }).catch(function (num) {
-    console.log("reject invoked");
+    console.log("reject invoked, num:", num);
 })
 
-
-const promiseFirst = new Promise(resolve => resolve(1))
+const promiseFirst = new Promise(resolve => resolve(1)) // resove 안의 데이터 전달
     .then(result => `${result + 10}`) // 11 반환
     .then(result => {console.log(result); return result + 1;}) // 11출력 111 반환
 
@@ -1014,7 +1015,7 @@ Promise.all([promiseFirst, promiseSecond]).then(result => console.log(result)) /
 
 > https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Statements/async_function
 
-promise 대신 비동기 처리를 가능하게 해주는 키워드 
+`promise` 대신 비동기 처리를 가능하게 해주는 키워드 
 
 
 ## 연산자 

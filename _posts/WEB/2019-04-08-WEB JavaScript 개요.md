@@ -21,16 +21,13 @@ toc_sticky: true
 
 ## JavaScript 개요
 
-웹 프로그래밍 언어중 하나, html의 내용을 **동적**으로 변경할 수 있다.  
+웹페이지에서 사용할 수 있는 프로그래밍 언어중 하나, html의 내용을 **동적**으로 변경할 수 있다.  
 스타일, 속성, 요소를 숨기거나 표시할 수 있음.  
 
->에크마스크립트(ECMAScript): 유럽 컴퓨터 제조업자 협회(ECMA)에서 제정된 자바스크립트(JavaScript) 언어 표준. [네이버 지식백과]  
+>에크마스크립트(`ECMAScript`): 유럽 컴퓨터 제조업자 협회(ECMA)에서 제정된 자바스크립트(`JavaScript`) 언어 표준. [네이버 지식백과]   
+
 브라우저도 표준을 따라 동작해야한다.  
-1년마다 한번씩 JavaScript의 표준을 정의해준다.  
-
-
-<br><br>
-
+1년마다 한번씩 `JavaScript`의 표준을 정의해준다.  
 
 ## 읽을거리 - 자바 스크립트 시리즈
 
@@ -54,32 +51,27 @@ How JavaScript works: Event loop and the rise of Async programming + 5 ways to b
 자바스크립트는 어떻게 작동하는가: 웹소켓 및 HTTP/2 SSE  
 How JavaScript works: Deep dive into WebSockets and HTTP/2 with SSE + how to pick the right path  
 
-<br><br>
-
 ## JavaScript 작성
 
-`<script></script>` 태그 안에 JS코딩을 해야한다.  
-`<script type="text/javascript">` 타입속성을 적는 경우도 있는데  
-type속성은 적어도 되고 안적어도 된다.(브라우저가 알아서 JS라고 알아서 해석한다.) 
+`<script></script>` 또는 `<script type="text/javascript">` 태그 안에 JS코딩을 해야한다.  
 
 보통은 `head` 혹은 `body` 태그 안에서 사용한다. 태그 밖에서 사용하면 브라우저가 알아서 해석해서 `head`나 `body`태그 안으로 집어넣음.  
 
 JavaScript에서도 다른 언어들 처럼 명령라인 구분을 위해 세미콜론`;`을 추가해도 되고 엔터로 구분해도 된다.  
+
 단 한줄에서 명령라인 구분을 위해선 추가한다.(사용 권장)
 
 ### .js확장자 파일 - 외부 스크립트 파일
 
-`.css`파일처럼 하나의 페이지에서만 사용하는 것 이 아닌 여러 페이지에서 javascript코딩을 사용한다면 `.js`확장자 파일을 만들자.  
-
+`.css`파일처럼 하나의 페이지에서만 사용하는 것 이 아닌 여러 페이지에서 JavaScript 코딩을 사용한다면 `.js`확장자 파일을 만들자.  
 `.js`파일 안에서 `script`태그는 쓰지 않아도 된다.  
-사용시에는 `script`태그안의 `src`속성을 사용하면 된다.  
-`<script src = " "></script>`  
 
-**외부스크립트의 장접**
-1. html과 js코드 분리로 인한 유지보수 용이  
-2. 캐시된 javascript파일로 인해 처리속도 향상  
+외부에서 해당 스크립트 내용을 사용하고 싶다면 `script`태그안의 `src`속성을 사용하면 된다.  
+`<script src = ".js 파일 경로"></script>`  
 
-<br><br>
+**외부스크립트의 장점**  
+1. html과 js 코드 분리로 인한 유지보수 용이  
+2. 캐시된 js 파일로 인해 처리속도 향상  
 
 ### Javascript 함수선언
 
@@ -89,15 +81,17 @@ function name([매개변수]) {
   [return 리턴값;]
 }
 ```
+
 리턴자료형을 따로 명시하기 않고 리턴값이 없을 수도 있다.  
 
 ### Javascript 함수 호출
 
-**1. 만들어진 함수는 이벤트 처리(`onclick`같은)에서 호출**  
-`<button onclick="btn_click();">ok</button>`  
+1. 만들어진 함수는 이벤트 처리(`onclick`같은)에서 호출  
+```html
+<button onclick="btn_click();">ok</button>
+```
 
-**2. 다른 만들어진 함수에서 호출**   
-
+2. 다른 만들어진 함수에서 호출  
 ```js
 function window_load() {
   var demo = document.getElementById("demo");
@@ -110,14 +104,13 @@ function sum(a, b) {
 ```
 
 > 함수 이름뒤에 `()` 괄호를 다음과 같이 생략하면 `var result = sum`  
-> sum의 정의가 result에 담기게 된다.  
-> 정의를 담으면 `result()` 형식으로 sum을 가리키는 함수포인터 처럼 사용될 수 있다.(js에선 함수또한 하나의 변수처럼 취급받음)  
+> `sum`의 정의가 `result`에 담기게 된다.  
+> 정의를 담으면 `result()` 형식으로 `sum`을 가리키는 함수포인터 처럼 사용될 수 있다.(js에선 함수또한 하나의 변수처럼 취급받음)  
 
 
+## Javascript 변수
 
-### Javascript 변수 선언
-
-`var`키워드로 변수선언한다. 다른 언어처럼 한 라인에 여러 변수 선언 및 초기화가 가능하다.
+`var`키워드로 변수선언한다. 다른 언어처럼 한 라인에 여러 변수 선언 및 초기화가 가능하다.  
 
 ```js
 function btn1_click() {
@@ -128,11 +121,111 @@ function btn1_click() {
   z=x+y;
 }
 ```
-자료형이 구분하는 키워드가 `var` 하나이고  하나의 변수로 문자열, 실수, 정수, 객채 등 여러가지 자료형으로 재정의 할 수 있다.  
+
+`var` 키워드 하나로 문자열, 실수, 정수, 객채 등 여러가지 자료형 변수를 정의 할 수 있다.  
 
 당연히 함수안에 들어있는 변수는 지역변수로 사용되며 함수를 빠져나오면 사라진다.  
 
-<br><br>
+### JavaScript 자료형
+
+`var`키워드 하나로 모든 변수를 선언하지만 JavaScript 에도 분명 자료형은 있다.  
+
+```js
+console.log(typeof "admin");  //string
+console.log(typeof 10);       //number
+console.log(typeof 3.14);     //number
+console.log(typeof true);     //boolean
+console.log(typeof [1, 2, 3, 4]);  //object
+console.log(typeof NaN);      //number
+console.log(typeof new Date());    //object
+console.log(typeof null);     //object
+console.log(typeof function(){});  //function
+console.log(typeof {name: "hong", age: 20});  //object
+```
+
+출력값.
+```
+string
+number
+number
+boolean
+object
+number
+object
+object
+function
+object
+```
+
+>초기화 하지 않은 변수를 넣으면 undifiend로 출력된다. null은 object로 출력됨.
+
+총 5가지의 자료형 존재  
+
+1. string  
+2. number  
+3. boolean  
+4. object  
+5. function  
+
+자바 스크립트에선 `===` 연산자가 있는데 안의 데이터 뿐 아니라 type까지 비교해서 일치하는지 검사한다.  
+
+### JavaScript 전역변수
+
+**`var`키워드 없이 선언할 경우** 지역변수가 아닌 전역변수로 생성되며 다른 함수 안에서도 사용 가능하다.  
+
+```js
+function btn2_click() {
+  msg = "hello"
+  alert(msg);
+}
+```
+>이런식으로 선언하지 않고 사용하는 방식은 독이될 수 있는데 이 방식을 사용하고 싶지 않다면 다음 키워드를 사용한다.  
+
+```html
+<script>
+  "use strict"
+  ...
+</script>
+```
+
+엄격한 사용기준을 따르도록 한다. `ECMAScript5`부터 추가됨
+
+**함수 밖에서 선언할 경우** 역시 전역변수이다.  
+
+```html
+<button onclick="btn1_click();">버튼1</button>
+<button onclick="btn2_click();">버튼2</button>
+<script>
+  var age1 = 25;
+  age2 = 26;
+  function btn1_click() {
+    alert(age1);
+  }
+  function btn2_click() {
+    alert(age2);
+  }
+</script>
+<button onclick="btn3_click();">버튼3</button>
+<script>
+  function btn3_click() {
+    alert(age2);
+  }
+</script>
+```
+
+```html
+<script>
+  var name = "홍길동";
+  var name = "김길동";
+  function btn3_click() {
+    alert(age2);
+    document.getElementById("demo").innerHTML = name;
+    console.log(name);
+  }
+</script>
+```
+
+이런식으로 동일한 이름의 변수를 중복 선언해도 오류는 안난다. (나중에 선언된 `name`으로 초기화됨)  
 
 ## JavaScript로 data 출력하는 방법
 
@@ -181,7 +274,6 @@ html출력해주는 내장객체, 함수 사용
 
 ![js1](/assets/web/js/js1.png){: .shadow}  
 
-<br><br>
 
 ## onkeydown, onkeypress, onkeyup
 
@@ -277,110 +369,6 @@ else
 "ScrollLock"
 "Shift"
 ```
-
-<br><br>
-
-
-## JavaScript 전역변수
-
-**`var`키워드 없이 선언할 경우** 지역변수가 아닌 전역변수로 생성되며 다른 함수 안에서도 사용 가능하다.  
-
-```js
-function btn2_click() {
-  msg = "hello"
-  alert(msg);
-}
-```
->이런식으로 선언하지 않고 사용하는 방식은 독이될 수 있는데 이 방식을 사용하고 싶지 않다면 다음 키워드를 사용한다.  
-```html
-<script>
-  "use strict"
-  ...
-</script>
-```
-엄격한 사용기준을 따르도록 한다. ECMAScript5부터 추가됨
-
-**함수 밖에서 선언할 경우** 역시 전역변수이다.
-```html
-<script>
-	<button onclick="btn1_click();">버튼1</button>
-	<button onclick="btn2_click();">버튼2</button>
-  var age1 = 25;
-  age2 = 26;
-  function btn1_click() {
-    alert(age1);
-  }
-  function btn2_click() {
-    alert(age2);
-  }
-</script>
-<button onclick="btn3_click();">버튼3</button>
-<script>
-  function btn3_click() {
-    alert(age2);
-  }
-</script>
-```
-
-```html
-<script>
-  var name = "홍길동";
-  var name = "김길동";
-  function btn3_click() {
-    alert(age2);
-    document.getElementById("demo").innerHTML = name;
-    console.log(name);
-  }
-</script>
-```
-이런식으로 동일한 이름의 변수를 중복 선언해도 오류는 안난다. 나중에 선언된 name으로 초기화됨.  
-
-<br><br>
-
-## JavaScript 자료형
-
-`var`키워드 하나로 모든 변수를 선언하지만 JavaScript에도 분명 자료형은 있다.  
-
-```js
-console.log(typeof "admin");  //string
-console.log(typeof 10);       //number
-console.log(typeof 3.14);     //number
-console.log(typeof true);     //boolean
-console.log(typeof [1, 2, 3, 4]);  //object
-console.log(typeof NaN);      //number
-console.log(typeof new Date());    //object
-console.log(typeof null);     //object
-console.log(typeof function(){});  //function
-console.log(typeof {name: "hong", age: 20});  //object
-```
-
-출력값.
-```
-string
-number
-number
-boolean
-object
-number
-object
-object
-function
-object
-```
-
->초기화 하지 않은 변수를 넣으면 undifiend로 출력된다. null은 object로 출력됨.
-
-총 5가지의 자료형 존재  
-
-1. string  
-2. number  
-3. boolean  
-4. object  
-5. function  
-
-자바 스크립트에선 `===` 연산자가 있는데 안의 데이터 뿐 아니라 type까지 비교해서 일치하는지 검사한다.  
-
-
 
 ## JavaScript 반올림 함수 - Math 객체
 

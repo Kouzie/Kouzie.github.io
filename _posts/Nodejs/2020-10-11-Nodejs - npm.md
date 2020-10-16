@@ -1,5 +1,5 @@
 ---
-title:  "Nodejs - 개요!"
+title:  "Nodejs - npm!"
 
 read_time: false
 share: false
@@ -55,8 +55,8 @@ npm install request --save
 
 `request` 모듈을 설치, `--save` 속성을 통해 `dependencies`에 어떻게 저장할 것인지 지정 가능하다.  
 
-* `-P, --save-prod`: `package.json의` `dependencies`에 패키지를 등록합니다. (default)  
-* `-D, --save-dev`: `package.json의` `devDependencies`에 패키지를 등록합니다.  
+* `-P, --save-prod`: `package.json의` `dependencies`에 패키지를 등록. (default)  
+* `-D, --save-dev`: `package.json의` `devDependencies`에 패키지를 등록.  
 * `-O, --save-optional`: `package.json의` `optionalDependencies`에 패키지를 등록   
 * `--no-save`: `dependencies`에 패키지를 등록하지 않습니다.   
 
@@ -104,4 +104,23 @@ app.listen(5000, () => {
 ```
 
 `express` 에선 객체 출력시 자동으로 `JSON` 형식으로 출력한다.  
+
+## global
+
+```
+npm install -g '모듈이름'
+```
+
+permission error 가 뜰 것인데 아래 명령어로 global 모듈 설치 위치를 HOME 디렉토리로 설정하고 다운받아야 한다.  
+
+Make a directory for global installations:
+
+1. `mkdir ~/.npm-global`
+2. `npm config set prefix '~/.npm-global'`
+3. `export PATH=~/.npm-global/bin:$PATH`
+4. `source ~/.profile`
+
+js 파일에서 `var module = require('모듈이름')` 을 실행하면 `global` 에 저장된 모듈을 찾을 수 없다.  
+
+`npm link 모듈이름` 명령을 먼저 실행 하고 js 파일을 실행하자.  
 
