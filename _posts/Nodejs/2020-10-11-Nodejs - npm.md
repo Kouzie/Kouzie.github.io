@@ -111,14 +111,14 @@ app.listen(5000, () => {
 npm install -g '모듈이름'
 ```
 
-permission error 가 뜰 것인데 아래 명령어로 global 모듈 설치 위치를 HOME 디렉토리로 설정하고 다운받아야 한다.  
+`permission error` 가 뜰 것인데 아래 명령어로 `global` 모듈 설치 위치를 HOME 디렉토리로 설정하고 다운받아야 한다.  
 
 Make a directory for global installations:
 
-1. `mkdir ~/.npm-global`
-2. `npm config set prefix '~/.npm-global'`
-3. `export PATH=~/.npm-global/bin:$PATH`
-4. `source ~/.profile`
+1. `mkdir ~/.npm-global`  
+2. `npm config set prefix '~/.npm-global'`  
+3. `export PATH=~/.npm-global/bin:$PATH`  
+4. `source ~/.profile`  
 
 js 파일에서 `var module = require('모듈이름')` 을 실행하면 `global` 에 저장된 모듈을 찾을 수 없다.  
 
