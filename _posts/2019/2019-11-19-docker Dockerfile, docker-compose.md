@@ -199,7 +199,7 @@ nginx                     latest              540a289bab6c        4 days ago    
 `MergedDir, UpperDir, WorkDir`은 도커 이미지 구축을 위한 데이터로 
 두 이미지의 내용이 일치하는 부분이 상당히 많다.  
 
-## docker private registry 구축 및 관리  
+## local docker private registry 구축 및 관리  
 
 프라이빗 레지스트리를 구축하기 위한 이미지를 다운받아 컨테이너 생성해보자.  
 
@@ -207,12 +207,18 @@ nginx                     latest              540a289bab6c        4 days ago    
 
 ```
 [main server - 192.168.56.102]
-$ docker pull registry:2.0
-$ docker run --restart=always --name local-registry -d -p 5000:5000 registry:2.0
+$ docker pull registry:2
+$ docker run -d \
+  -p 5000:5000 \
+  --restart=always \
+  --name local-registry \
+  -v /mnt/registry:/var/lib/registry \
+  registry:2
 
 $ docker ps | grep registry
 sudo netstat -nlp | grep 5000
 ```
+
 `5000`번 포트를 매핑하고 해당 `local-registry` 컨테이너가 동작중이지 확인  
 
 `private registry` 구축끝!  
@@ -263,9 +269,20 @@ $ docker images
 REPOSITORY                              TAG                 IMAGE ID            CREATED             SIZE
 192.168.56.102:5000/google-monitoring   latest              eb1210707573        12 months ago       69.6MB
 ```
+
 이미지명 앞에 `ip:port`를 입력할 필요가 있다.  
 
 ### 외부 서버에 private registry 등록  
+
+`private registry` 를 외부에서 사용하려면 `https` 사용이 **필수**이다.  
+때문에 `dns` 설정, `ssl` 인증서 설치가 필요한대 `letsencrypt` 를 사용해 `ssl` 를 설치하고 진행해보았다.  
+
+regitsry 실행 전에 인증 파일이 저장되는 `/data/auth` 위치 `htpasswd` 를 사용해 계정정보 파일 생성 및 계정정보 입력
+
+```
+$ sudo apt-get install apache2-utils
+$ htpasswd -Bbn newid newpw > htpasswd # 루트 계정으로 진행
+```
 
 ```
 docker run -d \
@@ -273,27 +290,69 @@ docker run -d \
 --restart=always \
 --name docker-registry \
 -v /etc/letsencrypt:/etc/letsencrypt \
--v /data/registry:/var/lib/registry/docker/registry \
+-v /data/registry/registry:/var/lib/registry \
 -v /data/auth:/auth \
 -e "REGISTRY_AUTH=htpasswd" \
 -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
 -e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd" \
 -e "REGISTRY_HTTP_TLS_CERTIFICATE=/etc/letsencrypt/live/<mydomain>/fullchain.pem" \
 -e "REGISTRY_HTTP_TLS_KEY=/etc/letsencrypt/live/<mydomain>/privkey.pem" \
-registry
+registry:2
 ```
 
-`private registry` 를 외부에서 사용하려면 `https` 사용이 필수이다.  
-때문에 `dns` 설정, `ssl` 인증서 설치가 필요한대 `letsencrypt` 를 사용해 `ssl` 를 설치했다.  
+> `<mydomain>` 부분을 본인의 `letsencrypt` 에 적용된 도메인으로 변경  
 
 `letsencrypt`의 `pem` 파일들은 심볼릭 링크이기에 실제 파일을 사용하려면 `/etc/letsencrypt`를 모두 볼륨처리 해야한다.  
-인증 파일이 저장되는 `/data/auth` 위치 `htpasswd` 를 사용해 계정정보 파일 생성 및 계정정보 입력
+
+간단한 `docker-registry-ui` 를 지원하고 싶다면 아래처럼 `docker-compose` 파일 작성 권장  
+`joxit/docker-registry-ui` 외에도 `portus`, `nexus3` 등 지원  
+
+```yaml
+version: "3"
+
+services:
+  registry:
+    restart: always
+    image: registry:2
+    ports:
+      - 5000:5000
+    environment:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+      REGISTRY_HTTP_TLS_CERTIFICATE: /etc/letsencrypt/live/<mydomain>/fullchain.pem
+      REGISTRY_HTTP_TLS_KEY: /etc/letsencrypt/live/<mydomain>/privkey.pem
+      REGISTRY_STORAGE_DELETE_ENABLED: "true" # 삭제 허용
+    volumes:
+      - /data/registry:/var/lib/registry
+      - /data/auth:/auth
+      - /etc/letsencrypt:/etc/letsencrypt
+  ui:
+    restart: always
+    image: joxit/docker-registry-ui:static
+    ports:
+      - 8000:80
+    environment:
+      REGISTRY_URL: https://registry:5000
+      DELETE_IMAGES: "true"
+      REGISTRY_TITLE: My Private Docker Registry
+    depends_on:
+      - registry
+```
 
 ```
-$ apt install apache2-utils
-$ htpasswd -Bn kouzie >> htpasswd
-$ htpasswd -Bbn newid newpw > htpasswd
+$ docker login mydomain.com:5000
+# username: my-user
+# password: my-pass
+
+$ docker image tag mysql:5.7 mydomain.com:5000/mysql:5.7
+$ docker image push mydomain.com:5000/mysql:5.7
 ```
+
+> http://mydomina.com:8000/?page=1#!taglist/mysql 접속시 아래와 같은 WEB UI 출력  
+
+![dockercompose6](/assets/2019/dockercompose6.png){: .shadow}  
+
 
 ### 구글 클라우드플랫폼 사용  
 
