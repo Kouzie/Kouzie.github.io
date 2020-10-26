@@ -7,11 +7,11 @@ author_profile: false
 # classes: wide
 
 categories:
-  - Spring
+  - Nodejs
 
 tags:
-  - Spring
-  - java
+  - Nodejs
+  - npm
 
 toc: true
 toc_sticky: true
