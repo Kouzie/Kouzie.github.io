@@ -18,9 +18,9 @@ toc_sticky: true
 
 ---
 
-## AOP 
+## AOP (Aspect Oriented Programming)
 
-`AOP`는 `Aspect Oriented Programming` (관점 지향적 프로그래밍 기법)의 약자이다.  
+`Aspect Oriented Programming` 관점 지향적 프로그래밍 기법
 
 우리가 게시판을 만들때 글쓰기, 혹은 댓글쓰기 기능을 수행하기 전에 로그인 인증과정을 거쳐야 가능하도록 설정하는데 이런 기능 관점으로 프로그래밍 하는 것을 뜻한다.  
 

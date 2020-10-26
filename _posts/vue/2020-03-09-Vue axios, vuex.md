@@ -1,5 +1,5 @@
 ---
-title:  "Vue - Vue axios, veux!"
+title:  "Vue - Vue axios, vuex!"
 
 read_time: false
 share: false

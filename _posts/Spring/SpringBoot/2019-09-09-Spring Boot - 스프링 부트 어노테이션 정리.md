@@ -245,14 +245,14 @@ DB의 `ON DELETE CASCADE, UPDATE`
 
 ### fetch
 
-관계 Entity의 데이터 읽기 전략을 결정. 즉시로딩(Eager), 지연로딩(Lazy)가 있다.  
+관계 `Entity` 의 데이터 읽기 전략을 결정. 즉시로딩(`Eager`), 지연로딩(`Lazy`)가 있다.  
 
 엔티티를 조회할때 연관된 엔티티도 같이 조회한다.
 
 `FetchType.LAZY` - 연관된 엔티티를 실제 사용할때 조회한다.  
 
-@OneToMany, @ManyToMany 의 경우 기본 fetch 전략을 `FetchType.LAZY` 로 설정하고 있고  
-@OneToOne, @ManyToOne 의 경우 기본 fetch 전략을 `FetchType.LAZY` 로 살정하고 있다.  
+`@OneToMany`, `@ManyToMany` 의 경우 기본 `fetch` 전략을 `FetchType.LAZY` 로 설정하고 있고  
+`@OneToOne`, `@ManyToOne` 의 경우 기본 `fetch` 전략을 `FetchType.LAZY` 로 살정하고 있다.  
 
 
 
