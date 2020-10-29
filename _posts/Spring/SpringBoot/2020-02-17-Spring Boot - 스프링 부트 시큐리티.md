@@ -183,12 +183,12 @@ public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception 
 }
 ```
 
-`Spring security login` 페이지에서 중요한건 필터가 요구하는 데이터의 `alias`이다.  
+`spring-security login` 페이지에서 중요한건 필터가 요구하는 데이터의 `alias`이다.  
 `user`에 대한 데이터를 조회할땐 `username`, `password`, `enabled`  
 `role`에 대한 데이터를 조회할땐 `uid`, `role` 
 
 
-> `rolePrefix("ROLE_")` : Spring security 는 롤 베이스 기반 보안정책을 제공하며 기본적으로 `ROLE_`접두사가 기본적으로 붙이도록 설정함.  
+> `rolePrefix("ROLE_")` : `spring-security` 는 롤 베이스 기반 보안정책을 제공하며 기본적으로 `ROLE_`접두사가 기본적으로 붙이도록 설정함.  
 공식문서에선 `RoleVoter`를 커스텀하면 접두사 변경이 가능하다 하는데 커스텀이 쉽지 않다...  
 > https://javadeveloperzone.com/spring-boot/spring-security-custom-rolevoter-example/
 
@@ -271,7 +271,7 @@ public class CustomUsersService implements UserDetailsService {
 }
 ```
 
-어떻게 `Member` 객체를 `Spring security` 에서 요구하는 `UserDetails` 로 반환하는지 알아보자.   
+어떻게 `Member` 객체를 `spring-security` 에서 요구하는 `UserDetails` 로 반환하는지 알아보자.   
 
 방법은 3가지다.  
 
@@ -437,7 +437,7 @@ protected void configure(HttpSecurity http) throws Exception {
 문제는 비밀번호 변경시 쿠키값도 변경되어야 한다는 거다.  
 이를 해결하기 위해 DB에 유저에 대한 토큰값을 저장하고 지속적으로 업데이트가 일어날 수 있도록 설정하자.  
 
-먼저 `Spring security`가 토큰 정보를 관리하는 테이블 생성  
+먼저 `spring-security`가 토큰 정보를 관리하는 테이블 생성  
 
 ```java
 @Getter
@@ -740,7 +740,7 @@ Rest API 를 사용하는 클라이언트가 `Session`/`Cookie` 시스템을 갖
 1. `/authenticate` url 로 `username`, `password` 정보와 함께 `jwt` 토큰 요청  
 2. 이미 토큰 데이터를 가지고 있지 않은지 확인 
 3. 없다면 `generateAuthenticateToken()` 메서드 호출 
-4. `username`, `password` 를 spring security `authenticate()` 를 사용해 검증시도
+4. `username`, `password` 를 `spring-security` `authenticate()` 를 사용해 검증시도
 5. 검증을 위해 `username` 을 DB 에서 검색, `Userdetails` 를 요청  
 6. `Userdetails` 를 반환, 내부에는 `username`, `password` 데이터가 포함되어있음.  
 7. 입력한 `username`, `password` 가 DB에서 반환된 값과 다를경우 에러발생  
@@ -1197,3 +1197,91 @@ public OAuthAttributes getUserAttributes(OAuthAccessToken accessToken) {
   return oAuthAttributes;
 }
 ```
+
+## Spring security cors 에러 이슈
+
+> cors 개요: https://kouzie.github.io/html/JavaScript-개요/#sopsame-origin-policycorscross-origin-resource-sharing-에러
+
+`spring-security`를 사용하지 않는경우 `CorsRegistry` 등록하여 `cors` 에러 이슈 처리방식을 사용해왔다.  
+
+
+```java
+@Configuration
+@RequiredArgsConstructor
+public class WebAdminConfig implements WebMvcConfigurer, Filter {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+            .allowedOrigins("*")
+            .allowedMethods("*")
+            .allowedHeaders("*")
+            .allowCredentials(true)
+            .maxAge(3600);
+    }
+}
+```
+
+
+`spring-security` 를 사용한다면 `configure` 에 해당 필터를 등록해준다.  
+
+```java
+public class CorsFilter implements Filter {
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        HttpServletResponse resp = (HttpServletResponse) response;
+        resp.setHeader("Access-Control-Allow-Origin", "*");
+        resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
+        resp.setHeader("Access-Control-Max-Age", "3600");
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type,XFILENAME,XFILECATEGORY,XFILESIZE,X-Token");
+        chain.doFilter(request, resp);
+    }
+}
+```
+
+
+```java
+.addFilterBefore(new CorsFilter(), ChannelProcessingFilter.class)
+```
+
+
+최신 `spring-security` 사용시에 `CorsConfiguration` 를 사용한 `cors` 이슈 처리  
+
+> https://stackoverflow.com/questions/36809528/spring-boot-cors-filter-cors-preflight-channel-did-not-succeed  
+
+```java
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    ...
+    ...
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                ...
+                .cors().configurationSource(corsConfigurationSource())
+                ...
+        ;
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "DELETE"));
+        configuration.setAllowCredentials(true);
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "TOKEN_ID", "X-Requested-With", "Authorization", "Content-Type", "Content-Length", "Cache-Control"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+    }
+}
+```
+
+> 주의 : `WebSecurity` 의 `web.ignoring()` 사용시에 `spring-security filter` 에서 아예 제외됨으로 `CORS` 설정을 사용하지 않는다.  
+> `HttpSecurity` 와 `permitAll()` 을 통해 진행하는 것을 권장 

@@ -942,21 +942,55 @@ alert(counter2.value()); /* 0 */
 ## SOP(Same-Origin Policy),CORS(Cross Origin Resource Sharing) 에러
 
 > https://developer.mozilla.org/ko/docs/Web/HTTP/CORS
-> 
+
 
 최근 서비스 사이트에서 한 페이지 안에 모든 데이터를 꽉꽉 담아 한번에 출력하는 페이지는 일반적으로 만들지 않는다.  
 
 네이버 메인페이지만 봐도 메인페이지 자체 HTML은 `naver.com`에,  
 쇼핑, 뉴스, 증권 등 각종 데이터를 각종 도메인에서 비동기 요청을 통해 `json` 형식으로 데이터를 수신받아 메인페이지에 출력한다.  
 
-`naver.com` 에서 받은 페이지에서 `somen-ews.com` 에서 받은 뉴스정보 데이터를 받아 브라우저에서 랜더링하는데 `SOP` 보안 정책 에러가 발생한다. (흔히 `CORS`라 부름, 동일한 도메인이 아닌 서로 다른 도메인에서 받은 데이터를 랜더링해서 발생하는 오류)  
+`naver.com` 에서 받은 페이지에서 `some-ews.com` 에서 받은 뉴스정보 데이터를 받아 브라우저에서 랜더링하는데 `SOP` 보안 정책 에러가 발생한다.  
+(흔히 `CORS`라 부름, 동일한 도메인이 아닌 서로 다른 도메인에서 받은 데이터 요청시 발생하는 오류)  
 
 1. 컨슈머 서버측에서 프록시 제공  
 2. 서비스 제공자 측에서 `CORS` 기능 제공  
 3. 서비스 제공자 측에서 `JSONP` 기능 제공  
 
-vue나 react같은 클라이언트 서버는 일반적으로 별도의 서비스 제공자와 협력한다.(Node, Spring 등)  
+`vue`나 `react`같은 클라이언트 서버는 일반적으로 별도의 서비스 제공자와 협력한다.(`Node-express`, `Spring` 등)  
 서비스 서버를 개인적으로 수정할 수 있다면 2, 3 번 방법을 써도 되지만 수정 불가능하다면 1번 방법을 통해 해결해야 한다.  
+
+### Preflighted requests in CORS
+
+`OPTIONS` 메소드를 통해 `preflight(사전 전달)` 보내 서버가 해당 `parameters`를 포함한 요청(`GET`, `POST` 등)을 보내도 되는지에 대한 응답을 줄 수 있게 한다. 
+
+```
+# request header
+Access-Control-Request-Headers: authorization,content-type
+Access-Control-Request-Method: POST
+...
+```
+`Access-Control-Request-Headers` - 실제 요청에서 어떤 HTTP 헤더를 사용할지 서버에게 알려줌
+`Access-Control-Request-Method` - 실제 요청에서 어떤 HTTP 메서드를 사용할지 서버에게 알려줌
+
+```
+# response header
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Headers: authorization, content-type
+Access-Control-Allow-Methods: HEAD,GET,POST,PUT,DELETE
+Access-Control-Allow-Origin: http://localhost:8080
+...
+```
+`Access-Control-Allow-Credentials` - 요청에 대한 응답을 표시할 수 있는지를 나타냄, credentials을 사용하여 실제 요청을 수행할 수 있는지를 나타냅니다.
+`Access-Control-Allow-Headers` - 실제 요청시 사용할 수 있는 HTTP 헤더를 나타냅니다.
+`Access-Control-Allow-Origin` - 브라우저가 해당 출처가 리소스에 접근하도록 허용
+
+![js25](/assets/web/js/js25.png){: .shadow}  
+
+그림과 같이 `OPTIONS` 요청에 `200 OK` 반환값과 특정 메서드와 헤더가 사용 가능함을 알게되고 데이터를 요청하게 된다.
+
+이는 브라우저의 약속이기에 `preflight`를 발생시키지 않는 `simple request` 로 변경하여 `CORS` 이슈 없이 처리 가능하지만 보안상의 이유로 브라우저에서 별도의 설정을 통해서만 가능하다.  
+
+
 
 ### JSONP  
 
@@ -964,7 +998,7 @@ vue나 react같은 클라이언트 서버는 일반적으로 별도의 서비스
 
 ### Proxy
 
-
+vue, react 에서 제공하는 local proxy 사용 혹은
 
 
 ## Promise

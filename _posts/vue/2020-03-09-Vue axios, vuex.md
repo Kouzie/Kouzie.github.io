@@ -42,8 +42,7 @@ $ yarn add axios
 
 ![vue15](/assets/vue/vue15.png){: .shadow}   
 
-> `Cross Origin Resource Sharing`(교차 출처 리소스 공유): 한 출처에서 실행 중인 웹 애플리케이션이 다른 출처의 선택한 자원에 접근할 수 있는 권한을 부여하도록 브라우저에 알려주는 체제. 
-> https://developer.mozilla.org/ko/docs/Web/HTTP/CORS
+> cors 개요: https://kouzie.github.io/html/JavaScript-개요/#sopsame-origin-policycorscross-origin-resource-sharing-에러
 
 서비스 제공자에 `axios` 를 사용해 리소스를 가져오는데 위와같은 사항때문에 때에 따라 프록시 서버 설정이 필요하다.  
 
@@ -74,7 +73,7 @@ moudel.exports = {
 
 `vue.config.js` 파일 생성후 위와 같이 작성,  
 
-개발용 서버(프록시 서버)에 `/api/contacts` 로 요청하면 서비스 제공자 `sample.bmaster.kro.kr/contacts` 로의 접근을 자신을 경유해 요청 전달.
+개발용 서버(자기자신의 프록시 서버)에 `/api/contacts` 로 요청하면 서비스 제공자 `sample.bmaster.kro.kr/contacts` 로의 접근을 자신을 경유해 요청 전달.
 
 
 
