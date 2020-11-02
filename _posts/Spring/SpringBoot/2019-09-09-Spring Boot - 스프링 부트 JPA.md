@@ -960,17 +960,22 @@ private List<Reply> replies;
 `ManyToOne`, `OneToOne` 관계에선 `innerJoin`, `leftJoin` 을 통해 `N+1` 문제와 `paging`
 처리를 모두 할 수 있다.  
 
-하지만 `OntToMany` 관계에선 둘중 하나만 선택해야 한다.  
+하지만 `OneToMany` 관계의 데이터까지 가져오려면 포기해야할 사항이 많다.  
 
-### @Query 메서드
+1. 여러개의 OneToMany 속성에 대한 데이터를 같이 검색할 수 없다.  
+   - SQL 특성상 2개의 `1:N`, `1:m` 관계의 테이블을 조인하게 되면 `n x m` 개 `Cartesian` 곱만큼 raw 가 반환된다.
+2. 페이징 처리가 불가능하다.
+   - `1:N` 테이블을 조인 할 경우 `n`개의 raw 가 출력되게 되며 raw 기반으로 페이징 처리하는 SQL 특성상 페이징이 불가능하다.
+
+
+`JPQL` 의 경우 `DISTINCT` 키워드와 함께 `JOIN FETCH` 쿼리 시행  
 
 ```java
-@Query("SELCET o FROM Order o JOIN FETCH o.orderMenus om WHERE o.customer.id = :id")
+@Query("SELCET DISTINCT o FROM Order o JOIN FETCH o.orderMenus om WHERE o.customer.id = :id")
 List<Order> findAllWithOrderMenus(Long id);
 ```
 
-### Querydsl
-
+`QueryDsl` 의 경우 알아서 중복데이터를 객체로 만들지 않는다.
 ```java
 QStoreMenu qStoreMenu = QStoreMenu.storeMenu;
 QOrderMenu qOrderMenu = QOrderMenu.orderMenu;
@@ -988,9 +993,10 @@ return queryFactory.selectFrom(qOrder)
 
 ### paging 처리 딜레마
 
-위의 두 방법으로 `N+1` 문제는 해결이 되나 `Pageable` 객체나 `orderBy`, `limit`, `offset` 3개의 메서드를 모두 사용해도 페이징 처리는 되지 않는다.  
+위의 두 방법으로 `N+1` 문제는 해결이 되나 페이징처리는 사용 불가능하다.  
+`Pageable` 객체나 `orderBy`, `limit`, `offset` 3개의 메서드를 모두 사용해도 페이징 처리는 되지 않는다.  
 
-`N+1` 문제를 해결하기 위해 `Order` 를 중복적으로 `OrderMenu` 만큼 가져오는 `inner join` 쿼리를 사용하며 그만큼 행의 길이가 늘어나기에 `paging` 처리 메서드를 삽입해도 무시된다.  
+`N+1` 문제를 해결하기 위해 `Order` 를 중복적으로 `OrderMenu` 만큼 가져오는 `inner join` 쿼리를 사용하며 그만큼 행의 길이(`Cartesian` 곱)가 늘어나기에 `paging` 처리 메서드를 삽입해도 정확한 값이 나오지 않는다.   
 
 `paging` 메서드나 객체를 사용하고 싶다면 `OneToMany` 객체를 `join` 하는 쿼리를 포기해야 한다.  
 
@@ -1077,7 +1083,10 @@ public class DeviceRestartCustomRepositoryImpl implements DeviceRestartCustomRep
 ```
 
 ```java
-public interface DeviceRestartLogRepository extends JpaRepository<DeviceRestartLog, Long>, QuerydslPredicateExecutor<DeviceRestartLog>, DeviceRestartCustomRepository {
+public interface DeviceRestartLogRepository extends JpaRepository<DeviceRestartLog, Long>, 
+        QuerydslPredicateExecutor<DeviceRestartLog>, 
+        DeviceRestartCustomRepository 
+{
     DeviceRestartLog findByMessageId(String messageId);
 }
 ```

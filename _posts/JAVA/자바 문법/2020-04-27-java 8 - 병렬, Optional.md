@@ -136,9 +136,9 @@ Result "modernjavainaction.chap07.ParallelStreamBenchmark.parallelRangedSum":
 
 ## 포크/조인 프레임워크  
 
-자바 8 이전에 어떤식으로 병렬 프로그래밍을 진행했는지 알아보자.  
+`java8` 이전에 어떤식으로 병렬 프로그래밍을 진행했는지 알아보자.  
 
-java7에 추가된 포크/조인 프레임워크 방식을 사용한다.  
+`java7`에 추가된 포크/조인 프레임워크 방식을 사용한다.  
 
 
 ![image11](/assets/java/java/image11.png){: .shadow}  
@@ -146,8 +146,7 @@ java7에 추가된 포크/조인 프레임워크 방식을 사용한다.
 각각의 작업들을 잘게 쪼개 서브테스크로 만들고 모든 서브테스크를 수행  
 처리결과를 조합하는 과정이 실제 병렬처리에 들어가있다.  
 
-작업을 나누고 스레드에 할당하는 과정에서 재귀적으로 스테드 풀을 사용하게 된다.  
-
+작업을 나누고 스레드에 할당하는 과정에서 `java.util.concurrent.RecursiveTask` 객체를 통해 재귀적으로 스레드 풀을 사용하게 된다.  
 
 ```java
 public class ForkJoinSumCalculator extends RecursiveTask<Long> {
@@ -173,12 +172,10 @@ public class ForkJoinSumCalculator extends RecursiveTask<Long> {
         if (length <= THRESHOLD)  // 처리개수가 THRESHOLD 보다 작아진다면 연산 후 반환 
             return computeSequentially();
         ForkJoinSumCalculator leftTask = new ForkJoinSumCalculator(numbers, start, start + length / 2); // 분할1
+        leftTask.fork(); // 태스크 비동기 실행
         ForkJoinSumCalculator rightTask = new ForkJoinSumCalculator(numbers, start + length / 2, end); // 분할2
-        leftTask.fork();
-        // rightTask.fork();
-        // Long rightResult = rightTask.join();
-        Long rightResult = rightTask.compute();
-        Long leftResult = leftTask.join();
+        Long rightResult = rightTask.compute(); // 태스크 분할
+        Long leftResult = leftTask.join(); // 결과가 도출될때 까지 대기 
         return leftResult + rightResult;
     }
 
@@ -198,7 +195,9 @@ public class ForkJoinSumCalculator extends RecursiveTask<Long> {
 }
 ```
 
-`ForkJoinPool` 은 일반적으로 한개이상 생성하지 않으며 `availableProcessors` 에서 반환한 개수만큼의 스레드 풀을 생성해 두며 자유롭게 해당 풀에 접근할 수 있도록 한다.  
+`forkJoinSum()` 메서드를 보면 `java.util.concurrent.ForkJoinTask` 태스크를 생성해 `ForkJoinPool` 에 집어넣어 병렬실행한다.  
+
+`ForkJoinPool` 인스턴스는 은 일반적으로 한개이상 생성하지 않으며 런타임의 `availableProcessors` 에서 반환한 개수만큼의 스레드 풀을 생성해 두며 태스크가 자유롭게 해당 풀에 접근할 수 있도록 한다.  
 
 `invoke()` 메서드를 통해 `ForkJoinSumCalculator` 의 `compute` 메서드가 호출되게 된다.  
 
@@ -207,6 +206,25 @@ public class ForkJoinSumCalculator extends RecursiveTask<Long> {
 `fork()` 를 통해 `compute()` 메서드를 스레드 풀에서 실행시키고 `join()` 메서드를 호출해 예하의 모든 메서드가 종료될때까지(최종 결과값 반환) 기다린다.
 
 > https://www.baeldung.com/java-fork-join
+
+```java
+@Override
+protected Long compute() {
+    int length = end - start;
+    if (length <= THRESHOLD) {
+        return computeSequentially();
+    }
+    ForkJoinSumCalculator leftTask = new ForkJoinSumCalculator(numbers, start, start + length / 2);
+    leftTask.fork();
+    ForkJoinSumCalculator rightTask = new ForkJoinSumCalculator(numbers, start + length / 2, end);
+    rightTask.fork();
+    Long rightResult = rightTask.join();
+    Long leftResult = leftTask.join();
+    return leftResult + rightResult;
+}
+```
+
+`compute` 대신 `fork` 를 사용해도 작업내용은 동일하다. `task` 큐에 밀어넣고 `compute` 메서드가 실행되길 기다린다.  
 
 ### 작업훔치기
 
