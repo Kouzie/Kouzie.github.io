@@ -186,7 +186,8 @@ management.endpoints.web.exposure.include=*
 eureka.instance.lease-renewal-interval-in-seconds=1
 # heartbeat 못받고 2초가 지나가면 인스턴스가 제거된다. 더이상 클라이언트로 서비스를 서버가 보내지 않는다
 eureka.instance.lease-expiration-duration-in-seconds=2
-
+# 10 초마다 eureka server 로부터 등록된 서비스 패치 기본 30 초
+eureka.client.registry-fetch-interval-seconds=10
 # 유레카 서버에 본인 서비스를 등록할 건지 여부
 eureka.client.register-with-eureka=true
 # 유레카 서버로부터 서비스 목록을 로컬 캐시에 저장할 건지 여부, 둘 다 기본값 true라서 지정하지 않아도 상관 없다.

@@ -72,6 +72,7 @@ docker안에서 생성된 배포파일을 밖의 실사용 서버로 전송하�
 
 
 > 주의사항: 만약 허가되지 않은 인증서(사내 서버 등)의 경우 `jenkins`에서 인증서 확인을 무시하도록 설정해야 한다.  
+
 `JENKINS_HOME` 환경변수 위치에 `.gitconfig` 파일을 생성   
 ```
 vi /var/jenkins_home/.gitconfig

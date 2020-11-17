@@ -220,6 +220,47 @@ com.example.websock.component.Socket : onClose called, userCount:0
 연결해 버든을 누르면 `ws://localhost:8080/websocket` 로 소켓연결을 시도한다.  
 > 테스트를 위해 만든용으로 버튼을 누를때마다 소켓연결이 생성된다. `userCount`값 증가와 `Advanced REST Client` 툴에서 메세지가 찍히는지만 확인하자.  
 
+### Bean 가져오기
+
+`@Component` 로 선언되있음에도 불구하고 `ServerEndpoint` 클래스에서 `@Autowired` 사용이 불가능하다.(사용해도 `null`로 초기화된다)
+
+`ServerEndpoint` 는 웹소켓에 의해 세션이 연결될때마다 인스턴스가 `JWA` 구현에 의해 생성되고 관리되기에 생성될때마다 의존성 주입을 할수 있도록 별도 설정이 필요하다.
+
+> https://stackoverflow.com/questions/30483094/springboot-serverendpoint-failed-to-find-the-root-webapplicationcontext
+
+```java
+@Configuration
+public class CustomSpringConfigurator extends ServerEndpointConfig.Configurator implements ApplicationContextAware {
+
+    /**
+     * Spring application context.
+     */
+    private static volatile BeanFactory context;
+
+    @Override
+    public <T> T getEndpointInstance(Class<T> clazz) throws InstantiationException {
+        return context.getBean(clazz);
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        CustomSpringConfigurator.context = applicationContext;
+    }
+}
+```
+
+```java
+@Component
+@ServerEndpoint(value = "/websocket", configurator = CustomSpringConfigurator.class)
+public class Socket {
+    ...
+    ...
+    @Autowired
+    ...
+}
+```
+
+
 ## STOMP
 
 단순한 웹 소켓 처리는 `javax.websocket` 에서 지원하는 `@ServerEndpoint`, `@OnOpen`, `@OnClose`, `@OnMessage`, `@OnError` 어노테이션과 `ServerEndpointExporter` 빈 객체로 처리할 수 있다.  
@@ -246,7 +287,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/gs-guide-websocket").withSockJS();
+        registry.addEndpoint("/gs-guide-websocket").withSockJS(); // 소켓 연결 주소
     }
 }
 ```
