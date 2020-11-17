@@ -1,5 +1,5 @@
 ---
-title:  "java 8 - Future!"
+title:  "java 9 - Future!"
 read_time: false
 share: false
 toc: true
@@ -97,7 +97,7 @@ int r = r(qr1.get(), qr2.get());
 public class CompletableFuture<T> implements Future<T>, CompletionStage<T> {...}
 ```
 
-`Future` 는 인터페이스이기 때문에 생성자로 사용 불가능하지만 **구현체** 인 `CompletableFuture`는 가능하다.  
+`Future` 는 인터페이스이기 때문에 생성자로 사용 불가능하지만 **구현체** 인 `CompletableFuture`는 가능하다(java 9 추가).  
 
 `CompletableFuture`는 박스 채널 모델의 문제점을 해결하기 위해 **콤비네이터 메서드**를 사용할 수 있다.
 
