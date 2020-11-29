@@ -59,6 +59,7 @@ public static void main(String[] args) throws ExecutionException, InterruptedExc
 ```
 간단하게 멀티 스레드를 생성할 수 있는 `ExecutorService` 를 사용해 프로세스를 진행하는 `Future` 객체가 생성되면 향후 `get()` 메서드를 사용해 결과를 가져올 때 까지 기다린다.  
 
+> `executorService.shutdown()` 을 통해 모든 스레드를 종료하지 않으면 `main` 이 종료되지 않는다. 
 
 ## 박스 채널 모델
 
