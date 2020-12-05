@@ -1,5 +1,5 @@
 ---
-title:  "Nodejs - nuxt with vue!"
+title:  "Nodejs - nuxt and vue!"
 
 read_time: false
 share: false
@@ -20,25 +20,20 @@ toc_sticky: true
 
 ## 개요
 
-`nuxt` - 서버사이드 자바스크립트 프레임 워크  
-`vue` - 프론트엔트 자바스크립트 프레임 워크  
-```
+`vue` - 클라이언트 사이드 랜더링 프론트 프레임워크  
+`nuxt` - 검색엔진등의 문제로 클라이언트 사이드 프론트를 제공하지 못할 경우 nuxt 프레임워를 사용하면 vue 를 사용해 서버사이드 랜더링이 가능한 서버개발이 가능하다  
 
-> npm install -g vue-cli
-> vue init nuxt-community/starter-template nuxt-exam
-> cd nuxt-exam
-> npm install 
-> npm install --save nuxt
-> npm run dev
+
+```
+$ npm install -g vue-cli
+$ vue init nuxt-community/starter-template nuxt-exam
+$ cd nuxt-exam
+$ npm install 
+$ npm install --save nuxt
+$ npm run dev
 ```
 
 http://localhost:3000/ 으로 접속 가능한 테스트 
-
-`nuxt` 에서 `vue` 를 사용해 쉽게 프론트 엔드를 구축할 수 있다.  
-
-## 서버 실행
-
-`npm install --save nuxt`
 
 `pages` 디렉토리에 `users.vue` 생성
 
@@ -50,40 +45,24 @@ http://localhost:3000/ 으로 접속 가능한 테스트
 ```
 
 `nuxt.js` 는 `pages` 디렉토리 구조에 따라 자동으로 라우팅된다.  
+
 > http://localhost:3000/users
 
 
 ### 디렉토리 구조  
 
-`nuxt.config.json`
-nuxt 설정 정보 저장 파일, 
-
-`package.json`
-의존성 모듈, 스크립트를 정의 파일
-
-`assets`
-SASS, LESS, 빌드가 필요한 JS파일이 저장되는 디렉토리
-
-`components`
-화면 구성을 위해 사용되는 컴포넌트들이 저장되어 있는 디렉토리  
-
-`layouts`
-기본 레이아웃 포함하는 디렉토리, 반복되는 상단, 하단, 좌/우측 레이아웃을 위한 파일 정의
-
-`middleware`
-페이지 렌더링 전에 실행되는 파일이 정의되는 디렉토리
-
-`pages`
-컴포넌트의 일종, 
-
-`plugins`
-웹 어플리케이션이 실행되기전에 실행시키고 싶은 js 파일을 저장하는 디렉토리,
-
-`static`
-CSS, JS, image 같은 정적 파일 저장하는 디렉토리
-
-`store`
-상태관리를 도와주는 `vuex` 라이브러리가 포함된 디렉토리
+|파일명|설명|
+|---|---|
+`nuxt.config.json` | `nuxt` 설정 정보 저장 파일       
+`package.json` | 의존성 모듈, 스크립트를 정의 파일  
+`assets` | `SASS`, `LESS`, 빌드가 필요한 `js`파일이 저장되는 디렉토리  
+`components` | 화면 구성을 위해 사용되는 컴포넌트들이 저장되어 있는 디렉토리  
+`layouts` | 기본 레이아웃 포함하는 디렉토리, 반복되는 상단, 하단, 좌/우측 레이아웃을 위한 파일 정의  
+`middleware` | 페이지 렌더링 전에 실행되는 파일이 정의되는 디렉토리  
+`pages` | 컴포넌트의 일종       
+`plugins` | 웹 어플리케이션이 실행되기전에 실행시키고 싶은 js 파일을 저장하는 디렉토리      
+`static` | `CSS, JS, image` 같은 정적 파일 저장하는 디렉토리  
+`store` | 상태관리를 도와주는 `vuex` 라이브러리가 포함된 디렉토리  
 
 ## 파일 구조
 

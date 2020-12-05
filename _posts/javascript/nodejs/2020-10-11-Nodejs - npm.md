@@ -109,43 +109,10 @@ $ npm run test
 `npm install`:  `dependencies`, `devDependencies` 의 모든 의존성 모듈 설치  
 `npm install --production`: `dependencies` 의존성 모듈만 설치  
 
-
-## express
-
-웹서버 개발시 많이 사용되는 `express` 라는 패키지를 설치하여 서버를 실행해보자.  
+### global 설치  
 
 ```
-npm install express --save
-```
-
-```js
-const express = require('express');
-const app = express();
-
-app.get('/', (req, rep) => {
-    const data = { name: 'ko', age: 25 };
-    rep.send(data);
-});
-app.get('/error', (req, res) => {
-    res.status(404).send('404 Error');
-})
-app.listen(5000, () => {
-    console.log('server is running, http://localhost:5000');
-})
-```
-
-출력값
-
-```
-{"name":"ko","age":25}
-```
-
-`express` 에선 객체 출력시 자동으로 `JSON` 형식으로 출력한다.  
-
-## global
-
-```
-npm install -g '모듈이름'
+$ npm install -g '모듈이름'
 ```
 
 `permission error` 가 뜰 것인데 아래 명령어로 `global` 모듈 설치 위치를 HOME 디렉토리로 설정하고 다운받아야 한다.  

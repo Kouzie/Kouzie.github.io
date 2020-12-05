@@ -42,8 +42,6 @@ $ yarn add axios
 
 ![vue15](/assets/vue/vue15.png){: .shadow}   
 
-> cors 개요: https://kouzie.github.io/html/JavaScript-개요/#sopsame-origin-policycorscross-origin-resource-sharing-에러
-
 서비스 제공자에 `axios` 를 사용해 리소스를 가져오는데 위와같은 사항때문에 때에 따라 프록시 서버 설정이 필요하다.  
 
 많은 서비스 제공자는 `SOP(Same Origin Policy)`를 사용하기에 `CORS` 에러가 발생할 수 있다.   

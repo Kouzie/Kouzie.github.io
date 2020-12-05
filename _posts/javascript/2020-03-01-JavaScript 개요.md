@@ -45,14 +45,14 @@ How JavaScript works: Deep dive into WebSockets and HTTP/2 with SSE + how to pic
 ES2016에 대한 설명
 
 
-## JavaScript 변수 - const, var, let
+## JavaScript 키워드
 
-ES2015 등장 전까진 js 에서 `var` 키워드로 변수생성을 자주 했었다.  
-`var`는 hoisting한 키워드라 편하기도 하지만 혼란을 주는 키워드이다.  
+### const, var, let
 
-### JavaScript hoisiting (끌어 올리기)  
+`ES2015` 등장 전까진 JavaScript 에서 `var` 키워드로 변수생성을 자주 했었다.  
+`var`는 `hoisting` 한 키워드라 편하기도 하지만 혼란을 주는 키워드이다.  
 
-실행 컨텍스트 생성시 `var`, `function` 과 같은 일부 키워드를 먼저 읽어 변수를 미리 생성한다.  
+> JavaScript hoisiting (끌어 올리기): 실행 컨텍스트 생성시 `var`, `function` 과 같은 일부 키워드를 먼저 읽어 변수를 미리 생성한다.  
 
 
 ```js
@@ -72,19 +72,15 @@ function multi(a, b) {
     return a * b;
 }
 ```
-
-### `use strict` (`Strict mode`-엄격모드)  
-
-> https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Strict_mode
-
 이를 막고싶다면 `"use strict"` 키워드를 사용, 파일 상단에 `"use strict";` 작성한다.  
+> use strict (Strict mode): https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Strict_mode
 
 
 ### local, global, block
 
-JavaScript에는 지역범위(`local scope`), 전역범위(`global scope`) 이외에 블록범위(`block scope`) 개념이 있다.  
+JavaScript 에는 지역범위(`local scope`), 전역범위(`global scope`) 이외에 블록범위(`block scope`) 개념이 있다.  
 
-ES2015 이후에 추가되었으며 `let`, `const` 키워드를 사용해 **블록범위** 변수를 선언한다.  
+`ES2015` 이후에 추가되었으며 `let`, `const` 키워드를 사용해 **블록범위** 변수를 선언한다.  
 
 ```js
 var name = "hong gil dong"; //<--global scope
@@ -176,6 +172,89 @@ console.log(j); //5 출력
 
 for문안의 `let j`는 블록안에 별도 공간에서 사용되기 위해 선언된 변수로 for문 밖의 `j`와 전혀 관계 없다.  
 
+### try, catch, finally
+
+타 언어와 같이 `try, catch, finally`문을 사용한다.  
+
+```html
+<input type="text" id="num">
+<button onclick="exec();">click</button>
+<p id="demo"></p>
+<script>
+function exec() {
+    var num = document.getElementById("num").value
+    try {
+        if (num == "")
+            throw "empty"; //예외 발생시킴
+        if (isNaN(num))
+            throw "not a number"; //예외 발생시킴
+        if (!(0 <= num && num <= 100))
+            throw "out of range num";
+
+        document.getElementById("demo").innerHTML = num;
+    }
+    catch (err) {
+        document.getElementById("demo").innerHTML = err;
+    }
+    finally {
+
+    }
+}
+```
+
+## this
+
+> https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/this
+
+객체지향 언어에서 `this`는 대부분 해당 메서드를 정의한 객체를 가리킬 때 사용하는 키워드이다.  
+
+JavaScript에선 조금 다른데 메서드의 실행 문맥(호출한 객체) 따라 `this` 가 가리키는 값이 달라진다.  
+
+### 메서드에서 `this` 사용
+
+메서드에서 `this`키워드는 해당 메서드를 호출한 객체와 같다.  
+
+`<script>` 태그 바로 아래에 메서드 정의, 호출한다면 `window` 객체아래에 메서드를 정의하고 호출한 경우이다.  
+
+이 경우 메서드 내부의 `this` 는 해당 메서드를 호출한 `window` 를 가리킨다.
+
+단 엄격모드(`use strict`)에선 철저히 실행 컨텍스트를 지정해 줘야 하기에  
+별도로 함수 앞에 실행 컨텍스트를 지정하지 않으면 `this`는 아무 객체도 가리키지 않는다.  
+
+```html
+<script>
+  function f1() {
+      console.log(this);
+  }
+  function f2() {
+      "use strict";
+      console.log(this);
+  }
+  f1(); //window 객체
+  f2(); //undefined
+  window.f2(); //window 객체
+</script>
+```
+
+객체 내부에 메서드를 정의하고 사용하는 경우가 대부분이기에  
+당연히 `this` 는 해당 메서드를 정의한 객체를 가리키는 것 같지만 실제로는 **해당 메서드를 호출한 객체**를 가리킨다.
+
+```js
+var person = {
+    name: "admin",
+    age: 20,
+    info: function () {
+        return this.name + "/" + this.age;
+    }
+}; //object
+console.log(person.name);   //admin
+console.log(person["age"]); //20
+console.log(person.info()); //admin/20
+```
+
+위의 `this` 도 `person` 정의했기 때문이 아닌 `person` 이 호출했기 때문에 `this` 가 `person` 을 가리키는 것.  
+
+
 ## Object(객체)
 
 > https://developer.mozilla.org/ko/docs/Web/JavaScript/Guide/Working_with_Objects
@@ -185,7 +264,7 @@ for문안의 `let j`는 블록안에 별도 공간에서 사용되기 위해 선
 자바스크립트 세상에서는 거의 모든 것들이 객체이다. `null` 과 `undefined` 를 제외한 모든 원시 타입도 객체로 취급된다.  
 이러한 원시 타입들에도 프로퍼티가 추가될 수 있고 모두 객체로서의 특징을 갖는다.
 
-객체의 종류에는 여러가지가 있다. 직접만들 수 도 있고 JavaScript에 이미 존재하는 객체또한 많다.
+객체의 종류에는 여러가지가 있다. 직접만들 수 도 있고 JavaScript 에 이미 존재하는 객체또한 많다.
 
 * `Date`  
 * `Array`  
@@ -352,10 +431,10 @@ Person {name: "hong", age: 25, color: "red"}
 `hong` 인스턴스 내부에 `__proto__` 객체가 저장되어있고 위에서 정의한 `print` 메서드외에  
 `__proto__`, `constructor`를 가진다.  
 
-`constructor`는 `hong` 인스턴스 생성시 사용했던 생성자 함수가 저장되어있다.    
+`constructor`는 `hong` 인스턴스 생성시 사용했던 생성자 함수가 저장되어있다.  
 `__proto__`는 출력된 내용으로 보아 `Object` 객체를 가리키는 것 같다.  
 
-JavaScript 에선 이 프로토타입 객체를 통해 객체지향은 지원한다.  
+JavaScript 에선 이 프로토타입 객체를 통해 객체지향을 지원한다.  
 
 위에서도 모든 객체의 상위객체인 `Obejct`가 `hong.__proto__.__proto__` 를 통해 참조되고 있다.  
 
@@ -424,36 +503,6 @@ console.log(test.__proto__);
 
 > https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/new
 
-
-## try, catch, finally
-
-타 언어와 같이 `try, catch, finally`문을 사용한다.  
-
-```html
-<input type="text" id="num">
-<button onclick="exec();">click</button>
-<p id="demo"></p>
-<script>
-function exec() {
-    var num = document.getElementById("num").value
-    try {
-        if (num == "")
-            throw "empty"; //예외 발생시킴
-        if (isNaN(num))
-            throw "not a number"; //예외 발생시킴
-        if (!(0 <= num && num <= 100))
-            throw "out of range num";
-
-        document.getElementById("demo").innerHTML = num;
-    }
-    catch (err) {
-        document.getElementById("demo").innerHTML = err;
-    }
-    finally {
-
-    }
-}
-```
 만약 `input`태그 내용이 if조건문에 걸린다면 `throw`를 통해 예외가 발생하고 `p`태그에 출력된다.  
 
 ## function
@@ -626,58 +675,6 @@ function foodReport(name, age, ...favoriteFoods) {
 foodReport("이몽룡", 20, "짜장면", "초밥", "냉면", "불고기");
 foodReport("고길동", 20, "백반");
 ```
-
-## this
-
-> https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/this
-
-객체지향 언어에서 `this`는 대부분 해당 메서드를 정의한 객체를 가리킬 때 사용하는 키워드이다.  
-
-JavaScript에선 조금 다른데 메서드의 실행 문맥(호출한 객체) 따라 `this` 가 가리키는 값이 달라진다.  
-
-### 메서드에서 `this` 사용
-
-메서드에서 `this`키워드는 해당 메서드를 호출한 객체와 같다.  
-
-`<script>` 태그 바로 아래에 메서드 정의, 호출한다면 `window` 객체아래에 메서드를 정의하고 호출한 경우이다.  
-
-이 경우 메서드 내부의 `this` 는 해당 메서드를 호출한 `window` 를 가리킨다.
-
-단 엄격모드(`use strict`)에선 철저히 실행 컨텍스트를 지정해 줘야 하기에  
-별도로 함수 앞에 실행 컨텍스트를 지정하지 않으면 `this`는 아무 객체도 가리키지 않는다.  
-
-```html
-<script>
-  function f1() {
-      console.log(this);
-  }
-  function f2() {
-      "use strict";
-      console.log(this);
-  }
-  f1(); //window 객체
-  f2(); //undefined
-  window.f2(); //window 객체
-</script>
-```
-
-객체 내부에 메서드를 정의하고 사용하는 경우가 대부분이기에  
-당연히 `this` 는 해당 메서드를 정의한 객체를 가리키는 것 같지만 실제로는 **해당 메서드를 호출한 객체**를 가리킨다.
-
-```js
-var person = {
-    name: "admin",
-    age: 20,
-    info: function () {
-        return this.name + "/" + this.age;
-    }
-}; //object
-console.log(person.name);   //admin
-console.log(person["age"]); //20
-console.log(person.info()); //admin/20
-```
-
-위의 `this` 도 `person` 정의했기 때문이 아닌 `person` 이 호출했기 때문에 `this` 가 `person` 을 가리키는 것.  
 
 ### Function.prototype.call
 
@@ -936,70 +933,6 @@ alert(counter2.value()); /* 0 */
 ```
 
 클로저 함수를 사용함으로 바로 객체의 변수에 접근하지 못하도록 하고 접근용 함수에서 유효성 체크를 할 수 있다.  
-
-
-
-## SOP(Same-Origin Policy),CORS(Cross Origin Resource Sharing) 에러
-
-> https://developer.mozilla.org/ko/docs/Web/HTTP/CORS
-
-
-최근 서비스 사이트에서 한 페이지 안에 모든 데이터를 꽉꽉 담아 한번에 출력하는 페이지는 일반적으로 만들지 않는다.  
-
-네이버 메인페이지만 봐도 메인페이지 자체 HTML은 `naver.com`에,  
-쇼핑, 뉴스, 증권 등 각종 데이터를 각종 도메인에서 비동기 요청을 통해 `json` 형식으로 데이터를 수신받아 메인페이지에 출력한다.  
-
-`naver.com` 에서 받은 페이지에서 `some-ews.com` 에서 받은 뉴스정보 데이터를 받아 브라우저에서 랜더링하는데 `SOP` 보안 정책 에러가 발생한다.  
-(흔히 `CORS`라 부름, 동일한 도메인이 아닌 서로 다른 도메인에서 받은 데이터 요청시 발생하는 오류)  
-
-1. 컨슈머 서버측에서 프록시 제공  
-2. 서비스 제공자 측에서 `CORS` 기능 제공  
-3. 서비스 제공자 측에서 `JSONP` 기능 제공  
-
-`vue`나 `react`같은 클라이언트 서버는 일반적으로 별도의 서비스 제공자와 협력한다.(`Node-express`, `Spring` 등)  
-서비스 서버를 개인적으로 수정할 수 있다면 2, 3 번 방법을 써도 되지만 수정 불가능하다면 1번 방법을 통해 해결해야 한다.  
-
-### Preflighted requests in CORS
-
-`OPTIONS` 메소드를 통해 `preflight(사전 전달)` 보내 서버가 해당 `parameters`를 포함한 요청(`GET`, `POST` 등)을 보내도 되는지에 대한 응답을 줄 수 있게 한다. 
-
-```
-# request header
-Access-Control-Request-Headers: authorization,content-type
-Access-Control-Request-Method: POST
-...
-```
-`Access-Control-Request-Headers` - 실제 요청에서 어떤 HTTP 헤더를 사용할지 서버에게 알려줌
-`Access-Control-Request-Method` - 실제 요청에서 어떤 HTTP 메서드를 사용할지 서버에게 알려줌
-
-```
-# response header
-Access-Control-Allow-Credentials: true
-Access-Control-Allow-Headers: authorization, content-type
-Access-Control-Allow-Methods: HEAD,GET,POST,PUT,DELETE
-Access-Control-Allow-Origin: http://localhost:8080
-...
-```
-`Access-Control-Allow-Credentials` - 요청에 대한 응답을 표시할 수 있는지를 나타냄, credentials을 사용하여 실제 요청을 수행할 수 있는지를 나타냅니다.
-`Access-Control-Allow-Headers` - 실제 요청시 사용할 수 있는 HTTP 헤더를 나타냅니다.
-`Access-Control-Allow-Origin` - 브라우저가 해당 출처가 리소스에 접근하도록 허용
-
-![js25](/assets/web/js/js25.png){: .shadow}  
-
-그림과 같이 `OPTIONS` 요청에 `200 OK` 반환값과 특정 메서드와 헤더가 사용 가능함을 알게되고 데이터를 요청하게 된다.
-
-이는 브라우저의 약속이기에 `preflight`를 발생시키지 않는 `simple request` 로 변경하여 `CORS` 이슈 없이 처리 가능하지만 보안상의 이유로 브라우저에서 별도의 설정을 통해서만 가능하다.  
-
-
-
-### JSONP  
-
-웹 브라우저에서 css나 js 같은 리소스 파일들은 동일 출처 정책에 영향을 받지 않고 로딩이 가능하다. 이런 점을 응용해서 외부 서버에서 읽어온 js 파일을 json으로 바꿔주는 일종의 편법적인 방법.
-
-### Proxy
-
-vue, react 에서 제공하는 local proxy 사용 혹은
-
 
 ## Promise
 
