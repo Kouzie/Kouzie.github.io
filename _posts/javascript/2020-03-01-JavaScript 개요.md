@@ -936,29 +936,48 @@ alert(counter2.value()); /* 0 */
 
 ## Promise
 
-비동기 처리를 위해 JavaScript 에서 제공하는 전역객체.  
-
-`Promise` 객체를 사용하면 좀더 깔끔하게 수행 가능하다. 
+비동기 처리를 위해 JavaScript 에서 제공하는 **전역객체**.  
+비동기 특성상 이벤트 처리 콜백 메서드의 순서를 지정할 수 없는데 `Promise` 객체를 사용하면 이번 문제를 해결할 수 있을 뿐 아니라  
+콜백 지옥같은 코드 구조를 해결 가능하다. 
 
 > https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Promise
 
 
 ```js
 var p = new Promise(function (resolve, reject) {
-  ...
+  /* 비동기적으로 수행할 작업 */
   if(...) {
-      resolve(num);
+      resolve(num); // 작업성공시 호출할 콜백
   } else {
-      reject(num);
+      reject(num); // 작업 실패시 호출할 콜백
   }
 });
-p.then(function (num) {
-    console.log("resolve invoked, num:", num);
-}).catch(function (num) {
-    console.log("reject invoked, num:", num);
-})
 
-const promiseFirst = new Promise(resolve => resolve(1)) // resove 안의 데이터 전달
+// 위의 작업이 끝나 후 호출할 성공/실패 콜백 메서드 정의
+p.then(function (num) {
+    console.log("resolve invoked, num:", num); // 작업 성공 콜백
+}).catch(function (num) {
+    console.log("reject invoked, num:", num); // 작업 실패 콜백
+})
+```
+
+`p` 내부의 비동기 코드 수행 완료 후 `resolve-then`, `reject-catch` 세트로 정의된 콜백메서드가 호출된다.  
+
+위의 `Promise` 콜백 메서드는 아래처럼 `then` 메서드만으로도 구성 가능하다.  
+
+```js
+p.then(
+  (result) => console.log("resolve invoked, num:", result),
+  (error) => console.log("reject invoked, num:", error)
+);
+```
+
+### Promise Chaining
+
+위의 `then`, `catch` 메서드는 또다른 `Promise` 객체를 반환하기 때문에 `then`, `catch` 를 여러개 묶을 수 있다.  
+
+```js
+const promiseFirst = new Promise(resolve => resolve(1)) // 그냥 실행 성공 콜백에 1 전달
     .then(result => `${result + 10}`) // 11 반환
     .then(result => {console.log(result); return result + 1;}) // 11출력 111 반환
 
@@ -966,25 +985,24 @@ const promiseSecond = new Promise(resolve => resolve(1))
     .then(result => `${result + 20}`) // 21 반환
     .then(result => {console.log(result); return result + 1;}) // 21 출력 211 반환
 
-
-Promise.all([promiseFirst, promiseSecond]).then(result => console.log(result)) // 111, 211 출력
+// 2개의 비동기 메서드 결합
+Promise.all([promiseFirst, promiseSecond]).then(result => console.log(result))
 ```
 
-`Promise`에 설정한 함수 내부에서 `resolve`를 호출하면 외부의 `then`에 설정해둔 함수가 호출된다, 매개변수로 `resolve`가 전달한 데이터를 사용 가능.  
+문자열로 인식되어 `1`이 붙어 `111`, `211` 로 출력된다.  
 
-반면 `reject` 가 호출되면 외부의 `catch`에 설정해둔 함수가 호출, 마찬가지로 매개변수를 통해 데이터 전달 가능  
+```
+11
+21
+[ '111', '211' ]
+```
 
+`then` 에 정의된 람다식을 실행 후 `resolve` 를 호출, 아래의 `then` 의 정의된 람다식을 호출, 이를 반복하여 `chaining` 을 구성한다.  
 
-
-`Promise` 객체 생성시 전달하는 함수가 비동기로 실행, 
+`Promise.all` 전역 메서드를 사용해 여러개의 `Promise` 객체를 병합하여 새로운 `Promise` 객체를 생성하는 것도 가능하다.  
 
 ### async, await
 
 > https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Statements/async_function
 
-`promise` 대신 비동기 처리를 가능하게 해주는 키워드 
-
-
-## 연산자 
-
-### 확산연산자 `...`
+`promise` 객체와 함께 
