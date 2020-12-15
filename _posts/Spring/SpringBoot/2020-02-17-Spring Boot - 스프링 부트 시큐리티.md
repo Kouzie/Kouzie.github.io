@@ -1200,8 +1200,6 @@ public OAuthAttributes getUserAttributes(OAuthAccessToken accessToken) {
 
 ## Spring security cors 에러 이슈
 
-> cors 개요: https://kouzie.github.io/html/JavaScript-개요/#sopsame-origin-policycorscross-origin-resource-sharing-에러
-
 `spring-security`를 사용하지 않는경우 `CorsRegistry` 등록하여 `cors` 에러 이슈 처리방식을 사용해왔다.  
 
 
