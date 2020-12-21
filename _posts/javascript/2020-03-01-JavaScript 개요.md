@@ -1005,4 +1005,81 @@ Promise.all([promiseFirst, promiseSecond]).then(result => console.log(result))
 
 > https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Statements/async_function
 
-`promise` 객체와 함께 
+```js
+const fs = require('fs');
+
+const _p = (val) => {
+    return new Promise((resolve, reject) => {
+        fs.readFile('./test.txt', (err, data) => {
+            if (err) {
+                reject(err)
+            }
+            resolve(`${val}: ${data.toString()}`)
+        })
+    })
+}
+
+async function p() {
+    try {
+        var data1 = await _p(1);
+        var data2 = await _p(2);
+        var data3 = await _p(3);
+        console.log(data1, data2, data3);
+    } catch (err) {
+        console.log('error! ' + err);
+    }
+}
+
+p();
+```
+
+
+함수 앞에 `async` 키워드, 비동기 처리 코드 앞에 `await` 키워드 적용.  
+`await` 키워드는 `async` 메서드 내부에서만 사용 가능하다.  
+
+`try, catch` 를 사용해 비동기 메서드 안에서 `reject` 가 호출되거나 `throw` 로 예외를 발생시킨 것을 쉽게 처리할 수 있다.  
+
+비동기 처리 메서드는 `Promise` 객체를 반환해야 `await`가 의도한 대로 동작한다.  
+
+그렇다고 `async, await` 키워드로 비동기 처리를 하려고 꼭 `Promise` 객체를 정의할 필요는 없다.  
+아래처럼 `async` 와 람다식을 사용해 비동기 메서드 정의가 가능하다.  
+
+```js
+const originPromise = new Promise((resolve, reject) => {
+    console.log("origin called")
+    resolve("origin promise");
+});
+
+originPromise.then(res => {
+    console.log(res);
+});
+
+const newMetaPromise = async () => {
+    console.log("new meta called")
+    return "new meta promise";
+}
+newMetaPromise().then(res => {
+    console.log(res);
+});
+// origin called
+// new meta called
+// origin promise
+// new meta promise
+```
+
+비동기 처리를 위해 `callback`을 마지막 매개변수로 넘겨주거나 `Promise` 객체를 정의하는 것 보다  
+아래처럼 비동기 메서드를 `async, await` 키워드로 한번 더 감싸면 코드는 조금 늘어나도 를 사용하면 비동기적 사고는 적게할 수 있다.    
+
+```js
+const newMetaPromise = async () => {
+    console.log("new meta called")
+    return "new meta promise";
+}
+
+async function test() {
+    let result = await newMetaPromise();
+    console.log(result);   
+}
+
+test();
+```
