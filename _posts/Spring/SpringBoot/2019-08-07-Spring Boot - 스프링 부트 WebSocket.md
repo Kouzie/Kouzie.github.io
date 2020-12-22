@@ -23,26 +23,20 @@ toc_sticky: true
 
 웹 소켓이 생기기전 서버는 클라이언트에게 어떠한 정보를 알리기 위해 무식한 방법인 `Polling`, `Long Polling` 양방향 통신 기법을 사용하였다.  
 
-`http`프로토콜로는 절대로 서버가 클라이언트에게 요청할 순 없다.   
+`http` 프로토콜로는 절대로 서버가 클라이언트에게 요청할 순 없다.   
 
 이를 해결하기 위해 클라이언트가 서버에게 **`n`초 주기**로 계속 자신에게 필요한 정보가 있는지 물어보는 요청을 날린다.(`Polling`방식)  
 
-`Long Polling`은 조금더 효율적으로 `n`초 주기가 아닌 일단 보내고 서버가 응답을 반환할때까지 기다리는 방식이다.  
-
+`Long Polling`은 조금더 효율적으로 `n`초 주기가 아닌 일단 보내고 서버가 응답을 반환할때까지 **기다리는 방식**이다.  
 일단 보내고 time out될 때까지 무한정 기다린다는 것이다  
 
 > https://kamang-it.tistory.com/entry/Webhttp통신을-이용한-양방향-통신기법-long-polling
 
-`HTML5`등장과 함께 `Websocket`이 등장하였고 위와같은 불편한 양방향 통신기법을 사용하지 않게되었다.  
+`HTML5`등장과 함께 `Websocket`이 등장하였고 위와같은 불편한 `Polling, Long Polling` 통신기법을 사용하지 않게되었다.  
 
 서버는 클라이언트의 요청이 없더라도 자유롭게 클라이언트에게 데이터를 전달할 수 있게되었다.  
 
-하지만 오래된 버전의 브라우저의 경우 아직 웹소켓을 지원하지 않음으로 `Long Polling` 방식을 지원해야 하는데 이를 위해 `SockJS`, `STOMP`같은 라이브러리가 존재한다.  
-
-스프링 부트에서는 `Websocket`을 구현하고 몇가지 속성만 추가하면 `SockJS`까지 지원 가능함으로 2가지 같이 사용가능하다.  
-많은 프로젝트에서 아직까지 `SockJS`를 사용중이다.  
-
-## 스프링 부트 기반 간단한 웹소캣 예제   
+## tomcat 웹소캣 예제   
 
 여기선 별도의 라이브러리를 사용하지 않고 단순 `websocket` 만을 사용한다.  
 
@@ -159,60 +153,69 @@ com.example.websock.component.Socket : onClose called, userCount:0
     <title>Your First WebSocket!</title>
 </head>
 <body>
-<script type="text/javascript">
-    var wsUri = "ws://localhost:8080/websocket";
-    var websocket;
-    var output;
-    function init() {
-        output = document.getElementById("output");
-    }
-    function send_message() {
-        websocket = new WebSocket(wsUri);
-        websocket.onopen = function (evt) {
-            onOpen(evt)
-        };
-        websocket.onmessage = function (evt) {
-            onMessage(evt)
-        };
-        websocket.onerror = function (evt) {
-            onError(evt)
-        };
-    }
+    <script type="text/javascript">
+        var wsUri = "ws://localhost:8080/websocket";
+        var websocket;
+        var output;
+        var textID
+        function init() {
+            output = document.getElementById("output");
+            textID = document.getElementById("textID");
+        }
+        function connect() {
+            if (!websocket) {
+                websocket = new WebSocket(wsUri);
+                websocket.onopen = function (evt) {
+                    onOpen(evt)
+                };
+                websocket.onmessage = function (evt) {
+                    onMessage(evt)
+                };
+                websocket.onerror = function (evt) {
+                    onError(evt)
+                };
+            }
+        }
+        
+        function disconnect() {
+            if (!websocket) websocket.close();
+        }
+        
+        function send_message() {
+            var message = textID.value;
+            writeToScreen("Message Sent: " + message);
+            websocket.send(message);
+        }
 
-   function onOpen(evt) {
-       writeToScreen("Connected to Endpoint!");
-       var textID = document.getElementById("textID");
-       doSend(textID.value);
-    }
-    function onMessage(evt) {
-        writeToScreen("Message Received: " + evt.data);
-    }
-    function onError(evt) {
-        writeToScreen('ERROR: ' + evt.data);
-    }
-    function doSend(message) {
-        writeToScreen("Message Sent: " + message);
-        websocket.send(message);
-        //websocket.close();
-    }
-    function writeToScreen(message) {
-        var pre = document.createElement("p");
-        pre.style.wordWrap = "break-word";
-        pre.innerHTML = message;
+        function onOpen(evt) {
+            writeToScreen("Connected to Endpoint!");
+        }
 
-       output.appendChild(pre);
-    }
-    window.addEventListener("load", init, false);
-</script>
-<h1 style="text-align: center;">Hello World WebSocket Client</h1>
-<br>
-<div style="text-align: center;">
-    <form action="">
-        <input onclick="send_message()" value="Send" type="button">
-        <input id="textID" name="message" value="Hello WebSocket!" type="text"><br>
-    </form>
-</div>
-<div id="output"></div>
+        function onMessage(evt) {
+            writeToScreen("Message Received: " + evt.data);
+        }
+
+        function onError(evt) {
+            writeToScreen('ERROR: ' + evt.data);
+        }
+
+        function writeToScreen(message) {
+            var pre = document.createElement("p");
+            pre.style.wordWrap = "break-word";
+            pre.innerHTML = message;
+            output.appendChild(pre);
+        }
+        window.addEventListener("load", init, false);
+    </script>
+    <h1 style="text-align: center;">Hello World WebSocket Client</h1><br>
+    <div style="text-align: center;">
+        <form action="">
+            <input onclick="connect()" value="Connect" type="button">
+            <input onclick="send_message()" value="Send" type="button">
+            <input id="textID" name="message" value="Hello WebSocket!" type="text"><br>
+        </form>
+    </div>
+    <div id="output"></div>
 </body>
 </html>
 ```
@@ -260,21 +263,174 @@ public class Socket {
 }
 ```
 
+아니면 `ApplicationContextAware` 를 사용해 스프링 컨텍스트에서 직접 가져와 사용해도 된다.  
 
-## STOMP
+```java
+@Component
+public class SpringContext implements ApplicationContextAware {
+     
+    private static ApplicationContext context;
+     
+    public static <T extends Object> T getBean(Class<T> beanClass) {
+        return context.getBean(beanClass);
+    }
+     
+    @Override
+    public void setApplicationContext(ApplicationContext context) throws BeansException {
+        SpringContext.context = context;
+    }
+}
+```
 
-단순한 웹 소켓 처리는 `javax.websocket` 에서 지원하는 `@ServerEndpoint`, `@OnOpen`, `@OnClose`, `@OnMessage`, `@OnError` 어노테이션과 `ServerEndpointExporter` 빈 객체로 처리할 수 있다.  
+## Spring 웹 소켓 예제  
 
-조금 복잡한 구조를 웹소켓을 통해 처리하고 싶다면 **구독, 발행 시스템**을 사용하면 처리하기 편한데 
-이를 지원하는 라이브러리가 `STOMP` 이다, 이제 매력적인 구독, 발행 구조를 `WebSocket` 을 사용해 구축할 수 있다.   
+톱켓 웹 소켓에서 스프링 관련 기능을 사용할 수 있기 때문에 많이 추상적이지만 간결하다.  
+거추장 스러운 `ServerEndPoint` 같은 어노테이션이 모두 삭제되고 아래 2개 스프링 빈 객체만 적용하면된다.  
+
+```java
+@Configuration
+@EnableWebSocket
+@RequiredArgsConstructor
+public class WebSocketConfig implements WebSocketConfigurer {
+
+    private final WebSocketHandler webSocketHandler;
+
+    @Override
+    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        registry.addHandler(webSocketHandler, "/websocket")
+                .setAllowedOrigins("*");
+                .withSockJS(); // sockjs 지원
+    }
+}
+```
+
+```java
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class WebSocketHandler extends TextWebSocketHandler {
+
+    private static Set<WebSocketSession> sessions = new ConcurrentHashMap().newKeySet();
+    private final TestComponent testComponent;
+
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        super.afterConnectionEstablished(session);
+        sessions.add(session);
+        testComponent.printTestString();
+        log.info("client{} connect", session.getRemoteAddress());
+    }
+
+    @Override
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        log.info("client{} handle message:{}", session.getRemoteAddress(), message.getPayload());
+        for (WebSocketSession webSocketSession : sessions) {
+            if (session == webSocketSession) continue;
+            webSocketSession.sendMessage(message);
+        }
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        super.afterConnectionClosed(session, status);
+        sessions.remove(session);
+        log.info("client{} connect", session.getRemoteAddress());
+    }
+}
+```
+
+그 외의 코드는 tomcat 웹소켓과 똑같다.  
+
+### SockJS
+
+대부분의 브라우저가 웹소켓을 지원하지만 오래된 버전의 브라우저의 경우 아직 웹소켓을 지원하지 않음으로 `Long Polling` 방식을 지원해야 하는데 이를 위해 `SockJS` 같은 라이브러리가 존재한다.  
+스프링 부트에서는 `Websocket` 을 구현하고 몇가지 속성만 추가하면 `SockJS`까지 지원 가능함으로 폴링 방식의 코드를 별도로 작성할 필요 없어 많은 프로젝트에서 아직까지 `SockJS`를 사용중이다.  
+
+
+```js
+public class WebSocketConfig implements WebSocketConfigurer {
+
+    private final WebSocketHandler webSocketHandler;
+
+    @Override
+    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        registry.addHandler(webSocketHandler, "/websocket")
+                .setAllowedOrigins("*")
+                .withSockJS(); // sockjs 지원
+        registry.addHandler(webSocketHandler, "/websocket")
+                .setAllowedOrigins("*"); // 그냥 websocket 지원
+    }
+}
+```
+
+`client` 에 `SockJs` 를 위한 라이브러리 추가,  
+웹 소켓 생성 `url`, 메서드를 `SockJs` 형식으로 변경  
+
+```html
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Your First WebSocket!</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+</head>
+<body>
+    <script type="text/javascript">
+        //var wsUri = "ws://localhost:8080/websocket";
+        var wsUri = "http://localhost:8080/websocket";
+        var websocket;
+        var output;
+        var textID
+        function init() {
+            output = document.getElementById("output");
+            textID = document.getElementById("textID");
+        }
+        function connect() {
+            if (!websocket) {
+                //websocket = new WebSocket(wsUri);
+                websocket = new SockJS(wsUri);
+                ...
+            }
+            ...
+        }
+    ...
+    </script>
+    ...
+</body>
+```
+
+웹소켓을 지원하는 브라우저에선 웹소켓으로, 지원하지 않는 브라우저에선 폴링 방식으로 동작한다.  
+
+실제 웹소켓 연결시 뒤에 임의의 숫자, 문자열이 붙어 연결된다.  
+
+```
+ws://localhost:8080/websocket/197/dvkiyrn1/websocket
+```
+
+외부 라이브러리는 `maven, gralde` 등의 의존성을 통해 내부에 생성된 `jar` 파일에서도 가져올 수 있다.  
+
+```html
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+```
+
+```xml
+<dependency>
+    <groupId>org.webjars</groupId>
+    <artifactId>sockjs-client</artifactId>
+    <version>1.0.2</version>
+</dependency>
+```
+
+## STOMP 웹 소켓 예제
+
+단순한 웹 소켓 처리는 톰캣 혹은 스프링 에서 지원하는 웹소켓 라이브러리로 작성할 수 있다.  
+
+> STOMP: Simple (or Streaming) Text Orientated Messaging Protocol. https://stomp.github.io/
+
+복잡한 구조를 웹소켓을 통해 처리하고 세밀한 메세지 구조를 작성 할 수 있지만 `STOMP` 라이브러리를 통해 **구독, 발행 시스템**을 사용할 수 도 있다.  
 
 > https://spring.io/guides/gs/messaging-stomp-websocket/
 
 메시징 형식의 시스템은 브로커와 클라이언트가 있으며 브로커는 토픽에 대한 메세지가 들어오면 
 헤딩 토픽을 구독하고 있는 모든 클라이언트에게 메세지를 전달한다.  
-
-기존의 `Websocket` 관련된 `Bean` 객체와 클래스를 주석처리하고 아래 `@Configuration` 객체를 추가한다.  
-> 주석처리 하지 않아도 상관은 없지만 일반 `Websocket` 과 `STOMP` 를 사용한 `Websocket` 은 서로 호환되지 않는다.  
 
 ```java
 @Configuration
@@ -282,184 +438,112 @@ public class Socket {
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic"); //구독 topic 등록시 앞에 붙이는 prefix
+        config.enableSimpleBroker("/topic"); // 구독 topic 등록시 앞에 붙이는 prefix
         config.setApplicationDestinationPrefixes("/app"); // websocket 메세지 전달시 앞에 붙이는 prefix
     }
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/gs-guide-websocket").withSockJS(); // 소켓 연결 주소
+        registry.addEndpoint("/websocket").withSockJS(); // sockjs 지원
+        registry.addEndpoint("/websocket"); // 그냥 websocket 지원
     }
 }
 ```
 
-원래 메세지 브로커 기능을 사용하려면 Mqtt 브로커 서버를 별도로 설치해야 하는데  
-스프링에서 어노테이션을 통해 해당 서버를 Java 형식으로 지원한다.  
-
-`@EnableWebSocket` 어노테이션과 `WebSocketMessageBrokerConfigurer` 의 구현을 통해  
-혹여 웹소켓을 지원하지 않는 브라우저라도 `Loog Pooling` 방식으로 `SockJS` 지원이 가능하다.  
-
-`SockJS`를 통해 웹 소켓에 연결하는 코드  
-
-```js
-function connect() {
-    var socket = new SockJS('/gs-guide-websocket');
-    stompClient = Stomp.over(socket);
-    stompClient.connect({}, function (frame) {
-        setConnected(true); // 다시 connect 버튼 못누르게 disable 하는 메서드
-        console.log('Connected: ' + frame);
-        stompClient.subscribe('/topic/greetings', function (greeting) {
-            $("#greetings").append("<tr><td>" + JSON.parse(greeting.body).content + "</td></tr>");
-        });
-    });
-}
-function disconnect() {
-    if (stompClient !== null) {
-        stompClient.disconnect();
-    }
-    setConnected(false); // 다시 disconnect 버튼 못누르게 disable 하는 메서드
-    console.log("Disconnected");
-}
-```
-
-
-연결 버튼을 누르면 위의 `connect()` 메서드가 호출되고 아래와 같은 콘솔이 출력된다.  
+어노테이션을 통해 해당 메세지 브로커 형식으로 웹소켓 서버를 지원한다.  
+`stompClient.connect()` 메서드가 호출되면 아래와 같은 메세지가 콘솔에 출력된다.  
 
 ```
-Opening Web Socket... stomp.min.js:8 
-Web Socket Opened... stomp.min.js:8 
+Opening Web Socket...
+Web Socket Opened...
 
->>> CONNECT stomp.min.js:8 
+>>> CONNECT
 accept-version:1.1,1.0
-heart-beat:10000,10000 
+heart-beat:10000,10000
 
-<<< CONNECTED stomp.min.js:8 
+<<< CONNECTED
 version:1.1
 heart-beat:0,0
 
-connected to server undefined stomp.min.js:8 
-
-Connected: CONNECTED app.js:19 
+connected to server undefined
+Connected: CONNECTED
 heart-beat:0,0
 version:1.1
 
-
->>> SUBSCRIBE stomp.min.js:8 
+>>> SUBSCRIBE
 id:sub-0
 destination:/topic/greetings
-
->>> DISCONNECT stomp.min.js:8 
-
-Disconnected app.js:31 
 ```
 
 대부분의 출력이 `stomp.min.js` 에서 출력된다.  
 
-`SockJS('/gs-guide-websocket')` 메서드로 연결되는 소켓 주소는 아래와 같다.  
-`ws://localhost:8080/gs-guide-websocket/743/plasadi4/websocket`
+`SockJS('/websocket')` 메서드로 연결되는 소켓 주소는 아래와 같다.  
+`ws://127.0.0.1:8080/websocket/504/qxhc1u02/websocket`  
+랜덤한 숫자와 영문자가 추가로 URL 뒤에 붙는다.  
 
-`gs-guide-websocket` 뒤의 `path parameter` 는  랜덤한 숫자와 영문자로 결졍된다.  
 
-메세지 구독형 답게 `stompClient.subscribe` 을 통해 `/topic/greetings` path 를 구독하고 해당 토픽에 메세지가 오면 테이블에 추가한다.  
-
-전송 버튼을 누르면 아래 메서드를 호출한다.  
-
-```js
-function sendName() {
-    stompClient.send("/app/hello", {}, JSON.stringify({'name': $("#name").val()}));
-}
-```
-`/app/hello` URI 로 `JSON` 객체를 전송한다.  
-
-실제 `Websocket` 을 통해 주고받은 데이터는 아래  
-
-```
-0: "SEND↵destination:/app/hello↵content-length:17↵↵{"name":"kouzie"}"
-
-0: "MESSAGE↵destination:/topic/greetings↵content-type:application/json;charset=UTF-8↵subscription:sub-0↵message-id:s0y0s3ic-0↵content-length:28↵↵{"content":"Hello, kouzie!"}"
-```
-
-콘솔에는 아래와 같이 출력된다.  
+`stompClient.send(), stompClient.subscribe()` 메서드를 통해 데이터를 송 수신하면 콘솔에 아래와 같이 출력된다.  
 
 ```
 >>> SEND
-destination:/app/hello
-content-length:17
+destination:/app/message
+content-length:30
 
-{"name":"kouzie"}
+{"message":"Hello WebSocket!"}
 
 <<< MESSAGE
 destination:/topic/greetings
 content-type:application/json;charset=UTF-8
 subscription:sub-0
-message-id:s0y0s3ic-0
-content-length:28
-
-{"content":"Hello, kouzie!"}
+message-id:qxhc1u02-0
+content-length:62
+{"now":"2020-12-22T19:17:37.036","content":"Hello WebSocket!"}
 ```
+
+실제 네트워크 탭에서 송수신한 데이터를 보면 클라이언트에서 보낸 데이터는 `{"message":"Hello WebSocket!"}`
+서버에서 보낸 데이터는 `{"now":"2020-12-22T19:17:37.036","content":"Hello WebSocket!"}` 이지만  
+부가적으로 보내고 받는 데이터가 여러개 있다.  
+
+> STOMP 라이브러리를 사용하지 않은 일반적인 웹소켓 클라이언트는 호환하기 힘들다. 
 
 해당 메세지를 위처럼 처리하기 위해 `Messging handler annotaion` 을 사용한다.  
 
-`@MessageMapping`, `@SendTo`  
-
 ```java
+@Slf4j
 @Controller
 public class MessageHandler {
-    @MessageMapping("/hello")
+
+    @MessageMapping("/message")
     @SendTo("/topic/greetings")
-    public Greeting greeting(HelloMessage message) throws Exception {
+    public Greeting greeting(ClientMessage message) throws Exception {
+        log.info("message received, message:{}", message.getMessage());
         Thread.sleep(1000); // simulated delay
-        return new Greeting("Hello, " + HtmlUtils.htmlEscape(message.getName()) + "!"); //html 특수문자 변환
+        return Greeting.builder()
+                .content(HtmlUtils.htmlEscape(message.getMessage()))
+                .now(LocalDateTime.now())
+                .build();
     }
 }
 ```
 
-위에서 클라이언트의 websocket message 수신을 위해 prefix 를 붙였었다.  
-`config.setApplicationDestinationPrefixes("/app")`
-
-클라이언트가 `/app/hello` 형식으로 보낸 메세지를 처리하고 `@SendTo` 어노테이션으로 해당 topic 을 구독하고 있는 클라이언트들에게 반환값을 전달한다.  
-
-> `parameter` 와 `return` 값은 자동으로 `Json <-> Object` 로 변환가능함으로 `Setter` 를 정의해두면 편하다.  
-클라이언트는 
+클라이언트가 `/app/message` 형식으로 보낸 메세지를 처리하고 `@SendTo` 어노테이션으로 해당 `topic` 을 구독하고 있는 클라이언트들에게 반환값을 전달한다.  
 
 내부적으로 세션관리할 필요없이 `STOMP` 라이브러리를 사용하면 쉽게 메시지 브로커 형식의 시스템을 사용 가능하다.  
 
 덤으로 구형 브라우저까지 `SockJS` 라이브러리가 지원해주니 일석이조이다.  
-단 직관적인 코드를 작성하기엔 일반 `Websocket`을 사용하는것이 더 좋다고 생각한다.  
 
-> 채팅 외에는 굳이 `STOMP` 라이브러리를 사용할 필요를 못느끼겠다.  
-> 오히려 자유자재로 `session` 관리가 가능한 소켓이 더 편할 수 있다.  
+> 간단한 구성의 경우 자유자재로 `session` 관리가 가능한 톰캣, 스프링 웹소켓이 더 편할 수 있다.  
 
-### 추가 코드  
 
-```js
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class HelloMessage {
-    private String name;
-}
+`SockJS` 와 마찬가지로 의존성을 통해 내부 `jar` 에서 가져올 수 있음.
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class Greeting {
-    private String content;
-}
-
-@Log
-@Controller
-public class WebPageController {
-
-    @GetMapping("/sample")
-    public void websocket_sample(Model model) {
-        log.info("websocket_sample called...");
-        model.addAttribute("result", "SUCCESS");
-    }
-
-    @GetMapping("/stomp")
-    public void websocket_stomp(Model model) {
-        log.info("websocket_stomp called...");
-        model.addAttribute("result", "SUCCESS");
-    }
-}
+```xml
+<dependency>
+    <groupId>org.webjars</groupId>
+    <artifactId>stomp-websocket</artifactId>
+    <version>2.3.3</version>
+</dependency>
 ```
+
+## 샘플 코드 URL
+
+https://github.com/Kouzie/websocket-sample
