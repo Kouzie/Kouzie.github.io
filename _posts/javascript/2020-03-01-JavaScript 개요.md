@@ -7,7 +7,7 @@ author_profile: false
 # classes: wide
 
 categories:
-  - HTML
+  - JavaScript
 
 tags:
   - web
@@ -302,12 +302,6 @@ console.log(s1.print()); //홍길동/21
 `Object`안의 프로퍼티(`Property`) 출력하는 방법은 2가지, 
 `.`뒤에 바로 프로퍼티명을 붙여 쓰는 방법과 `[]`를 사용해서 출력하는 방법이 있다.  
 
-코드 `new Foo(...)`가 실행될 때 다음과 같은 일이 발생한다  
-
-1. `Foo.prototype`을 상속하는 새로운 객체가 하나 생성된다.  
-2. 명시된 인자 그리고 새롭게 생성된 객체에 바인드된 this와 함께 생성자 함수 `Foo`가 호출된다. `new Foo`는 `new Foo()`와 동일하다. 즉 인자가 명시되지 않은 경우, 인자 없이 `Foo`가 호출된다.  
-3. 생성자 함수에 의해 리턴된 객체는 전체 `new` 호출 결과가 된다. 만약 생성자 함수가 명시적으로 객체를 리턴하지 않는 경우, 첫 번째 단계에서 생성된 객체가 대신 사용된다.(일반적으로 생성자는 값을 리턴하지 않는다. 그러나 일반적인 객체 생성을 재정의(override)하기 원한다면 그렇게 하도록 선택할 수 있다.)  
-
 
 ### 객체를 생성하는 방법 1 - `new` 키워드
 
@@ -345,7 +339,7 @@ person.print = function() {
 > 생성자 함수에선 맨 앞의 문자를 대문자로 쓸 것 을 권장한다.  
 
 ```js
-function Person(name, age, color) {
+function Foo(name, age, color) {
   this.name = name;
   this.age = age;
   this.color = color;
@@ -355,23 +349,40 @@ function Person(name, age, color) {
   }
   //메서드추가도 가능.
 }
-var father = new Person("Hong", 30, "blue");
-var son = new Person("Kim", 10, "red");
+var father = new Foo("Hong", 30, "blue");
+var son = new Foo("Kim", 10, "red");
 ```
 
-생성자 함수도 일반 함수이기 때문에 `this.name`은 최상위 객체인 `window`의 `name`이라는 전역변수를 정의하고 초기화 하는 문법이 되어버린다.  
-
+생성자 함수도 일반 함수이기 때문에 단순 호출시 `this.name`은 최상위 객체인 `window`의 `name`이라는 전역변수를 정의하고 초기화 하는 문법이 되어버린다.  
 
 때문에 함수앞에 `new`키워드 를 붙여 객체를 생성하고 `new` 연산자는 사용자 정의 객체 타입 또는 내장 객체 타입의 인스턴스를 생성한다.  
 `this`키워드는 해당 객체의 공간을 나타낸다.  
 
 생성자 메서드로 인해 만들어진 객체들은 JavaScript의 다른 객체들처럼 프로퍼티를 삭제하거나, 추가, 재정의 할 수 있다.  
 
+코드 `new Foo(...)`가 실행될 때 다음과 같은 일이 발생한다  
+
+1. `Foo.prototype`을 상속하는 새로운 객체가 하나 생성된다.  
+2. 명시된 인자 그리고 새롭게 생성된 객체에 바인드된 `this`와 함께 생성자 함수 `Foo`가 호출된다. `new Foo`는 `new Foo()`와 동일하다. 즉 인자가 명시되지 않은 경우, 인자 없이 `Foo`가 호출된다.  
+3. 생성자 함수에 의해 리턴된 객체는 전체 `new` 호출 결과가 된다. 만약 생성자 함수가 명시적으로 객체를 리턴하지 않는 경우, 첫 번째 단계에서 생성된 객체가 대신 사용된다.(일반적으로 생성자는 값을 리턴하지 않는다. 그러나 일반적인 객체 생성을 재정의(`override`)하기 원한다면 그렇게 하도록 선택할 수 있다.)  
+
 함수앞에 `new`키워드를 붙이는개 생소하지만 문법으로 받아들이자.  
+
+> https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/new
 
 ### 객체를 생성하는 방법 3 - `Object.create`
 
+> https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Object/create  
+
 `Object.create(proto[, propertiesObject])`
+
+```js
+var o;
+o = {};
+// 위는 아래와 같습니다:
+o = Object.create(Object.prototype);
+```
+
 
 ## Prototype (원형)
 
@@ -438,24 +449,28 @@ JavaScript 에선 이 프로토타입 객체를 통해 객체지향을 지원한
 
 위에서도 모든 객체의 상위객체인 `Obejct`가 `hong.__proto__.__proto__` 를 통해 참조되고 있다.  
 
+> `hong.__proto__.__proto__` = `Person.prototype.__proto__`, 즉 생성자 함수 객체도 `__proto__` 객체를 가지고 있으며 `Object.prototype` 를 가리킨다.  
+![js14-2](/assets/web/js/js14-2.png){: .shadow}  
+
+
 ### Prototype Link, Prototype Chain
 
-그렇다면 `function Person` 으로 생성된 인스턴스 `hong` 의 `proto` 객체는 어떤걸 가리키고 있는지 알아보자.  
+위에서 보았듯이 `function Person` 으로 생성된 인스턴스 `hong.__proto__` 객체는 `Person.prototype` 를 가리킨다.  
 
 ![js14-1](/assets/web/js/js14-1.png){: .shadow}  
 
-`Person` 메서드 객체의 `prototype`객체를 `hong`의 `__proto__` 객체가 가리킨다.  
+`function Person(...) {...}` 이라는 **메서드를 정의**하면 아래와 같은 그림이 형성된다.  
 
 ![js14](/assets/web/js/js14.png){: .shadow}  
 
-즉 `function Person(...) {...}` 이라는 메서드를 정의하면 위와 같은 그림이 형성된다.  
-그리고 `new Person(...)` 으로 생성된 모든 인스턴스는 `Person` 메서드 객체의 `prototype`을 `__proto__` 객체를 통해 공유하게 된다.  
+> 오른쪽이 생성된 Person 객체(hong), 왼쪽이 생성자 함수 객체
+> `prototype` 속성은 생성자 함수 객체만 가지고 있으며 일반 객체는 `__property__` 속성만 가지고있다.
 
-`__proto__` 객체가 생성자 함수의 `prototype`객체에 접근하도록 해주는 열쇠같은 녀석이다.  
+`new Person(...)` 으로 생성된 모든 인스턴스는 `__proto__` 객체를 통해 `Person.prototype` 객체를 공유하게 된다.  
+`__proto__` 객체가 **생성자 함수의 `prototype`** 객체에 접근하도록 해주는 열쇠같은 녀석이다.  
 
-> `property` 속성은 `Finction` 객체만 가지고 있으며 일반 객체는 `__property__` 속성만 가지고있다.
-
-생성자 함수로 생성되던, 리터럴로 생성되던 모든 `Object`의 하위객체는 `__proto__`객체를 멤버로 가지고 있다.  
+이는 생성자가 아닌 리터럴로 생성되는 모든 `Object` 에게도 적용된다.  
+모든 객체는 `__proto__` 객체를 멤버로 가지고 있다.  
 
 ```js
 var hong = new Person("Hong", 30, "blue");
@@ -471,39 +486,17 @@ console.log(kim.__proto__);
 
 ![js15](/assets/web/js/js15.png){: .shadow}  
 
-리터럴로 생성된 `kim`객체또한 `Object()`함수를 통해 만들어진 것이기 때문에 `__proto__`는 `Object` 생성자 메서드의 `prototype`을 가리킨다.  
+리터럴로 생성된 `kim`객체또한 `Object()` 함수 와 `new` 연산자를 통해 만들어진 것이기 때문에  
+`__proto__`는 `Object` 생성자 메서드의 `prototype`을 가리킨다.  
 
-생성자 함수로 만들어진 객체이건, 리터럴로 만들어진 객체이건 `Prototype`을 통해 위로 올라가면 `Object`객체가 나온다. 
+생성자 함수로 만들어진 객체이건, 리터럴로 만들어진 객체이건 `Prototype`을 통해 위로 올라가면 `Object.prototype` 객체가 나온다.  
 이를 통해 `Object` 생성자 메서드의 `prototype`에 정의된 메서드들을 `kim`, `hong`과 같은 인스턴스가 체인처럼 연결된 프로토 체인을 통해 접근할 수 있다.  
 
-> 아무래도 `Object()`멤버의 `prototype`객체에 기본적으로 정의된 전역적 함수, 변수가 우리가 정의한 `Person()`보단 많다.  
-
-이렇게 `__proto__` 객체를 통해 `하위->상위`로 객체간 연결하는 것을 `Prototype Link` 라 한다.  
+이렇게 객체를 연결하는 `__proto__` 를 `Prototype Link`  
+객체를 통해 `하위->상위`로 객체간 연결하는 것을 `Prototype Chain` 라 한다.  
 
 어쨋건 `hong.print()` 형식으로 메서드를 호출할 수 있는 이유는 먼저 `print`메서드가 자신에게 있는지 탐색하고 없다면 `__proto__`에 연결된 생성자 함수의 `prototype`객체에 `print`가 정의되어 있는지 탐색하기 때문  
 
-JavaScript 는 모두 객체로 이루어져 있으며 메서드객체 `Function` 또한 `Object` 객체의 하위객체이다.  
-
-`new Function()` 문법이 기억 나는가?  
-
-> https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Function  
-
-사실 `function test(){...}` 메서드 정의는 위의 `var test = new Function(...)` 로 객체 생성한 것 과 같다.(완벽히 같지는 않음)  
-즉 `test()`는 `Function()` 이라는 생성자 함수로 만들어진 일종의 `Obejct`의 하위 객체 `Function`이다.  
-
-`__proto__`객체는 모든 객체가 가지고 있기때문에 `test`객체또한 가지고 있다.  
-
-```js
-function test() {};
-console.log(test.__proto__);
-```
-
-`Person` 객체 `hong` 의 `__proto__` 가 `Person.prototype` 을 가리키듯이  
-`Function` 객체 `test`의 `__proto__` 는 `Function.prototype`을 가리킨다.  
-
-> https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/new
-
-만약 `input`태그 내용이 if조건문에 걸린다면 `throw`를 통해 예외가 발생하고 `p`태그에 출력된다.  
 
 ## function
 
@@ -512,13 +505,40 @@ console.log(test.__proto__);
 
 JavaScript에선 `function` 정의와 호출방법이 몇가지 더 있다.
 
+JavaScript 는 모두 객체로 이루어져 있으며 메서드객체 `Function` 또한 `Object` 객체의 하위객체이다.  
+아래와 같은 비교문을 통해 알 수 있다.  
+
+```js
+console.log(new Function('a', 'b', 'return a + b') instanceof Object) // true
+```
+
+`new Function()` 문법이 기억 나는가?  
+
+> https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Function  
+
+```js
+console.log(new Function('a', 'b', 'return a + b') instanceof Object) // true
+var test1 = new Function('a', 'b', 'return a + b');
+
+function test2(a, b) {
+    return a + b;
+}
+```
+
+![js15-2](/assets/web/js/js15-2.png){: .shadow}  
+
+`function test(){...}` 메서드 정의는 위의 `var test = new Function(...)` 로 객체 생성한 것 과 같다.  
+`test()`는 `Function()` 이라는 생성자 함수로 만들어진 일종의 `Obejct`의 하위 객체 `Function`이다.  
+
+`test1.__proto__.__proto__` 을 실행하면 `Object.prototype` 이 반환된다.  
+
 
 ### function - arguments
 
 > https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Functions/arguments  
 
 
-> `arguments` 객체는 함수에 전달된 인수에 해당하는 Array 형태의 객체입니다.  
+> `arguments` 객체는 함수에 전달된 인수에 해당하는 `Array` 형태의 객체입니다.  
 > 형태일 뿐이지 `Array` 객체는 아니다. (변환은 가능)  
 
 
