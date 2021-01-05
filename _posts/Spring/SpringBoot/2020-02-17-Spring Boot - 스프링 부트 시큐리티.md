@@ -145,18 +145,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 
 
-> 스프링 5.0 버전 이상부턴 입력된 패스워드를 `PasswordEncoder`를 통해 인코딩 후 비교한다고 한다.  
+> 스프링 5.0 버전 이상부턴 입력된 패스워드를 `PasswordEncoder`를 통해 해시 인코딩 후 비교한다고 한다.  
 ```
 {bcrypt}$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG
 {noop}password
 {pbkdf2}5d923b44a6d129f3ddf3e3c8d29412723dcbde72445e8ef6bf3b508fbf17fa4ed4d6b99ca763d8dc
 {scrypt}$e0801$8bWJaSu2IKSn9Z9kM+TPXfOc/9bdYSrN1oD9qfVThWEwdRTnO7re7Ei+fUZRJ68k9lTyuTeUp4of4g24hHnazw==$OAOec05+bXxvuu/1qZ6NUR+xQYvYv7BeL1QxwRpY5Pc=
 {sha256}97cde38028ad898ebc02e690819fa220e88c62e0699403e94fff291cfffaf8410849f27605abcbc0
-```
+```  
 패스워드 앞에 `{...}` 문자열을 사용해 어떤 방식으로 인코딩 되었는지 확인 가능하다.  
-어떠한 방식으로보 `{noop}`을 앞에 붙여 인코딩 과정을 사용하지 않음을 명시한다.  
+`{noop}` 을 앞에 붙여 인코딩 과정을 사용하지 않음을 명시한다.  
 
-id 는 `manger`, 비밀번호는 `1111` 로 설정  
+아이디는 `manger`, 비밀번호는 `1111` 로 설정  
 
 `boards/register` 로 이동해 `AuthenticationManagerBuilder` 으로 생성한 테스트 데이터가 작동하는지 확인하자.  
 
@@ -653,9 +653,11 @@ public class LoginCheckInterceptor extends HandlerInterceptorAdapter {
     }
 }
 ```
+
 특정 요청이 들어오기 전에 호출되는 `preHandle` 정의  
 
 해당 인터셉터를 `WebMvcConfigurer` 를 통해 요청 `url` 에 매핑  
+
 ```java
 @Log
 @Configuration

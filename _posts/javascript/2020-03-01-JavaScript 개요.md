@@ -443,7 +443,6 @@ Person {name: "hong", age: 25, color: "red"}
 `__proto__`, `constructor`를 가진다.  
 
 `constructor`는 `hong` 인스턴스 생성시 사용했던 생성자 함수가 저장되어있다.  
-`__proto__`는 출력된 내용으로 보아 `Object` 객체를 가리키는 것 같다.  
 
 JavaScript 에선 이 프로토타입 객체를 통해 객체지향을 지원한다.  
 
