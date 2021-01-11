@@ -21,12 +21,12 @@ tags:
 하나의 웹 어플리케이션 구현시 하나의 서비스만 제공하는 것이 아닌 여러개의 서비스를 엮어서 사용자에게 제공한다(메시업 형태).  
 
 여러개의 서비스가 엮이면서 하나의 서비스에서 병목현상이 일어나면 그 이후의 서비스까지 병목되는데  
-이를 해결하기 위해 계속 뛰어난 병렬처리 방식이 아닌 **동시처리 방식**이 나오고 있으며 자바의 `Future` 또한 그중 하나이다.  
+이를 해결하기 위해 계속 뛰어난 병렬처리 방식이 아닌 **동시처리(Concurrency) 방식**이 나오고 있으며 자바의 `Future` 또한 그중 하나이다.  
 
 ![image15](/assets/java/java/image15.png){: .shadow}  
 
-병렬 처리는 2개의 작업을 동시에 처리하는 것이고  
-동시 처리는 2개의 작업중 하나가 멈추었을때 이어서 남은 작업을 진행한다.  
+병렬 처리(Parallelism)는 2개의 작업을 동시에 처리하는 것이고  
+동시 처리(Concurrency)는 2개의 작업중 하나가 멈추었을때 이어서 남은 작업을 진행한다.  
 
 java 8 에서 `Future`, `Flow` 등의 동시처리 가능한 독립적인 테스크 지원이 가능하다.  
 
@@ -75,41 +75,43 @@ int r = r(q1(t), q2(t));
 만약 동시성을 갖추고 위 코드를 실행하고 싶다면 각 메서드를 박스(`Future`)로 감싸 사용하면 된다.  
 
 ```java
-int t = p(x) 
+int x = 1;
+int t = p(x);
 Future<Integer> qr1 = excutorService.submit(() -> q1(t));
+// 실제 반환 객체는 Future 를 구현하는 FutureTask
 Future<Integer> qr2 = excutorService.submit(() -> q2(t));
 int r = r(qr1.get(), qr2.get());
+System.out.println(r);
 ```
 
 지금은 박스에 하나의 간단한 함수만 포함하고 있지만  
 박스가 커지고 박스내부에 또 다른 박스가 존재한다면 무작정 각 박스(`Future`)가  끝나기를 기다릴 순 없다.  
 
 만약 `q1` 과 `q2` 가 어마어마한 연산량이 필요한 메서드라면 `get()` 호출마다 병목이 발생할 것이고  
-결국 `r()` 호출 라인에서 많은시간이 소비된다.  
+결국 `r(...)` 호출 라인에서 많은시간이 소비된다.  
 
 `get()` 메서드를 호출때 마다 박스의 결과를 기다리기에 블록이 발생함으로 이를 최소화 해야한다.  
 
 > 물론 일부 상황해 한해 **데이터 동기화**를 위해 특정 연산 완료까지 대기해야 하는 상황이 발생할 때에는 당연히 대기해야한다.  
+> 얼마나 `Future` 객체의 결과를 데이터 동기화가 필요한 위치까지 효율적으로 끌고 가는지가 핵심이다.  
 
 
 ## CompletableFuture
+
+java 9 추가된 클래스로 `Future` 구현클래스이다.  
 
 ```java
 public class CompletableFuture<T> implements Future<T>, CompletionStage<T> {...}
 ```
 
-`Future` 는 인터페이스이기 때문에 생성자로 사용 불가능하지만 **구현체** 인 `CompletableFuture`는 가능하다(java 9 추가).  
+`CompletableFuture`는 박스 채널 모델의 문제점을 해결(효율적으로 결과값을 처리)하기 위해 **콤비네이터 메서드**를 사용할 수 있다.  
 
-`CompletableFuture`는 박스 채널 모델의 문제점을 해결하기 위해 **콤비네이터 메서드**를 사용할 수 있다.
-
+> `CompletionStage` 인터페이스에 여러가지 콤비네티어 메서드가 정의되어 있다.  
 
 ### complete, thenCombine  
 
-`complete` - `Future` 의 연산이 끝나지 않을 경우 반환값을 강제로 지정하여 종료
-
-`thenCombine` - 현재 `CompletionStage` 와 매개변수로 들어온 `CompletionStage` 를 합쳐 새로운 `CompletionStage` 를 반환
-
-2개의 `Future` 를 합침.
+`complete` - `Future` 의 연산이 끝나지 않을 경우 **반환값을 강제로 지정**하여 종료  
+`thenCombine` - 현재 `CompletionStage` 와 매개변수로 들어온 `CompletionStage` 를 합쳐 새로운 `CompletionStage` 를 반환, 2개의 `Future` 를 합침.
 
 ```java
 public static void main(String[] args) throws Exception {
