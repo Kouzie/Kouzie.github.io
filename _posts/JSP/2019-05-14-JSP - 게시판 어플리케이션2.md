@@ -11,7 +11,7 @@ categories:
 
 tags:
   - JSP
-  - servelt
+  - servlet
 
 toc: true
 toc_sticky: true
