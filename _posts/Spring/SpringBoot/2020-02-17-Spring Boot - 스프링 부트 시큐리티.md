@@ -112,7 +112,7 @@ public class MemberRole {
 `Member`는 여러개의 `role`을 가질 수 있는 N:1 관계.  
 
 
-## 로그인/로그아웃 필터 처리
+## 로그인/로그아웃 필터 처리, 테스트 로그인 데이터 생성 
 
 특정 권한을 가진 유저만 `request` 요청을 허용하고 싶을때 `configure` 메서드에 필터를 등록해 처리할 수 있다.  
 
@@ -125,6 +125,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        super.configure(auth);
         log.info("SecurityConfig configure...");
         http.authorizeRequests()
                 .antMatchers("/boards/list").permitAll()
@@ -132,13 +133,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.formLogin();
     }
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        log.info("SecurityConfig configureGlobal...");
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        super.configure(auth);
         auth.inMemoryAuthentication()
+                .withUser(User.withUsername("user").password("{noop}user").roles("USER"))
+                .withUser(User.withUsername("admin").password("{noop}admin").roles("USER", "ADMIN"));
+        /* auth.inMemoryAuthentication()
                 .withUser("manager")
-                .password("{noop}1111")
-                .roles("MANAGER");
+                .password("{noop}manager")
+                .roles("MANAGER"); */
     }
 }
 ```
@@ -160,18 +164,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 `boards/register` 로 이동해 `AuthenticationManagerBuilder` 으로 생성한 테스트 데이터가 작동하는지 확인하자.  
 
-> 테스트로 db안의 데이터를 사용하고 싶다면 아래처럼 설정  
+테스트로 db안의 데이터를 사용하고 싶다면 아래처럼 설정  
 
 ```java
+// SecurityConfig.java
+
 @Autowired
 DataSource datasource;
-...
 
-@Autowired
-public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-
+@Override
+protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+  super.configure(auth);
+  
   log.info("SecurityConfig configureGlobal...");
-
   //enable 은 해당 계정 사용가능 여부
   String query1 = "SELECT uid username, CONCAT('{noop}', upw) password, true enabled FROM tbl_members WHERE uid = ?"; 
   String query2 = "SELECT member uid, role_name role FROM tbl_member_role WHERE member = ?";
@@ -193,38 +198,36 @@ public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception 
 > https://javadeveloperzone.com/spring-boot/spring-security-custom-rolevoter-example/
 
 
-
 ## 커스텀 로그인, 로그아웃, 접근제한 페이지 
 
 ```java
+// SecurityConfig.java
+
 @Override
 protected void configure(HttpSecurity http) throws Exception {
+    super.configure(auth);
     log.info("SecurityConfig configure...");
     http.authorizeRequests()
-            .antMatchers("/boards/list").permitAll()
-            .antMatchers("/boards/register").hasAnyRole("BASIC", "MANAGER", "ADMIN");
-    http.formLogin();
+        .antMatchers("/boards/list").permitAll()
+        .antMatchers("/boards/register").hasAnyRole("BASIC", "MANAGER", "ADMIN");
 
-    http.csrf().disable().formLogin().loginPage("/login");
-    //.loginProcessingUrl("")
-    //.successForwardUrl("")
-    //.failureForwardUrl("")
-    // 로그인 데이터 post 로 전달할 url 변경, 로그인 success, failure 리다이렉트 페이지 변경
+    http.csrf().disable();
+    http.formLogin().loginPage("/login");
+    //http.formLogin().loginProcessingUrl(""); 로그인 정보 post 로 전달할 url 변경
+    //http.formLogin().successForwardUrl(""); 로그인 success 리다이렉트 페이지
+    //http.formLogin().failureForwardUrl(""); 로그인 failure 리다이렉트 페이지
     // 어차피 form 을 사용해 post 방식의 /login url에 로그인 처리과정을 적용하기에 사용하지 않는다.
 
-    //.usernameParameter("user_id")
-    //.passwordParameter("user_pw")
-    // login 요청시 사용 파라미터 명
-
-    // login
+    //http.formLogin().usernameParameter("user_id");
+    //http.formLogin().passwordParameter("user_pw"); login 요청시 사용 파라미터 명
 
     http.exceptionHandling().accessDeniedPage("/accessDenied");
-
     http.logout().logoutUrl("/logout").invalidateHttpSession(true);
-
     http.userDetailsService(customUsersService);
 }
+```
 
+```java
 @Controller
 public class LoginController {
 
@@ -246,67 +249,16 @@ public class LoginController {
 ```
 
 
-
 ## userDetailsService
 
 간단한 데이터베이스 조회 후 인증작업을 거치려면 `AuthenticationManagerBuilder`의 `jdbcAuthentication`를 사용하면 되지만  
-커스텀 인증과정을 거치려면 `userDetailsService` 를 사용해야 한다.  
 
+커스텀 인증과정을 거치려면 `userDetailsService` 를 사용해야 한다.  
 `UserDetailsService`를 상속받는 서비스를 정의  
 
 ```java
-@Service
 @Log
-public class CustomUsersService implements UserDetailsService {
-
-    @Autowired
-    MemberRepository memberRepository;
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        memberRepository.findById(username);
-        //TODO return...
-        return null; 
-    }
-}
-```
-
-어떻게 `Member` 객체를 `spring-security` 에서 요구하는 `UserDetails` 로 반환하는지 알아보자.   
-
-방법은 3가지다.  
-
-1. `Member` 를 `UserDetails`의 구현체로 만드는것.  
-2. `Member` 를 `UserDetails`의 구현체인 `User`의 하위객체로 만드는것.  
-3. `User`의 정보 `Member`의 정보 2개를 포함하는 새로운 객체를 정의  
-
-3번 방법을 사용해 `UserDetails` 를 반환해보자.  
-
-```java
-import org.springframework.security.core.userdetails.User;
-
-@Getter
-@Setter
-public class CustomSecurityUser extends User {
-
-    private static final String ROLE_PREFIX = "ROLE_";
-
-    private Member member;
-    public CustomSecurityUser(Member member) {
-        super(member.getUid(), "{noop}" + member.getUpw(), makeGrantedeAuth(member.getRoles()));
-        this.member = member;
-    }
-
-    private static List<GrantedAuthority> makeGrantedeAuth(List<MemberRole> roles) {
-        List<GrantedAuthority> list = new ArrayList<>();
-        roles.forEach(
-                memberRole -> list.add(new SimpleGrantedAuthority(ROLE_PREFIX + memberRole.getRoleName()))
-        );
-        return list;
-    }
-}
-
 @Service
-@Log
 public class CustomSecurityUsersService implements UserDetailsService {
 
     @Autowired
@@ -320,16 +272,59 @@ public class CustomSecurityUsersService implements UserDetailsService {
 }
 ```
 
+어떻게 `Member` 객체를 `spring-security` 에서 요구하는 `UserDetails` 로 반환하는지 알아보자.   
+
+방법은 3가지다.  
+
+1. `Member` 를 `UserDetails`의 구현체로 만드는것.  
+2. `Member` 를 `UserDetails`의 구현체인 `User`의 하위객체로 만드는것.  
+3. `User` 를 상속하면서 `Member` 를 필드로 갖는 새로운 객체를 정의  
+
+3번 방법을 사용해 `CustomSecurityUser` 라는 개체를 정의하고 반환해보자.  
+
+```java
+import org.springframework.security.core.userdetails.User;
+
+@Getter
+@Setter
+public class CustomSecurityUser extends User {
+
+    private static final String ROLE_PREFIX = "ROLE_";
+
+    private Member member;
+    public CustomSecurityUser(Member member) {
+        super(member.getUid(), "{noop}" + member.getUpw(), makeGrantedeAuth(member.getRoles()));
+        // password 를 사용하지 않을거라면 굳이 넘길 필요 없다.  
+        this.member = member;
+    }
+
+    private static List<GrantedAuthority> makeGrantedeAuth(List<MemberRole> roles) {
+        List<GrantedAuthority> list = new ArrayList<>();
+        roles.forEach(memberRole -> 
+            list.add(new SimpleGrantedAuthority(ROLE_PREFIX + memberRole.getRoleName())));
+        return list;
+    }
+}
+```
+
+정의했으면 `SecurityConfig` 에 해당 `userDetailService` 를 사용해 인증객체를 생성하도록 설정  
+
+```java
+// SecurityConfig.java
+
+@Override
+protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+    super.configure(auth);
+    auth.userDetailsService(customSecurityUsersService);
+}
+```
+
 ### 컨트롤러에서 로그인 정보 접근  
 
 ```java
 @GetMapping("/list")
 @Transactional
-public void list(
-    Authentication authentication,
-    @ModelAttribute("pageVO") PageVO vo,
-    Model model
-) {
+public void list(Authentication authentication, @ModelAttribute("pageVO") PageVO vo, Model model) {
   log.info("list() called");
   Pageable page = vo.makePageable(0, "bno");
   Page<Object[]> result = customCrudRepository.getCustomPages(vo.getType(), vo.getKeyword(), page);
@@ -387,7 +382,7 @@ public void list(
 ![springboot_security2](/assets/springboot/springboot_security2.png){: .shadow}  
 
 
-> `Role`(역할) 과 `Authority`(권한): 스프링 프레임워크에선 둘의 기능은 같다. 하지만 다른 프레임워크에선 다르게 쓰이는 용어일 수 있다. 
+> `Role`(역할) 과 `Authority`(권한): 스프링 프레임워크에선 둘의 기능은 같다. 하지만 다른 프레임워크에선 다르게 쓰이는 용어일 수 있다.  
 > `Authority`가 좀더 세세한 의미로 관리자는 모두 `ROLE_ADMIN` 이란 역할(`ROLE`)을 가지지만 각 관리자별로 별도의 `AUTHORITY`(권한)을 할당해 줄 수 있다.  
 
 
@@ -475,7 +470,7 @@ private PersistentTokenRepository getJDBCRepository() {
 
 ## Controller Method 접근 제한  
 
-위의 `WebSecurityConfigurerAdapter`의 필터설정 `http.authorizeRequests().antMatchers("...").hasAnyRole("...", "...", ...)` 을 통해서도 접근제한이 가능하지만  
+위의 `WebSecurityConfigurerAdapter`의 필터설정 `http.authorizeRequests().antMatchers("...").hasAnyRole("...")` 을 통해서도 접근제한이 가능하지만  
 메서드에 어노테이션을 지정하는 것으로도 접근제한이 가능하다.  
 
 먼저 `WebSecurityConfigurerAdapter` 하위 클래스에 `@EnableGlobalMethodSecurity` 어노테이션 설정,  
@@ -494,9 +489,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 간단한 `ROLE_MANAGER` 만 접근 가능한 컨트롤러 메서드 정의  
 
 ```java
+@Log
 @Controller
 @RequestMapping("/manager")
-@Log
 public class ManagerController{
 
     @Secured({"ROLE_MANAGER"})
@@ -580,16 +575,17 @@ public String joinPost(@ModelAttribute("member") Member member) {
 
 ## 로그인 후 페이지 이동  
 
-`url` 이동시에 로그인 필터에 걸려 로그인 페이지 이동시에는 상관없다.  
-로그인 완료 후 원래 이동하려는 페이지로 이동한다.  
+로그인이 필요한 `url`로 이동시에 로그인 필터에 걸려 로그인 페이지 이동시한다.  
+로그인 완료 후 원래 이동하려는 페이지로 이동하려면 원래 이동하려 했던 `url` 을 알아야 한다.  
 
-하지만 직접 `/login` url로 `GET Request` 요청후 로그인시에는 루트 디렉토리로 이동된다.  
+> 직접 `/login` url로 `GET Request` 요청후 로그인시에는 루트 디렉토리로 이동된다.  
 
-이동할 페이지 지정을 위해 이동할 Url을 파라미터(`/login?dest=...`)로 같이 넘겨 세션에 저장하고 로그인 성공시 이동하도록 설정해보자.  
+이동할 페이지 지정을 위해 로그인 페이지로 리다이렉트 될때 원래 가려했던 `url` 을 파라미터로 넘긴다.  
+`/login?dest=...` 세션에 저장하고 로그인 성공시 이동하도록 설정해야 한다.  
 
-먼저 login 필터에 `successHandler` 메서드를 사용해 로그인 성공후 실행할 코드들이 정의되어 있는 클래스 `LoginSuccessHandler`를 설정한다.  
+먼저 `login` 필터에 `successHandler` 메서드를 사용해 로그인 성공후 실행할 코드들이 정의되어 있는 클래스 `LoginSuccessHandler`를 설정한다.  
+
 ```java
-
 @Log
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true)
@@ -620,7 +616,6 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
 
   @Override
   protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response) {
-    log.info("determineTargetUrl....");
     Object dest = request.getSession().getAttribute("dest");
     String nextUrl = null;
     if (dest != null) {
@@ -629,8 +624,7 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
     } else {
       nextUrl = super.determineTargetUrl(request, response);
     }
-    log.info("determineTargetUrl nextUrl: " + nextUrl);
-    return nextUrl;
+    return nextUrl; // 로그인 성공시 session 에서 url 을 꺼내 반환
   }
 }
 ```
@@ -642,21 +636,20 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
 ```java
 @Log
 public class LoginCheckInterceptor extends HandlerInterceptorAdapter {
-
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         log.info("preHandle...");
         String dest = request.getParameter("dest");
         if (dest != null)
-            request.getSession().setAttribute("dest", dest);
+            request.getSession().setAttribute("dest", dest); // 목적지가 있었다면 세션에 저장 
         return super.preHandle(request, response, handler);
     }
 }
 ```
 
-특정 요청이 들어오기 전에 호출되는 `preHandle` 정의  
+특정 요청이 들어오기 전에 호출되는 인터셉터와 `preHandle` 정의  
 
-해당 인터셉터를 `WebMvcConfigurer` 를 통해 요청 `url` 에 매핑  
+해당 인터셉터를 `WebMvcConfigurer` 를 통해 로그인 요청 `url` 에 매핑  
 
 ```java
 @Log
@@ -669,6 +662,8 @@ public class InterceptorConfig implements WebMvcConfigurer {
     }
 }
 ```
+
+앞으로 비로그인 유저가 로그인이 필요한 url 에 접근히 
 
 # Spring Security Rest API
 
@@ -822,7 +817,6 @@ public class JwtTokenUtil implements Serializable {
 
 ### JWTUserDetailsService
 
-`customUsersService` 와 같은 기능이지만 헷갈림으로 하나 더 생성하자  
 토큰으로부터 사용자 정보를 받아 db에서 조회  
 
 ```java
@@ -890,19 +884,19 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
+            // DB 에서 토큰정보로 검색 
             UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
 
             // 토큰 유효시간도 많고 Spring Security 부터 가져온 userDetails 과도 인증정보가 일치하면
             if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                        new UsernamePasswordAuthenticationToken(
-                          userDetails,
-                          null,
-                          userDetails.getAuthorities());
+                    new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities());
 
                 usernamePasswordAuthenticationToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request));
+                    new WebAuthenticationDetailsSource().buildDetails(request));
 
                 // 인증 정보가 일치함으로 context 에 인증정보를 저장하고 통과, filter 외부의 컨트롤러에서도 인증정보를 참조하기에 저장해두어야 한다.
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);

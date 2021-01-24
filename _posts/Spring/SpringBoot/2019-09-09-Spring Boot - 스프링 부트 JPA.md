@@ -20,16 +20,14 @@ toc_sticky: true
 
 ## JPA 개념
 
-데이터를 유지하고 관리하기위해 db를 사용하고   
-java프로그램에서 db와 연동하는 jdbc를 사용하였다.  
+데이터를 유지하고 관리하기위해 DB를 사용하고   
+java프로그램에서 DB와 연동하는 jdbc를 사용하였다.  
 
 여기서 발생하는 수많은 중복코드 (jdbc 연동 및 dto, vo객체에 데이터 매핑)을 제거하기 위해 Mybatis와 같은 매퍼도 사용한다.  
 
 위의 설명은 모두 데이터베이스의 종속적인 (테이블에 해당하는 vo객체를 정의하고 매핑) 코딩이었다.  
 
 반대로 `Java Persistent API` 를 사용해 개발자가 정의한 객체에 종속적인 (`Object Relation Mapping ORM`)적인 시스템을 구축해보자!
-
-
 
 JDBC는 자바와 데이터베이스를 연결할 때 어떤 데이터베이스이던 간에  
 개발자는 인터페이스에 제공하는 메서드를 사용하여 똑같은 방법으로 각종 DB에 연결이 가능하다.  
@@ -52,15 +50,18 @@ Spring으로 ORM을 사용해 개발시 단순 Hibernate를 사용해 개발할 
 
 ![springboot_jpa_1](/assets/springboot/springboot_jpa_1.png){: .shadow}   
 
-즉 Hibernate, Spring Boot JPA모두 JPA를 구현한 구현체이지만 `Spring Boot JPA` 가 훨씬 편하게 사용할 수 있음을 알 수 있다.  
+즉 Hibernate, Spring Boot JPA모두 JPA를 구현한 구현체이지만 `Spring Boot JPA` 가 훨신 편하게 사용할 수 있음을 알 수 있다.  
 
-아마 Spring과 java가 아닌 다른 프레임워크로 개발한다면 Hibernate를 사용해 개발해야 할것.  
+Spring이 아닌 다른 프레임워크로 개발한다면 Hibernate를 사용해 개발해야 할것.  
 
 
 
 ## 엔티티, 엔티티 매니저
 
-`사원`이라는 테이블이 있다면 사원번호, 사원명, 생년월일, 주민번호와 같은 속성들이 존재할 것이고 이러한 정보를 가진 레코드들이 여러개 있을것이다.  
+`Spring Data JPA` 를 사용하면 엔티티를 엔티티 매니저를 직접적으로 사용할 일은 없다.  
+하지만 `Spring Data JPA` 내부적으로 `JPA` 규약과 이를 구현한 `Hibernate` 가 엔티티 매니저를 통해 데이터를 관리하기에 알아두어야함  
+
+`사원`이라는 테이블이 있다면 `사원번호, 사원명, 생년월일, 주민번호`와 같은 속성들이 존재할 것이고 이러한 정보를 가진 레코드들이 여러개 있을것이다.  
 
 JPA에서 엔티티는 `사원` 테이블을 만들기 위한 일종의 객체이다(명세서같은)  
 
@@ -132,12 +133,7 @@ spring.jpa.database-platform=org.hibernate.dialect.MySQL5InnoDBDialect
 
 ## JPA Repository
 
-
-```java
-public interface BoardRepository extends CrudRepository<Board, Long> {
-
-}
-```
+`Spring Data JPA` 외에도 여러 `Spring Data` 프로젝트들은(`redis, jdbc, mongo` 등) `Repository` 패턴을 사용한다.  
 
 먼저 테이블로 설계를 위한, 데이터를 담기위한 객체를 하나 생성.  
 
@@ -145,8 +141,8 @@ public interface BoardRepository extends CrudRepository<Board, Long> {
 @Getter
 @Setter
 @ToString
-@Table(name="tbl_boards")
 @Entity
+@Table(name="tbl_boards")
 public class Board {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -163,6 +159,13 @@ public class Board {
 ```
 
 위의 클래스로 `CRUD` 작업을 처리하게 되는데 이를 위한 `Repository` 인터페이스를 정의해야한다.  
+
+```java
+public interface BoardRepository extends CrudRepository<Board, Long> {
+
+}
+```
+
 `CrudRepository` 인터페이스를 상속하는데 `CrudRepository`에는 기본적인 `CRUD` 를 위한 가상메서드가 정의되어 있다.  
 
 ![springboot2_2](/assets/springboot/springboot2_2.png){: .shadow}  
@@ -170,7 +173,7 @@ public class Board {
 `save` 메서드를 통해 `update`, `insert` 가 가능하다.  
 
 `BoardRepository`를 구현한 클래스를 작성할 필요는 없다.  
-springboot가 db에 맞춰 알맞은 쿼리를 정의한 구현체를 동적으로 생성해준다.  
+`Spring Data JPA` 가 DB 에 맞춰 알맞은 쿼리를 정의한 구현체를 동적으로 생성해준다.  
 
 ```java
 @RunWith(SpringRunner.class)
@@ -1026,7 +1029,7 @@ return queryFactory.selectFrom(qOrder)
 
 * Thread1이 `DeviceRestartLog` 생성, redis와 같은 저장소에 Device번호와 logid를 저장  
 * Thread2는 Device를 재시작하고 메세지로 실행되는 스레드이다. Device번호를 이용해 logid를 흭득 후 `DeviceRestartLog` 업데이트  
-* Thread1은 Thread2가 성공적으로 일을 수행했는지 `Thread.sleep`으로 5초 후 db에서 `findByLogid` 실행  
+* Thread1은 Thread2가 성공적으로 일을 수행했는지 `Thread.sleep`으로 5초 후 DB에서 `findByLogid` 실행  
 
 ```java
 // Thread1의 코드

@@ -20,11 +20,27 @@ toc_sticky: true
 
 ## 스프링 부트
 
-지금까지 스프링MVC에서 각종 라이브러리 때문에 생기던 충돌 문제들....  
-지원되지 않는 라이브러리 버전...  
-`web.xml`과 `pom.xml`에 들어가는 복잡한 설정들...  
+지금까지 스프링MVC에서 각종 라이브러리 때문에 생기던 충돌 문제들
+지원되지 않는 라이브러리 버전, `web.xml`과 `pom.xml`에 들어가는 복잡한 설정 등
 
-스프링 부트를 사용하면 쉽게 해결가능하다.  
+모두 `제어의 역전(Inverse of Control: IoC)` 에서 발생하는 문제점들이다.  
+코드가 아닌 설정파일이 서버코드보다 장황하다  
+
+이런 문제점을 해결하기 위해 2009 년 `Spring Roo` 라는 새로운 프로젝트가 발표되고(인기없음)  
+2013 년 `Spring Boot` 프로젝트가 출시된다.  
+
+스프링 부트의 핵심은 개발 프로세스를 단순화 하고 사용자의 추가 인프라 설정 없이 프로젝트 시작이 가능하도록 하는 것 이다.  
+
+장황한 시작코드가 아래처럼 5줄 코드로 변경된다.  
+
+```java
+@SpringBootApplication
+public class DummyApp {
+    public static void main(String[] args) throws Exception {
+        SpringApplication.run(DummyApp.class, args);
+    }
+}
+```
 
 ### 스프링 프로젝트 생성
 

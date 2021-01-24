@@ -25,7 +25,7 @@ toc_sticky: true
 
 `http` 프로토콜로는 절대로 서버가 클라이언트에게 요청할 순 없다.   
 
-이를 해결하기 위해 클라이언트가 서버에게 **`n`초 주기**로 계속 자신에게 필요한 정보가 있는지 물어보는 요청을 날린다.(`Polling`방식)  
+이를 해결하기 위해 클라이언트가 서버에게 **n초 주기**로 계속 자신에게 필요한 정보가 있는지 물어보는 요청을 날린다.(`Polling`방식)  
 
 `Long Polling`은 조금더 효율적으로 `n`초 주기가 아닌 일단 보내고 서버가 응답을 반환할때까지 **기다리는 방식**이다.  
 일단 보내고 time out될 때까지 무한정 기다린다는 것이다  
@@ -34,7 +34,20 @@ toc_sticky: true
 
 `HTML5`등장과 함께 `Websocket`이 등장하였고 위와같은 불편한 `Polling, Long Polling` 통신기법을 사용하지 않게되었다.  
 
-서버는 클라이언트의 요청이 없더라도 자유롭게 클라이언트에게 데이터를 전달할 수 있게되었다.  
+웹소켓을 사용하려면 별도의 HTTP 웹소켓 헨드쉐이크 과정을 거쳐야 한다.  
+
+![springboot_websocket3](/assets/springboot/springboot_websocket3.png)
+
+```
+GET ws://localhost:8080/ws HTTP/1.1
+Origin: http://example.com
+Connection: Upgrade
+Host: localhost
+Upgrade: websocket
+```
+
+위 과정을 거쳐 커넥션이 생성되면 자유롭게 서버에서 클라이언트에게 데이터를 전달할 수 있게되었다.  
+
 
 ## tomcat 웹소캣 예제   
 
@@ -284,7 +297,7 @@ public class SpringContext implements ApplicationContextAware {
 
 ## Spring 웹 소켓 예제  
 
-톱켓 웹 소켓에서 스프링 관련 기능을 사용할 수 있기 때문에 많이 추상적이지만 간결하다.  
+Spring 웹 소켓에서 스프링 관련 기능을 사용할 수 있기 때문에 많이 추상적이지만 간결하다.  
 거추장 스러운 `ServerEndPoint` 같은 어노테이션이 모두 삭제되고 아래 2개 스프링 빈 객체만 적용하면된다.  
 
 ```java
@@ -344,8 +357,11 @@ public class WebSocketHandler extends TextWebSocketHandler {
 ### SockJS
 
 대부분의 브라우저가 웹소켓을 지원하지만 오래된 버전의 브라우저의 경우 아직 웹소켓을 지원하지 않음으로 `Long Polling` 방식을 지원해야 하는데 이를 위해 `SockJS` 같은 라이브러리가 존재한다.  
-스프링 부트에서는 `Websocket` 을 구현하고 몇가지 속성만 추가하면 `SockJS`까지 지원 가능함으로 폴링 방식의 코드를 별도로 작성할 필요 없어 많은 프로젝트에서 아직까지 `SockJS`를 사용중이다.  
 
+스프링 부트에서는 `Websocket` 을 구현하고 몇가지 속성만 추가하면 `SockJS`까지 지원 가능하다.   
+폴링 방식의 코드를 별도로 작성할 필요 없어 많은 프로젝트에서 아직까지 `SockJS`를 사용중이다.  
+
+> `SockJS` 라이브러리가 브라우저의 웹소켓 지원여부를 확인후 웹소켓으로 연결할지 폴링방식으로 연결할지 자동으로 결정한다.  
 
 ```js
 public class WebSocketConfig implements WebSocketConfigurer {
@@ -421,11 +437,12 @@ ws://localhost:8080/websocket/197/dvkiyrn1/websocket
 
 ## STOMP 웹 소켓 예제
 
-단순한 웹 소켓 처리는 톰캣 혹은 스프링 에서 지원하는 웹소켓 라이브러리로 작성할 수 있다.  
+단순한 웹 소켓 처리는 `톰캣 웹소켓` 혹은 `스프링 웹소켓` 라이브러리로 작성할 수 있다.  
 
 > STOMP: Simple (or Streaming) Text Orientated Messaging Protocol. https://stomp.github.io/
 
-복잡한 구조를 웹소켓을 통해 처리하고 세밀한 메세지 구조를 작성 할 수 있지만 `STOMP` 라이브러리를 통해 **구독, 발행 시스템**을 사용할 수 도 있다.  
+복잡한 구조를 위의 웹소켓 라이브러리 통해 처리하고 세밀한 메세지 구조를 작성 할 수 있지만  
+`STOMP` 라이브러리를 통해 **구독, 발행 시스템**을 사용할 수 도 있다.  
 
 > https://spring.io/guides/gs/messaging-stomp-websocket/
 
@@ -542,6 +559,114 @@ public class MessageHandler {
     <artifactId>stomp-websocket</artifactId>
     <version>2.3.3</version>
 </dependency>
+```
+
+## Websocket Client  
+
+Spring 에서 소켓 서버가 아닌 클라이언트를 사용하고 싶을때 `WebSocketHandler`, `WebSocketSession` 클래스를 사용한다.  
+
+먼저 웹소켓 메세지를 보내고, 받을때 메세지를 처리하는 핸들러 클래스 정의  
+`WebSocketHandler` 상속한다.  
+
+```java
+import org.springframework.web.socket.*; 
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class WebSocketHandlerImpl implements WebSocketHandler {
+
+    private final ObjectMapper objectMapper;
+
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        log.info("afterConnectionEstablished, session:{}, session:{}", session.getId(), session.getUri());
+    }
+
+    @Override
+    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
+        Map<String, String> map = objectMapper.readValue(message.getPayload().toString(), Map.class);
+        log.info("handleMessage, message:{}", objectMapper.writeValueAsString(map));
+    }
+
+    @Override
+    public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
+        log.error("handleTransportError");
+
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
+        log.info("afterConnectionClosed, status:{}", closeStatus);
+
+    }
+
+    @Override
+    public boolean supportsPartialMessages() {
+        log.info("supportsPartialMessages");
+        return false;
+    }
+}
+```
+
+여러가지 웹소켓 클라이언트가 있지만 `org.springframework.web.socket.client.standard.StandardWebSocketClient` 사용  
+
+```java
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class WebSocketSender {
+
+    @Value("${websocket.server.url}")
+    private String serverUrl;
+    @Value("${websocket.server.secret}")
+    private String secret;
+    private WebSocketSession webSocketSession;
+
+    private final WebSocketHandlerImpl webSocketHandler;
+    private final ObjectMapper objectMapper;
+
+    @PostConstruct
+    public void init() {
+        try {
+            URI uri = new URI(serverUrl);
+            WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+            headers.add("X-AUTH-TOKEN", secret);
+            ListenableFuture<WebSocketSession> listenableFuture = 
+                new StandardWebSocketClient().doHandshake(webSocketHandler, headers, uri);
+            listenableFuture.addCallback(
+                result -> {
+                    log.info("WebSocketClient connect success, uri:{}", result.getUri());
+                    webSocketSession = result;
+                }, ex -> {
+                    log.error("WebSocketClient connect failed, error:{}, type{}", ex.getMessage(), ex.getClass().getCanonicalName());
+                });
+        } catch (URISyntaxException e) {
+            log.error("server url syntax error:{}, type:{}", e.getMessage(), e.getClass().getCanonicalName());
+        } catch (Exception e) {
+            log.error("WebsocketClient init error:{}, type:{}", e.getMessage(), e.getClass().getCanonicalName());
+        }
+    }
+
+    @PreDestroy
+    public void destroy() {
+        try {
+            this.webSocketSession.close();
+        } catch (IOException e) {
+            log.error("web socket close error:{}", e.getMessage());
+        }
+    }
+
+    private boolean sendMessage(String message) {
+        try {
+            webSocketSession.sendMessage(new TextMessage(message));
+            return true;
+        } catch (IOException e) {
+            log.error("send message error:{}, type:{}, message:{}", e.getMessage(), e.getClass(), message);
+            return false;
+        }
+    }
+}
 ```
 
 ## 샘플 코드 URL
