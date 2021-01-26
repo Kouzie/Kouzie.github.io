@@ -1,5 +1,5 @@
 ---
-title:  "java time패키지, LocalDate, LocalTime!"
+title:  "java time패키지, LocalDate, LocalTime, Pathcer, Matcher!"
 read_time: false
 share: false
 toc: true
@@ -14,7 +14,7 @@ tags:
   - 문법
 ---
 
-### java.time 클래스
+# java.time 클래스
 
 jdk 1.8부터 추가된 java.time패키지, 시간을 다루는 클래스들이 포함되어 있다.
 
@@ -50,7 +50,7 @@ Calendar는 기존 인스턴스의 정보를 바꾸지만 java.time패키지의 
 
 ---
 
-### LocalDate, LocalTime, LocalDateTime 클래스
+## LocalDate, LocalTime, LocalDateTime 클래스
 
 java.time에서는 **날짜**를 다루는 클래스와 **시간**을 다루는 클래스들 분리해두었다.  
 날짜 - LocalDate  
@@ -58,7 +58,7 @@ java.time에서는 **날짜**를 다루는 클래스와 **시간**을 다루는 
 
 날짜와 시간 같이 다루어아 한다면 LocalDateTime 객체를 사용하면 된다.
 
-#### LocalDate
+### LocalDate
 
 LocalDate 원형
 ```
@@ -86,7 +86,7 @@ now() 메서드는 현재시간이 담긴 객체를 반환한다.
 
 
 
-#### LocalDate - get...메서드
+### LocalDate - get...메서드
 
 LocalDate객체의 정보를 얻기위해 많은 get 메서드가 정의되어 있다.  
 enum클래스인 java.time.temporal.ChronoField를 같이 사용해서 정보를 가져올 수 있다.  
@@ -107,7 +107,7 @@ System.out.println(now.getDayOfMonth());
 <br>
 <br>
 
-#### LocalDate - 날짜 설정 메서드들
+### LocalDate - 날짜 설정 메서드들
 
 1. LocalDate - plusDays(), minusDays() 메서드  
 
@@ -162,7 +162,7 @@ System.out.println(now); //2019-09-11
 ```
 <br><br>
 
-#### LocalDate - parse(), format() 메서드
+### LocalDate - parse(), format() 메서드
 문자열을 LocalDate로 변환   
 LocalDate를 문자열로 변환  
 
@@ -206,7 +206,7 @@ System.out.println(date_str);
 ```
 <br><br>
 
-#### LocalDate - lengthOfMonth()메서드
+### LocalDate - lengthOfMonth()메서드
 
 Calendar에서 마지막 날짜를 구하려면 getActualMaximum()메서드를 사용했다.  
 LocalDate에도 마지막 날짜 구하는 메서드가 있다! lengthOfMonth()!
@@ -224,7 +224,7 @@ System.out.println(endDay);
 자매품 lengthOfYear 메서드 - 해당 년도의 일 수 를 반환  
 <br><br>
 
-#### LocalDate - compareTo, isAfter, isBefore, isEqual
+### LocalDate - compareTo, isAfter, isBefore, isEqual
 
 친절하게도 비교메서드를 여러개 만들어 주었다.
 기능은 타 클래스 비교 메서드들과 비슷하다. 
@@ -250,12 +250,12 @@ isEqual 메서드가 있기때문에 isAfter와 isBefore는 당연히 해당 날
 <br><br>
 
 
-#### Year, YearMonth, MonthDay 클래스
+### Year, YearMonth, MonthDay 클래스
 날짜를 더 세분화해서 관리.... 알고만 있자.
 
 ---
 
-#### LocalTime
+### LocalTime
 
 LocalTime 원형
 ```
@@ -269,7 +269,7 @@ LocalDate가 날짜 전용 클래스라면 LocalTime은 시간 전용 클래스
 plus, get, with, of, parse, 비교메서드 등등...  
 <br><br>
 
-#### LocalTime - now 메서드
+### LocalTime - now 메서드
 
 ```
 LocalTime now = LocalTime.now();
@@ -282,7 +282,7 @@ System.out.println(now);
 시:분:초.밀리초 형식으로 출력된다.  
 <br><br>
 
-#### LocalTime - of 메서드
+### LocalTime - of 메서드
 ```
 LocalTime now = LocalTime.now();
 System.out.println(now);
@@ -300,7 +300,7 @@ System.out.println(now);
 <br><br>
 
 
-#### LocalTime - get 메서드
+### LocalTime - get 메서드
 
 ```
 int time = now.getHour();
@@ -332,7 +332,7 @@ ChronoField를 사용하면 더 다양한 값을 얻을수 있다.
 with메서드도 withHour, withMinute 등이 있음  
 <br><br>
 
-#### LocalTime - parse, format 메서드
+### LocalTime - parse, format 메서드
 ```
 String ts = "10:10:10";
 System.out.println(LocalTime.parse(ts)); //10:10:10
@@ -351,7 +351,7 @@ System.out.println(time_str); //10.10.10
 ```
 <br><br>
 
-#### LocalTime - truncatedTo 메서드
+### LocalTime - truncatedTo 메서드
 
 truncatedTo은 밑으로 다 버리는 메서드이다.
 ```
@@ -369,7 +369,7 @@ ChronoUnit을 사용해서 시간을 조정한다.
 
 ---
 
-#### LocalDateTime
+### LocalDateTime
 
 LocalDate와 LocalTime을 합쳐놓은 클래스  
 날짜와 시간정보 모두 포함하고 있고 두 클래스에서 사용하는 클래스 대부분을 
@@ -385,7 +385,7 @@ implements Temporal, TemporalAdjuster, ChronoLocalDateTime<LocalDate>, Serializa
 <br><br>
 
 
-#### LocalDateTime - of메서드
+### LocalDateTime - of메서드
 
 LocalDateTime의 객체를 반환하는 of메서드는 오버로딩이 7개나 되었다....
 최소한 년, 월, 일, 시간, 분은 설정해줘야하 한다.
@@ -407,7 +407,7 @@ System.out.println(dt);
 
 ---
 
-#### TemporalAdjusters - 시간조정자
+### TemporalAdjusters - 시간조정자
 
 
 해당일자로 부터 다음주 토요일, 다음달 2번째 월요일 등  
@@ -439,10 +439,10 @@ System.out.println(today.with(TemporalAdjusters.next(DayOfWeek.TUESDAY))); //다
 
 ---
 
-### Period, Duration - 두 시간, 날짜 차이를 구하는 클래스
+## Period, Duration - 두 시간, 날짜 차이를 구하는 클래스
 
 
-#### Period
+### Period
 
 날짜 차이가 얼마나 나는지 구하고 싶을땐 Period메서드를 사용하면 편하다.
 ```
@@ -462,7 +462,7 @@ System.out.println(pe.getDays());
 ```
 총 1년 11개월 30일 차이난다는것을 알 수 있다.
 
-#### Duration
+### Duration
 
 시간 차이가 얼마나 나는지 구하고 싶을땐 Duration
 
@@ -496,4 +496,27 @@ System.out.println(dday);
 ```
 162
 ```
+
+
+# Pathcer, Matcher
+
+`java.util.regex`에 포함된 클래스로 정규식에 사용되는 클래스이다.  
+`Pattern`은 정규식을 정의하는데 사용되고    
+`Matcher`는 정규식을 데이터와 비교하는 역학을 한다.  
+
+
+
+```java
+Pattern p = Pattern.complie("c[a-z]*");
+
+Marcher m = p.matcher(compStr);
+
+if(m.matched())
+...
+```
+
+사용법은 간단하다.  
+
+`Pattern`의 `complile` 메서드를 사용해서 정규식을 정의하고 `matcher` 메서드를 사용해서 정규패턴을 검사할 `Matcher` 객체를 만들면서 검사할 문자열을 전달한다.   
+만들어진 `Matcher`클래스는 `matched`함수를 호출하면서 패턴과 문자열이 일치하는지 `true`, `false`로 반환한다.  
 
