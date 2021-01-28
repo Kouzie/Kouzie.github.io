@@ -1616,7 +1616,7 @@ public static void main(String[] args) throws InterruptedException {
 
 ### all
 
-![image53](/assets/java/reactive-java/53.png)  
+![image53](/assets/java/reactive-java/image53.png)  
 
 반환값이 `boolean` 타입이며 모든 발행 데이터가 해당 조건에 맞아야 `true` 를 반환한다.  
 
