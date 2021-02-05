@@ -1,4 +1,4 @@
----
+<!-- ---
 title:  "루비 온 레일즈, Action, Mongoid!"
 
 read_time: false
@@ -73,6 +73,7 @@ end
 class ApplicationController < ActionController::API
 end
 ```
+
 ### ActionController::Base
 
 Rails 컨트롤러가 제공하는 
@@ -284,4 +285,4 @@ end
 ```
 
 필드에는 `key`, `value` 값만 있지만 생성된 문서에는 `created_at`, `updated_at` 속성도 포함된다.  
-
+ -->

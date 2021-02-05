@@ -1279,3 +1279,29 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 > 주의 : `WebSecurity` 의 `web.ignoring()` 사용시에 `spring-security filter` 에서 아예 제외됨으로 `CORS` 설정을 사용하지 않는다.  
 > `HttpSecurity` 와 `permitAll()` 을 통해 진행하는 것을 권장 
+
+# SSL 적용  
+
+```
+# 비밀번호 123456 사용, 그외의 값은 아무값이나 적용  
+$ keytool -genkey -alias spring -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 4000
+...
+Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct?
+  [no]:  yes
+```
+
+`keystore.p12` 생성이 확인되었으면 아래처럼 설정  
+
+```conf
+#ssl
+server.ssl.key-store=keystore.p12
+server.ssl.key-store-type=PKCS12
+server.ssl.key-store-password=123456
+server.ssl.key-alias=spring
+```
+
+> https://127.0.0.1:8080/ 
+
+위와 같이 `https` 와 `ip`, `port` 를 사용해 접속 할 수 있다.  
+
+크롬기반 브라우저는 정책상 유효하지 않은 인증서는 사용할 수 없어 파이어폭스같은 브라우저로 테스트하길 권장
