@@ -154,10 +154,12 @@ Mybatis매퍼용 파일들을 생성해야한다.
 # mybatis.config-location=classpath:mybatis-config.xml #생략 가능
 mybatis.mapper-locations=classpath:mappers/**/*.xml
 ```
+
 SQL문 정의문서는 `mybatis.mapper-locations`속성으로 정의한다.  
 
 잠시 기존의 스프링 프레임워크와 사용법을 비교해 보자.  
 스프링 프레임워크에선 아래처럼 `SqlSession`으로 일일이 xml파일에 정의해 놓은 위치를 문자열 name을 통해 찾아서 지정해 주어야 한다.  
+
 ```java
 @Repository
 public class MemberDAOImpl implements MemberDAO{
@@ -174,8 +176,8 @@ public class MemberDAOImpl implements MemberDAO{
 }
 ```
 
-하지만 스프링 부트에선 interface정의하고 해당 추상 메서드 이름만 일치시켜 놓으면 된다.  
-애초에 `sqlSessionFactory` 빈객체를 만드는 코드가 없다.(아마 dependency 추가되면서 자동으로 만들어지는 듯?)
+하지만 스프링 부트에선 `interface`정의하고 해당 추상 **메서드 이름만 일치**시켜 놓으면 된다.  
+애초에 `sqlSessionFactory` 빈객체를 만드는 코드가 없다.(아마 `dependency` 추가되면서 자동으로 만들어지는 듯?)
 
 그럼 sql문이 작성된 xml안의 sql문과 연동할 매퍼클래스를 정의하고 연동시키는 작업을 수행해보자.  
 
@@ -213,12 +215,12 @@ public class MemberDAOImpl implements MemberDAO{
 </mapper>
 ```
 
-이제 mapper에 정의된 쿼리문 id만 메서드명과 일치시켜 인터페이스를 생성하면 된다.  
+이제 `mapper`에 정의된 쿼리문 `id`만 메서드명과 일치시켜 인터페이스를 생성하면 된다.  
 
 ```java
 public interface UserMapper {
-    User selectByPrimaryKey(@Param("id") Long id);
-    int deleteByPrimaryKey(@Param("id") Long id);
+    User selectById(@Param("id") Long id);
+    int deleteById(@Param("id") Long id);
     int insert(User user);
 }
 ```
