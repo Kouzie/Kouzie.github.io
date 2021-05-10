@@ -1204,6 +1204,7 @@ public OAuthAttributes getUserAttributes(OAuthAccessToken accessToken) {
 @RequiredArgsConstructor
 public class WebAdminConfig implements WebMvcConfigurer, Filter {
 
+    // WebMvcConfigurer 에서 cors 에러
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
@@ -1239,7 +1240,6 @@ public class CorsFilter implements Filter {
 .addFilterBefore(new CorsFilter(), ChannelProcessingFilter.class)
 ```
 
-
 최신 `spring-security` 사용시에 `CorsConfiguration` 를 사용한 `cors` 이슈 처리  
 
 > https://stackoverflow.com/questions/36809528/spring-boot-cors-filter-cors-preflight-channel-did-not-succeed  
@@ -1266,12 +1266,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "DELETE"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(false);
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "TOKEN_ID", "X-Requested-With", "Authorization", "Content-Type", "Content-Length", "Cache-Control"));
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-
         return source;
     }
 }
@@ -1279,6 +1277,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 > 주의 : `WebSecurity` 의 `web.ignoring()` 사용시에 `spring-security filter` 에서 아예 제외됨으로 `CORS` 설정을 사용하지 않는다.  
 > `HttpSecurity` 와 `permitAll()` 을 통해 진행하는 것을 권장 
+> CORS는 응답이 Access-Control-Allow-Credentials: true 을 가질 경우, Access-Controll-Allow-Origin의 값으로 *를 사용하지 못하게 막고 있다.
 
 # SSL 적용  
 

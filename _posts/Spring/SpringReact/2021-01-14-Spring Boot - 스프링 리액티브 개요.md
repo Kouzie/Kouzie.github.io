@@ -606,6 +606,60 @@ public static void main(String[] args) throws InterruptedException {
 `WebClient` 는 인터페이스이고 `DefaultWebClient` 가 `WebClient` 의 유일한 구현체이다.  
 실제 `DefaultWebClient` 내부에선 
 
+### WebClient Serialize config
+
+`WebClient` 에서 직렬화, 비직렬화를 수행할때 기존생성한 `ObjectMapper` 를 통해 처리할 수 잇다.  
+
+
+```java
+@Bean
+    public ObjectMapper objectMapper() {
+    JavaTimeModule module = new JavaTimeModule();
+    LocalDateTimeSerializer localDateTimeSerializer =
+            new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    module.addSerializer(LocalDateTime.class, localDateTimeSerializer);
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(module);
+    objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    // UnrecognizedPropertyException 처리
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    objectMapper.setVisibility(objectMapper
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE)
+            .getVisibilityChecker()
+            .withFieldVisibility(JsonAutoDetect.Visibility.ANY));
+    return objectMapper;
+}
+
+@Bean
+public WebClient webClient(ObjectMapper objectMapper) {
+    ExchangeStrategies jacksonStrategy = ExchangeStrategies.builder()
+            .codecs(config -> {
+                config.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder(objectMapper, MediaType.APPLICATION_JSON));
+                config.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(objectMapper, MediaType.APPLICATION_JSON));
+            }).build();
+    return WebClient.builder().exchangeStrategies(jacksonStrategy).build();
+}
+```
+
+주의사항으로 `uri(uriBuilder->..)` 메서드를 사용해 `query parameter` 를 지정할 경우 문자열에 `/` 가 들어갈 `escape` 문자로 인식하기 때문에 base64 문자열로 변환할 수 없다, url encoding 을 진행하지 않는다.
+또한 `WebClient` 생성시 `baseUrl` 을 설정하지 않으면 `uribuilder` 를 통해 `scheme, host, port, path` 빌드함수를 모두 호출해야 하기 때문에 번거롭다. 
+
+`WebClient` 를 `bean` 으로 생성해 `singleton` 방식으로 사용한다면 `StringBuilder` 를 통해 `uri` 를 직접생성하는 것을 권장.
+
+```java
+StringBuilder urlBuilder = new StringBuilder(WEATHER_GET_ULTRA_SRT_NCST); /*URL*/
+urlBuilder.append("?" + URLEncoder.encode("ServiceKey", "UTF-8") + "=" + URLEncoder.encode(dataGovApiKey, "UTF-8")); /*공공데이터포털에서 받은 인증키*/
+urlBuilder.append("&" + URLEncoder.encode("pageNo", "UTF-8") + "=" + URLEncoder.encode("1", "UTF-8")); /*페이지번호*/
+urlBuilder.append("&" + URLEncoder.encode("numOfRows", "UTF-8") + "=" + URLEncoder.encode("10", "UTF-8")); /*한 페이지 결과 수*/
+urlBuilder.append("&" + URLEncoder.encode("dataType", "UTF-8") + "=" + URLEncoder.encode("JSON", "UTF-8")); /*요청자료형식(XML/JSON)Default: XML*/
+urlBuilder.append("&" + URLEncoder.encode("base_date", "UTF-8") + "=" + URLEncoder.encode(LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE), "UTF-8")); /*15년 12월 1일발표*/
+urlBuilder.append("&" + URLEncoder.encode("base_time", "UTF-8") + "=" + URLEncoder.encode(String.format("%02d00", curHour), "UTF-8")); /*05시 발표*/
+urlBuilder.append("&" + URLEncoder.encode("nx", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(nx), "UTF-8")); /*예보지점 X 좌표값*/
+urlBuilder.append("&" + URLEncoder.encode("ny", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(ny), "UTF-8")); /*예보지점의 Y 좌표값*/
+URI uri = new URL(urlBuilder.toString()).toURI();
+```
+
 ## SSE(Server-Sent Event)
 
 > 참고: https://www.youtube.com/watch?v=4HlNv1qpZFY&t=1283s  
@@ -1081,7 +1135,19 @@ private Mono<TxResult> doTransferMoney(String from, String to, Integer amount) {
 
 > https://r2dbc.io/
 > https://spring.io/projects/spring-data-r2dbc
+> https://spring.io/projects/spring-data-r2dbc
 
+아래와 같은 DBMS 에 대하여 r2dbc 라이브러리를 제공
+
+```
+H2 (io.r2dbc:r2dbc-h2)
+MariaDB (org.mariadb:r2dbc-mariadb)
+Microsoft SQL Server (io.r2dbc:r2dbc-mssql)
+MySQL (dev.miku:r2dbc-mysql)
+jasync-sql MySQL (com.github.jasync-sql:jasync-r2dbc-mysql)
+Postgres (io.r2dbc:r2dbc-postgresql)
+Oracle (com.oracle.database.r2dbc:oracle-r2dbc)
+```
 
 지금까지 `스프링 JDBC` 혹은 `스프링 데이터 JDBC` 혹은 `JPA` 를 사용해 생성된 `Hikari CP` 안의 연결객체가 `JDBC` 드라이버를 사용해 관계형 DB 를 사용해 왔다.  
 
