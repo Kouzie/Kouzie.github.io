@@ -458,29 +458,7 @@ public class GlobalErrorWebExceptionHandler extends AbstractErrorWebExceptionHan
 
 웹소켓 서버, 웹소켓 클라이언트 모두 제공한다.   
 
-웹소켓을 사용하려면 먼저 웹소켓 설정 객체를 `Bean` 으로 등록해야 한다.  
-
-```java
-@Configuration
-public class WebSocketConfiguration {
-
-    @Bean
-    public HandlerMapping handlerMapping() {
-        SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
-        mapping.setUrlMap(Collections.singletonMap("/ws/echo", new EchoWebSocketHandler())); // 경로기반 매핑 설정
-        mapping.setOrder(-1); // 우선순위, 생략시 사용하지 않는 것으로 설정됨 
-        return mapping;
-    }
-
-    @Bean
-    public HandlerAdapter handlerAdapter() {
-        return new WebSocketHandlerAdapter(); 
-        // WebSocket Handshake (upgrade request) 를 처리하는 HandlerAdapter 생성 
-    }
-}
-```
-
-서버에선 `SimpleUrlHandlerMapping` 를 사용해 소켓 핸들러 객체인 `WebSocketHandler` 를 등록한다.  
+웹소켓 서버는 `WebSocketHandler` 를 사용해 소켓 핸들러 역할을 하는 객체인 `Handler` 를 등록한다.  
 
 ```java
 public class EchoWebSocketHandler implements WebSocketHandler {
@@ -497,6 +475,29 @@ public class EchoWebSocketHandler implements WebSocketHandler {
 }
 ```
 
+웹소켓을 사용하려면 먼저 웹소켓 설정 객체를 `Bean` 으로 등록해야 한다.  
+위에서 정의한 핸들러를 `url` 에 매핑하고, Request 요청을 Upgrade 하는 어뎁터를 `Bean` 으로 등록한다.  
+
+```java
+@Configuration
+public class WebSocketConfiguration {
+
+    @Bean
+    public HandlerMapping handlerMapping() {
+        SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
+        mapping.setUrlMap(Collections.singletonMap("/ws/echo", new EchoWebSocketHandler())); // 경로기반 매핑 설정
+        mapping.setOrder(-1); // 우선순위, 생략시 사용하지 않는 것으로 설정됨 
+        return mapping;
+    }
+    @Bean
+    public HandlerAdapter handlerAdapter() {
+        return new WebSocketHandlerAdapter(); 
+        // WebSocket Handshake (upgrade request) 를 처리하는 HandlerAdapter 생성 
+    }
+}
+```
+
+
 > `WebSocketMessage` 는 `payload` 로 `DataBuffer` 를 구현하여 문자열, 바이트코드로 쉽게 형변환 가능  
 ```java
 public class WebSocketMessage {
@@ -508,6 +509,9 @@ public class WebSocketMessage {
 
 `WebSocketHandler` 를 구현하면 해당 url 에 해당하는  `WebSocketSession` 객체를 사용해 메세지를 받고 보낸다.  
 웹소켓 테스트 툴을 사용해 `ws://127.0.0.1:8080/ws/echo` 로 접속, 메세지 전송시 `Echo: ...` 메세지 수신 확인    
+
+
+### WebSocket Client
 
 웹소켓 클라이언트의 경우 `WebSocketClient` 인터페이스를 구현한 `ReactorNettyWebSocketClient` 를 사용한다.  
 
@@ -532,7 +536,143 @@ public CommandLineRunner commandLineRunner() {
 
 정의해둔 `echo` 웹소켓 서버에 0.1 초마다 `interval` 데이터를 문자열로 전송  
 
+`client` 역시 `WebsocketHandler` 구현체를 `excute` 함수의 매개변수로 받으며 핸들러 매핑과 핸들러 어뎁터가 `Bean` 으로 등록되지 않을 뿐 웹소켓 서버 코드와 유사하다.   
+
+
+> 참고 코드: https://github.com/Kouzie/spring-reactive/tree/master/spring-reactive-websocket-client  
 안타깝게도 `WebFlux` 에서 제공하는 웹소켓 내용은 위의 기능이 전부이며 STOMP 를 사용한 메세지 매핑 등의 기능은 제공하지 않는다.  
+
+
+
+### 다중 통신 Sinks.Many 
+
+> 코드 참고: https://github.com/Kouzie/spring-reactive/tree/master/spring-reactive-websocket
+
+리액티브의 웹소켓은 WebMVC 에서 사용한 웹소켓과 다른점이 있는데 
+모든 요청에 대한 응답을 수행할 때 위와같이 람다식이나 함수를 미리 등록해두어야 하고  
+두개 이상의 클라이언트들간 통신을 위해서 각 클라이언트의 `session` 을 찾아 데이터를 발행하는데 `Sinks.Many` 클래스를 사용한다.  
+
+웹소켓 설정 객체를 `Bean` 으로 등록하고 핸들러 매핑하는 것은 동일하다.  
+
+```java
+@Configuration
+public class WebSocketConfig {
+
+    @Bean
+    public HandlerMapping handlerMapping(ChatSocketHandler chatSocketHandler) { // url, handler 매핑
+        SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
+        mapping.setUrlMap(Collections.singletonMap("/ws/chat", chatSocketHandler));
+        mapping.setOrder(-1);
+        return mapping;
+    }
+
+    @Bean
+    public WebSocketHandlerAdapter handlerAdapter() {
+        return new WebSocketHandlerAdapter();
+    }
+}
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class ChatSocketHandler implements WebSocketHandler { // handler 정의 
+
+    private final ObjectMapper mapper;
+
+    @Override
+    public Mono<Void> handle(WebSocketSession session) {
+        WebSocketMessageSubscriber subscriber = new WebSocketMessageSubscriber(session);
+        return session.receive()
+                .map(this::toDto)
+                .doOnNext(subscriber::onNext) // 수신 콜백 함수 등록
+                .doOnError(subscriber::onError) // 에러 콜백 함수 등록
+                .doOnCancel(subscriber::onCancel) // 연결끊김 콜백 함수 등록  
+                .zipWith(session.send(subscriber.getMany().asFlux().map(webSocketToClientDto -> // 메세지 발신 콜백 함수 등록
+                        session.textMessage(webSocketToClientDto.getFrom() + ":" + webSocketToClientDto.getMessage()))))
+                .then();
+    }
+
+    private WebSocketFromClientDto toDto(WebSocketMessage message) {
+        try {
+            WebSocketFromClientDto WsDto = mapper.readValue(message.getPayloadAsText(), WebSocketFromClientDto.class);
+            return WsDto;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+}
+```
+
+`session.send` 에 등록되는 `Flux` 발행자는 `Sinks.Many` 로부터 생성되는데  
+이는 아래에서 사용하는 코드와 같이 메세지를 집어넣을 수 있는 발행자다.  
+Websocket 외에도 SSE (Server Send Events) 에서도 사용된다.  
+
+```java
+@Slf4j
+class WebSocketMessageSubscriber {
+    // 본인을 포함한 다른 클라이언트의 웹소켓 메세지 발행자 맵
+    public static Map<String, Sinks.Many<WebSocketToClientDto>> userMap = new HashMap<>(); //sessionId, sink
+    private final String id;
+    @Getter
+    private final Sinks.Many<WebSocketToClientDto> many; // 본인의 웹소켓 메세지 발행자
+
+    public WebSocketMessageSubscriber(WebSocketSession session) {
+        many = Sinks.many().unicast().onBackpressureBuffer();
+        id = session.getId();
+        many.tryEmitNext(WebSocketToClientDto.builder().from("system").message("welcome, " + id).build());
+        userMap.put(id, many);
+    }
+
+    public void onNext(WebSocketFromClientDto msg) {
+        log.info("onNext invoked, to:{}, msg:{}", msg.getTo(), msg.getMessage());
+        Sinks.Many<WebSocketToClientDto> to = userMap.get(msg.getTo());
+        if (to == null)
+            many.tryEmitNext(WebSocketToClientDto.builder().from("system").message("no user:" + msg.getTo()).build());
+        else
+            to.tryEmitNext(WebSocketToClientDto.builder().from(id).message(msg.getMessage()).build());
+    }
+
+    public void onError(Throwable error) {
+        //TODO log error
+        log.error("onError invoked, error:{}, {}", error.getClass().getSimpleName(), error.getMessage());
+        many.tryEmitNext(WebSocketToClientDto.builder()
+                .from("system")
+                .message(id + " on error, error:" + error.getMessage())
+                .build());
+    }
+
+    public void onCancel() {
+        log.info("onCancel invoked, id:{}", id);
+        userMap.remove(id);
+        for (Map.Entry<String, Sinks.Many<WebSocketToClientDto>> entry : userMap.entrySet()) {
+            if (!entry.getKey().equals(id))
+                entry.getValue().tryEmitNext(WebSocketToClientDto.builder()
+                        .from("system")
+                        .message(id + " is exit")
+                        .build());
+        }
+    }
+}
+
+@Getter
+@Setter
+@Builder
+class WebSocketToClientDto {
+    private String from;
+    private String message;
+}
+
+@Getter
+@Setter
+class WebSocketFromClientDto {
+    private String to;
+    private String message;
+}
+```
+
+![springboot_react4](/assets/springboot/springboot_react4.png)  
+
 
 ## WebClient  
 
@@ -606,6 +746,7 @@ public static void main(String[] args) throws InterruptedException {
 `WebClient` 는 인터페이스이고 `DefaultWebClient` 가 `WebClient` 의 유일한 구현체이다.  
 실제 `DefaultWebClient` 내부에선 
 
+
 ### WebClient Serialize config
 
 `WebClient` 에서 직렬화, 비직렬화를 수행할때 기존생성한 `ObjectMapper` 를 통해 처리할 수 잇다.  
@@ -613,21 +754,21 @@ public static void main(String[] args) throws InterruptedException {
 
 ```java
 @Bean
-    public ObjectMapper objectMapper() {
+public ObjectMapper objectMapper() {
     JavaTimeModule module = new JavaTimeModule();
-    LocalDateTimeSerializer localDateTimeSerializer =
-            new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    LocalDateTimeSerializer localDateTimeSerializer = new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    LocalDateTimeDeserializer localDateTimeDeserializer = new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
     module.addSerializer(LocalDateTime.class, localDateTimeSerializer);
+    module.addDeserializer(LocalDateTime.class, localDateTimeDeserializer);
+
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(module);
     objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     // UnrecognizedPropertyException 처리
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    objectMapper.setVisibility(objectMapper
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-            .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE)
-            .getVisibilityChecker()
-            .withFieldVisibility(JsonAutoDetect.Visibility.ANY));
+    // json -> clas 에서 unknown 속성이 있어도 처리
+    objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL); // null 이 아닌것만 변환
+    objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE); // snake case 로 변환
     return objectMapper;
 }
 
@@ -984,7 +1125,7 @@ public SecurityWebFilterChain securityFilterChainConfigurer(ServerHttpSecurity h
 
 # 스프링 데이터 with WebFlux
 
-기존에 WebMVC 방식의 데이터 베이스 접근시 `JDBC` 를 구현한 `드라이버 라이브러리` 를 사용해 접근해왔다.  
+기존에 `WebMVC` 방식의 데이터베이스 접근시 `JDBC` 를 구현한 `드라이버 라이브러리` 를 사용해 접근해왔다.  
 
 리액티브한 DB 통신도 HTTP 와 다르지 않다.  
 이론적으로 DB 접근용 서비스를 생성하고 `WebClient` 를 사용해 DB 데이터를 가져온다면 비동기 DB 접근 라이브러리를 구현한 것 과 다름없다.  
