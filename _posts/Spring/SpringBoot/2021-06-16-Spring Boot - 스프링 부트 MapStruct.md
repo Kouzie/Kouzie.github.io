@@ -69,7 +69,7 @@ public class CarDto {
 }
 ```
 
-`MapStruct` 라이브러리가 `annotation processor` 를 사용해 구현체를 만들수 있도록 `interface` 작성을 통해 정의해햐 한다.  
+`MapStruct` 라이브러리가 `annotation processor` 를 사용해 구현체를 만들수 있도록 `@Mapper` 어노테이션과 함께 `interface` 작성을 통해 정의해햐 한다.  
 
 ```java
 @Mapper

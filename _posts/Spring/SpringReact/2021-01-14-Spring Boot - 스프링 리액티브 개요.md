@@ -778,6 +778,7 @@ public WebClient webClient(ObjectMapper objectMapper) {
             .codecs(config -> {
                 config.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder(objectMapper, MediaType.APPLICATION_JSON));
                 config.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(objectMapper, MediaType.APPLICATION_JSON));
+                config.defaultCodecs().maxInMemorySize(1024 * 1024 * 50);
             }).build();
     return WebClient.builder().exchangeStrategies(jacksonStrategy).build();
 }

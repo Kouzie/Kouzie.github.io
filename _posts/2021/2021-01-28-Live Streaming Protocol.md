@@ -305,7 +305,7 @@ rtsp://localhost:8554/mystream
 > https://developer.mozilla.org/ko/docs/Web/API/WebRTC_API/Signaling_and_video_calling  
 
 WebRTC 는 웹소켓을 통한 프로토콜로 서버를 거치지 않고  
-클라이언트간 연결을 형성에 통신한다.  
+클라이언트간 연결을 형성에 peer2peer 방식으로 통신한다.  
 
 따라서 delay 가 매우 짧으며 영상을 주고받는데에 좋다.  
 
