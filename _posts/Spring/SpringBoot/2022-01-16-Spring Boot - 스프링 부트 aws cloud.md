@@ -58,11 +58,11 @@ dependencies {
 
 ### AWSCredentialsProvider
 
-`AWS 리소스` 사용시 까다라온 권한검사가 필요한데 긴말 필요없이 `DefaultAWSCredentialsProviderChain` 로 인스턴스 생성하면 모두 해결된다.  
+`AWS 리소스` 사용시 까다로운 권한검사가 필요한데 긴말 필요없이 `DefaultAWSCredentialsProviderChain` 로 인스턴스 생성하면 모두 해결된다.  
 
 > https://docs.aws.amazon.com/ko_kr/sdk-for-java/v1/developer-guide/credentials.html
 
-`AWSCredentialsProvider` 의 구현객체로 아래와 같은 많은 객체들이 존재한다.  
+`AWSCredentialsProvider` 의 구현클래스로 아래와 같은 많은 객체들이 존재한다.  
 
 |클래스명|설명|
 |---|---|
@@ -74,7 +74,9 @@ dependencies {
 `InstanceProfileCredentialsProvider` | EC2 인스턴스 자격 증명
 `DefaultAWSCredentialsProviderChain` | 위 클래스 순서대로 권한 검사
 
-각 서버 배포 상황에 맞게 생성해서 사용해야 겠지만 `local`, `EC2`, `ECS`, 혹은 아예 다른 클라우드 서비스에 배포되어 사용될 수 있다.  
+각 어플리케이션 배포 상황에 맞게 생성해서 사용해야 겠지만  
+`local`, `EC2`, `ECS`, 혹은 아예 다른 클라우드 서비스에 배포되어 사용될 수 있는데 코드상에서 예외처리 하기엔 너무 조건이 까다롭다.  
+
 환경변수를 설정하던 프로필을 파일디렉토리에 삽입하던 `DefaultAWSCredentialsProviderChain` 를 사용하면 알아서 순서에 따라 적합한 자격증명클래스를 생성해준다.  
 
 ```java
@@ -84,9 +86,7 @@ public AWSCredentialsProvider awsCredentialsProvider() {
 }
 ```
 
-로컬에선 `ProfileCredentialsProvider`  
-`ECS 컨테이너`에선 `IAM Role` 를 지정했다면 `ContainerCredentialsProvider` 가 자동으로 설정된다.  
-
+로컬에선 `ProfileCredentialsProvider` 클래스를 사용하고 `ECS 컨테이너`에선 `IAM Role` 를 지정했다면 `ContainerCredentialsProvider` 클래스가 자동으로 설정된다.  
 
 ### AWS Parameter Store - Cloud Config
 
