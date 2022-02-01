@@ -69,6 +69,40 @@ toc_sticky: true
 **SchedulerFactory**  
 Scheduler 인스턴스를 생성하는 역할, 스프링 부트에선 `application.properties` 를 사용해 다양한 설정을 통해 자동으로 구현가능하다.  
 
+### Quartz Initialize
+
+> https://stackoverflow.com/questions/64101847/spring-boot-quartz-jdbc-tables-are-always-initailized
+
+
+```conf
+spring.quartz.jdbc.initialize-schema=always
+```
+
+위와 같은 설정 사용시 기존에 있던 테이블을 삭제하고 다시 생성하는데 MSA 환경에선 곤란할 때가 많다.  
+
+테이블이 없을경우에만 생성하고 없을때는 넘어가게 하고 싶을 때 직접 quartz initial SQL 쿼리를 정의할 수 있다.  
+
+```conf
+spring.quartz.jdbc.initialize-schema=always
+spring.quartz.jdbc.schema=classpath:quartz-create.sql
+```
+
+`resource/quartz-create.sql` 파일을 생성하고 아래처럼 `DROP` 문은 모두 주석처리 후 `CREATE TABLE IF NOT EXISTS` 로 변경해준다.  
+
+```sql
+# DROP TABLE IF EXISTS QRTZ_FIRED_TRIGGERS;
+# DROP TABLE IF EXISTS QRTZ_PAUSED_TRIGGER_GRPS;
+# DROP TABLE IF EXISTS QRTZ_SCHEDULER_STATE;
+...
+...
+
+CREATE TABLE IF NOT EXISTS QRTZ_JOB_DETAILS
+(
+    ...
+);
+...
+```
+
 
 ## 실행 프로세스  
 
@@ -261,7 +295,7 @@ scheduler.stanby()
 
 ### InterruptJob  
 
-실행주인 Job 이 Interrupt 되었을 때 
+실행중인 `Job` 이 `Interrupt` 되었을 때 이벤트 호출
 
 ```java
 @Slf4j
@@ -296,41 +330,29 @@ public class GradeRatingCronJob extends QuartzJobBean implements InterruptableJo
 전달받은 `jobDataMap` 는 `JobExecutionContext` 에서 가져올 수 있다.  
 부가적인 데이터(`name`, `desc` 등) 도 `JobExecutionContext` 에서 가져올 수 있다.  
 
-만약 특정상황이 발생하면 Job 을 중지시켜야 한다면 `InterruptableJob`을 상속받고 위처럼 구현  
-
 `scheduler.interrupt(jobKey)` 메서드 호출로 중지시킬 수 있다.  
+
+만약 특정상황이 발생하면 Job 을 중지시키고 특정 이벤트를 호출해야 한다면 `InterruptableJob`을 상속받고 위처럼 구현  
+
 
 > https://github.com/Flipkart/quartz/blob/master/distribution/examples/src/main/java/org/quartz/examples/example7/DumbInterruptableJob.java  
 위의 URL 에 해당 예제 외에도 다른 여러 예제가 많으니 참고
 
 
-## 조건값으로 Quartz 비활성화  
+### 조건값으로 Quartz 비활성화  
 
-단위테스트나  dev, stg 상태에서 실행할 때 `Quartz` 비활성화를 하고 싶을 경우,
+단위테스트나  dev, stg 상태에서 실행할 때 `Quartz` 비활성화를 하고 싶을 경우 아래 속성을 사용하면 된다.  
 
-아래 속성을 사용하면 된다.  
-```
+```conf
 spring.quartz.auto-startup=true
 ```
 
-
-JobStore 에 저장되어 있는 모든목록을 삭제할 순 없다.  
-실행시에 인자값 전달로 실행할 수 있도록 설정하자.  
-
-```conf
-app.scheduling.enable=false
-```
 
 만약 직접 `SchedulerFactoryBean` 인스턴스를 생성해야 한다면 아래 코드 사용 
 
 ```java
 schedulerFactoryBean.setAutoStartup(appQuartzEnable);
 ```
-
-위와같이 `application.properties` 를 설정해 두었기 때문에 비활성화시 로그가 출력되고 스케줄러 스레드가 생서되지 않는다.  
-
-> 향후에 서버 실행시 `java -jar -Dspring.quartz.auto-startup=true build/libs/....jar` 을 사용  
-
 
 ## Crone Expression  
 
