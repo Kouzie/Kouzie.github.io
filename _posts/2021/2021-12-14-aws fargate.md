@@ -1,5 +1,5 @@
 ---
-title:  "aws ECS!"
+title:  "aws ECS, Fargate, ApiGateway!"
 
 read_time: false
 share: false
@@ -196,7 +196,7 @@ $ aws servicediscovery discover-instances --namepsace-name shared --service-name
 `version` 이나 `stage` 등을 `attribute` 로 지정시 유연한 설계를 작성할 수 있다.  
 
 
-
+<!-- 
 # AppMesh
 
 `AppMesh` 는 AWS 에서 제공하는 `Service Mesh` 를 위한 서비스이다.  
@@ -325,6 +325,20 @@ ColorTellerRoute:
 ## AppMesh 데모  
 
 > https://github.com/aws/aws-app-mesh-examples/tree/main/examples
+-->
+
+# ApiGateway
+
+> https://aws.amazon.com/ko/api-gateway/
 
 
+AWS 에서 제공하는 각종 백앤드 서비스 (Lambda, EC2, ECS 등) 를 API 형식으로 접근할 수 있도록 도와주는 상품  
+
+VPC 내부에 있는 외부에서 접근되지 않는 객체들을 ApiGateway 를 사용하면 지정한 API 에 한하여 접근하도록 도와주며  
+각종 부가기능(cors, 보안, 등) 을 추가적으로 제공한다.  
+
+대표 리소스로 `HTTP API`, `REST API` 가 있으며 `HTTP API` 가 최근 출시된 서비스이며 더 싸고, 빠르다는 결과가 있다.  
+간단한 API Gateway 역활을 수행해야 한다면 HTTP API 가 적합하나 `REST API` 가 과거부터 많이 쓰였으며 좀더 세세하고 많은 기능을 제공한다.  
+
+## REST API
 
