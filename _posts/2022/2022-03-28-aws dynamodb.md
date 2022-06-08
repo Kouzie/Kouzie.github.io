@@ -268,3 +268,86 @@ DynamoDB 에서는 트랜잭션 기능을 제공하지만 안타깝게도 `Srpin
 ```java
 loadedObjects = mapper.transactionLoad(transactionLoadRequest);
 ```
+
+### Dynamic Query   
+
+`RDB` 에서는 `Dynamic Query` 지원을 위해 `QueryDSL` 이나 `Criteria` 등을 사용하는데  
+
+`DynamoDB` 에서는 별도의 라이브러리가 없고 `DynamoDBMapper` 클래스를 사용해서 `query`, `scan` 을 진행한다.  
+
+> DynamoDB scan vs query: <https://dynobase.dev/dynamodb-scan-vs-query/>
+![ddd1](/assets/2022/dynamodb4.png)  
+
+두 메서드의 사용방법은 모두 테이블에서 데이터 컬렉션을 읽어오기 위한 것으로 동일하나.  
+일반적으로 `query` 가 파티션 키를 사용하기 때문에 대부분 성능이 더 뛰어나며 문서 역시 `query` 메서드 사용을 권장한다.  
+
+일단 아래처럼 Filter Condition 을 생성하는 코드를 작성할 수 있다.  
+```java
+private Map<String, Condition> generateFilter(GetCustomerRequestDto requestDto) {
+    Map<String, Condition> filter = new HashMap<>();
+    if (StringUtils.hasLength(requestDto.getName())) {
+        filter.put("name", new Condition()
+            .withComparisonOperator(ComparisonOperator.CONTAINS)
+            .withAttributeValueList(new AttributeValue(requestDto.getName())));
+    }
+    if (StringUtils.hasLength(requestDto.getType())) {
+        BookmarkType type = BookmarkType.forValue(requestDto.getType());
+        if (type != null) {
+            filter.put("type", new Condition()
+                .withComparisonOperator(ComparisonOperator.EQ)
+                .withAttributeValueList(new AttributeValue()));
+        }
+    }
+    if (requestDto.getBeginDate() != null && requestDto.getEndingDate() != null) {
+        if (requestDto.getEndingDate().isBefore(requestDto.getBeginDate())) {
+            throw new IllegalArgumentException("being date is after then ending date");
+        }
+        filter.put("create", new Condition()
+            .withComparisonOperator(ComparisonOperator.BETWEEN)
+            .withAttributeValueList(
+                new AttributeValue(CustomTimeUtil.getUTCString(requestDto.getBeginDate())),
+                new AttributeValue(CustomTimeUtil.getUTCString(requestDto.getEndingDate()))
+                // zone date time to UTC Time String
+            )
+        );
+    }
+    return filter;
+}
+```
+
+타입에 따라 사용할 수 있는 `ComparisonOperator` 가 있으며 자세한 사항은 공식 문서 확인
+> https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Condition.html  
+
+위의 경우 `name`, `type`, `create` 필드에 따라 dynamic 하게 쿼리를 생성할 수 있도록 설정하였다.  
+
+```java
+public List<Customer> findAllByUmidAndContractCdAndPortNo(String group, GetCustomerRequestDto requestDto) {
+    Customer forHash = new Customer();
+    forHash.setGroup(group);
+    Map<String, Condition> queryFilter = generateFilter(requestDto);
+    DynamoDBQueryExpression expression = new DynamoDBQueryExpression()
+        .withHashKeyValues(forHash)
+        .withConsistentRead(false)
+        .withQueryFilter(queryFilter);
+    return dynamoDBMapper.query(Customer.class, expression);
+}
+```
+
+`Customer` 객체의 경우 `group` 문자열 필드를 `GSI` 로 설정하여 `HashKeyValue` 데이터로 사용하였다.  
+
+`GSI` 를 사용하다 보니 일관적인 읽기지원이 불가능함으로 `withConsistentRead(false)` 를 설정해주어야 한다.  
+
+`scan` 의 경우 아래처럼 진행해야 하는데 `id` 리스트를 기반으로 검색을 진행하려면 어쩔수 없이 `scan` 요청을 해야한다.   
+
+```java
+public List<Customer> findAllByIdIn(List<String> customerIds, GetCustomerRequestDto requestDto) {
+    Map<String, Condition> scanFilter = generateFilter(requestDto);
+    List<AttributeValue> attList = customerIds.stream().map(id -> new AttributeValue(id)).collect(Collectors.toList());
+    scanFilter.put("id", new Condition()
+        .withComparisonOperator(ComparisonOperator.IN)
+        .withAttributeValueList(attList));
+    DynamoDBScanExpression expression = new DynamoDBScanExpression()
+        .withScanFilter(scanFilter);
+    return dynamoDBMapper.scan(Customer.class, expression);
+}
+```
