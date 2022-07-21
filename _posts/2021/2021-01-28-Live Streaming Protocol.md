@@ -309,6 +309,18 @@ WebRTC 는 웹소켓을 통한 프로토콜로 서버를 거치지 않고
 
 따라서 delay 가 매우 짧으며 영상을 주고받는데에 좋다.  
 
+### TURN, STURN, 
+
+### Group calling architectures in WebRTC: MCU, SFU & P2P
+
+> <https://www.youtube.com/watch?v=d2N0d6CKrbk&t=1s>
+
+1:1 통신이라면 상관없지만 1:N, N:M 통신일 경우 uplink 와 downlink 의 숫자가 개인당 여러개씩 늘어나게 되는데  
+단순 P2P 통신으로만 구현할 경우 클라이언트 부하가 급속도로 늘어나게 된다.  
+
+상황에 맞춰 적절하게 MCU, SFU 방식을 써야 하는데 
+
+
 ### sample code 
 
 > https://github.com/Kouzie/WebRTC-SS

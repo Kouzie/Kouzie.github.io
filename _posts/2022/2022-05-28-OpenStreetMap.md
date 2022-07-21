@@ -38,6 +38,10 @@ toc_sticky: true
 OSM --(import)--> PostGIS --(encode)--> MVT
 ```
 
+> https://github.com/openmaptiles/openmaptiles
+
+위의 openmaptiles 리포에들어가면 해당작업을 docker를 통해 자동으로 진행할 수 있도록 지원한다.  
+
 ### Data import - imposm, osm2pgsql
 
 데이터 변환 방법으로 `imposm`, `osm2pgssql` 두가지 툴이 있으며  
@@ -51,7 +55,7 @@ linux 에선 binary 혹은 apt 명령을 통해 설치 가능하다.
 
 
 **PostGIS 설치**  
-
+sudo systemctl start postgresql.service
 ```
 docker run -d --name postgis \
     -e POSTGRES_USER=admin \
@@ -107,28 +111,35 @@ imposm import -connection postgis://admin:password@localhost:5432/osm \
 > https://github.com/openmaptiles/openmaptiles
 > https://github.com/Overv/openstreetmap-tile-server
 
+
+`OpenStreetMap's Standard tile layer` 라고 소개하는 `carto` 프로젝트가 가장 유명한 듯 하며  
+해당 프로젝트로 지도 타일맵을 구성해보자.  
+
 ### carto
 
-> 출처: <https://ircama.github.io/osm-carto-tutorials/tile-server-ubuntu/#install-mapnik-library>
+> 출처: <https://ircama.github.io/osm-carto-tutorials/tile-server-ubuntu>
+> <https://www.linuxbabe.com/ubuntu/openstreetmap-tile-server-ubuntu-18-04-osm>
 
-`OpenStreetMap's Standard tile layer` 라고 소개하는 `carto` 프로젝트가 가장 유명한 듯 하다.  
+
+> 예제를 통해 서버를 설치하면서 꼭 모든 서버 구성(DB, WEB, Render)을 한 서버에 구성해야 하는지 의구심이 들 수 있는데  
+DB ID 설정과 PW 로 인해 수정해야할 Config 파일이 너무 많기에 local 에 DB 를 설치하고 전용 계정을 ubuntu 에 생성하는 것을 추천한다.  
 
 총 8개 정도의 컴포넌트로 구성되며 흐름은 아래 사진과 같다.  
 
 - Mapnik
-- Apache
+- Apache: 타일 웹서버
 - Mod_tile
-- renderd
-- osm2pgsql
+- renderd: 랜더링 컴포넌드
+- osm2pgsql: 데이터 변환 툴
 - PostgreSQL/PostGIS database
-- carto
-- openstreetmap-carto
+- carto: 타일 디자인
+- openstreetmap-carto: 관련 오픈소스 프로젝트
 
 ![ddd1](/assets/2022/osm1.png)  
 
 #### osm2pgsql import OSM to PostGIS
 
-INSTALL 페이지에 들어가보면 osm2pgsql 를 통해 `openstreetmap-carto.style` 로 데이터를 import 한다.  
+INSTALL 페이지에 들어가보면 `osm2pgsql` 를 통해 `openstreetmap-carto.style` 로 데이터를 import 한다.  
 
 `-d gis` 속성이 있음으로 `postgis` 에 `gis` 데이터베이스 생성, 그리고 아래 extention 설치 
 ```sql
@@ -156,8 +167,10 @@ $ osm2pgsql -G --hstore \
 > GIS 시각화를 위한 각종 알고리즘과 패턴이 저장된 C++ 기반 라이브러리
 > Nodejs, Python 에서도 쓸 수 있도록 converting 가능  
 
-```
+```sh
+$ sudo add-apt-repository ppa:ubuntugis/ppa
 $ sudo apt-get update
+$ sudo apt-get install -y curl unzip gdal-bin mapnik-utils libmapnik-dev python3-pip
 $ sudo apt-get install -y git autoconf libtool libxml2-dev libbz2-dev \
   libgeos-dev libgeos++-dev libproj-dev gdal-bin libgdal-dev g++ \
   libmapnik-dev mapnik-utils python3-mapnik
@@ -187,12 +200,13 @@ $ curl localhost| grep 'It works!'
           It works!
 ```
 
-**Mod_tile 설치** 
+**Mod_tile, renderd 설치** 
 
 > Mod_tile: <https://github.com/openstreetmap/mod_tile> 
 > 래스터 타일을 제공하는 Apache 2 모듈.
 
-```
+```sh
+# for add repository
 $ sudo apt-get install -y software-properties-common
 $ sudo add-apt-repository -y ppa:osmadmins/ppa
 $ sudo apt-get update
@@ -242,8 +256,7 @@ font_dir_recurse=true
 
 위 항목을 아래처럼 수정 
 
-```
-$ mapnik-config --input-plugins # 플러그인 디렉토리 위치 출력
+```conf
 /usr/lib/mapnik/3.0/input
 
 [renderd]
@@ -253,7 +266,9 @@ num_threads=4
 tile_dir=/var/cache/renderd/tiles
 
 [mapnik]
-plugins_dir=/usr/lib/mapnik/3.0/input
+plugins_dir=/usr/lib/mapnik/3.0/input 
+# mapnik-config --input-plugins 명령에서 출력된 위치로 수정
+
 font_dir=/usr/share/fonts/truetype
 font_dir_recurse=true
 
@@ -265,17 +280,65 @@ HOST=localhost
 TILESIZE=256
 ```
 
+그 외에 manik 에서 인덱싱할때 사용하는 `mapnik-utils` 설치  
 
-#### 기타 설치  
+```
+sudo apt-get install -y mapnik-utils
+```
+
+ls /var/run/renderd
+renderd.pid  renderd.sock  renderd.stats
+
+#### carto 설치  
 
 폰트 설치
 
 ```
 sudo apt-get install -y fonts-noto-cjk fonts-noto-hinted fonts-noto-unhinted fonts-hanazono ttf-unifont fonts-dejavu-core
-sudo apt-get install -y vim
 ```
 
-###
+`nodejs`, `npm` 설치
+
+```
+sudo apt-get install -y nodejs npm
+```
+
+carto 0버전 설치
+
+```
+sudo npm install -g carto@0
+carto -v
+carto 0.18.2 (Carto map stylesheet compiler)
+```
+
+```
+$ mkdir carto
+
+$ npm install mapnik-reference
+$ node -e "console.log(require('mapnik-reference'))"
+{
+  versions: [
+    '2.0.0',  '2.0.1',
+    '2.0.2',  '2.1.0',
+    '2.1.1',  '2.2.0',
+    '2.3.0',  '3.0.0',
+    '3.0.3',  '3.0.6',
+    '3.0.20', '3.0.22'
+  ],
+  latest: '3.0.22',
+  load: [Function (anonymous)]
+}
+```
+
+```
+$ cd ../
+$ git clone https://github.com/gravitystorm/openstreetmap-carto.git
+$ cd openstreetmap-carto
+$ carto -a "3.0.22" project.mml > style.xml
+$ ls -l style.xml
+```
+
+
 
 ## GeoServer  
 
@@ -292,6 +355,3 @@ sudo apt-get install -y vim
 
 > http://data.nsdi.go.kr/dataset
 > http://download.geofabrik.de/asia.html
-
-
----- 작성중 ----
