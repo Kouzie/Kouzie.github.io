@@ -46,13 +46,13 @@ JPA를 개발하려면 기존엔 아래와 같은 코드가 필요했다.
 
 > 출처: https://suhwan.dev/2019/02/24/jpa-vs-hibernate-vs-spring-data-jpa/
 
-Spring으로 ORM을 사용해 개발시 단순 Hibernate를 사용해 개발할 일이 없다. JPA만을 사용할 일은 더더욱 없다.  
+Spring으로 `ORM`을 사용해 개발시 단순 `Hibernate`를 사용해 개발할 일이 없다. `JPA`만을 사용할 일은 더더욱 없다.  
 
 ![springboot_jpa_1](/assets/springboot/springboot_jpa_1.png){: .shadow}   
 
-즉 Hibernate, Spring Boot JPA모두 JPA를 구현한 구현체이지만 `Spring Boot JPA` 가 훨신 편하게 사용할 수 있음을 알 수 있다.  
+즉 `Hibernate`, `Spring Data JPA`모두 JPA를 구현한 구현체이지만 `Spring Data JPA` 가 훨신 편하게 사용할 수 있음을 알 수 있다.  
 
-Spring이 아닌 다른 프레임워크로 개발한다면 Hibernate를 사용해 개발해야 할것.  
+> 아마 `Spring`이 아닌 다른 java 기반 프레임워크로 개발한다면 `Hibernate` 를 사용해 개발해야 할것.  
 
 
 
@@ -363,12 +363,12 @@ result.previousPageable(): INSTANCE
 
 알아서 `Count`까지 해서 `Page` 객체에 데이터를 넣어준다.  
 
-## JPA 쿼리작성 - @Query, @Param
+## JPA 쿼리작성 - @Query, @Param, JPQL
 
 복잡한 구조 (각종 join, 여러 조건문 등) 을 가질 경우 자동생성되는 쿼리메서드로는 한계가 있다.  
 
 `@Query`어노테이션을 사용하면 각종 요청에 대처가능하다.  
-> `@Query`어노테이션으로 실제 DB종속적 쿼리는 아니지만 sql쿼리 비슷하게 작성된다.  
+> JPQL: `@Query`어노테이션과 유사 sql쿼리로 DB 종속을 피하면서 익숙한 쿼리문 작성이 가능.  
 
 ```java
 @Query("SELECT b FROM Board b WHERE b.title LIKE %?1% AND b.bno > 0 ORDER BY b.bno DESC")
@@ -444,9 +444,9 @@ List<SurveyAnswerStatistics> findSurveyCount();
 }
 ```
 
-클래스 풀 네임을 사용해 반환할 수 있다.  
+**클래스 풀 네임**을 사용해 반환할 수 있다.  
 
-`nativeQuery` 를 사용해야 한다면 아래처럼 적용 가능, 단 `getter` 메서드를 모두 정의해주어야 한다.  
+`nativeQuery` 를 사용해야 한다면 아래처럼 적용 가능, 단 `getter`, `setter` 메서드를 모두 정의해주어야 한다.  
 
 ```java
 public interface SurveyRepository extends CrudRepository<Survey, Long> {
@@ -461,9 +461,10 @@ public interface SurveyRepository extends CrudRepository<Survey, Long> {
 ### @Modifying, @Transactional, @Commit
 
 
-`@Query`는 기본적으로 `SELECT`구문만을 지원하지만 `@Modifying` 어노테이션으로 `UPDATE, DELETE`구현이 가능합니다.  
+`@Query`는 기본적으로 `SELECT`구문만을 지원하지만 `@Modifying` 어노테이션으로 `UPDATE, DELETE`구현이 가능하다.  
 
-`@Modifying`을 통해 DML 사용시 해당 쿼리 메서드를 사용하려면 `@Transactional` 어노테이션 처리 필요.  
+`@Modifying`을 통해 `DML` 사용시 해당 쿼리 결과를 DB 에 적용 처리하려면 `@Transactional` 어노테이션 처리 필요.  
+> 물론 `@Service` 클래스의 메서드에다 `@Transactional` 을 지정해도 됨.  
 
 ```java
 public interface PDSBoardRepository extends CrudRepository<PDSBoard, Long> {
@@ -476,7 +477,14 @@ public interface PDSBoardRepository extends CrudRepository<PDSBoard, Long> {
 ```
 
 Junit Test 의 경우 `@Transactional` 처리된 쿼리는 테스트가 끝남과 동시에 모두 자동 롤백 된다.  
-이를 원치안을 경우 `@Commit` 어노테이션을 사용하면 마지막에 변경된 결과가 커밋된다.  
+이를 원치않을 경우 `@Commit` 어노테이션을 사용하면 마지막에 변경된 결과가 커밋된다.  
+
+```java
+@Transactional
+// @Commit
+public class PDSBoardTest {
+    ...
+```
 
 ```java
 @Log
@@ -495,21 +503,12 @@ public class PDSBoardTest {
         log.info("update count: " + count);
     }
 }
-```
-
-반대로 `@Modifying` 와 `save` 메서드를 통해 테스트 메서드로 DB 변경을 원치 않는다면 상위에 
-`@Transactional` 어노테이션 사용  
- 
-```java
-@Transactional
-public class PDSBoardTest {
-    ...
-```
-
+``` 
 
 ## Querydsl - 동적sql처리
 
-변수는 `@Param`, `?1` 기능을 통해 동적으로 지정가능하지만 조건문의 경우도 동적으로 추가할 수 있어야 한다.  
+쿼리 생서에 있어서 변수는 `@Param`, `?1` 기능을 통해 동적으로 지정가능하지만  
+조건문의 경우도 동적으로 추가할 수 있어야 한다.  
 
 > maven 일 경우 설치는 아래 사이트 참고  
 > http://www.querydsl.com/static/querydsl/4.0.1/reference/ko-KR/html_single/  
@@ -618,9 +617,9 @@ queryFactory.select(Expressions.as(distanceExpression, distancePath))
 
 ## 객체간 연관관계
 
-위에선 하나의 테이블을 예제로 객체를 정의하였지만 정상적으로 사용하려면 거미줄처럼 테이블간의 연관관계가 구성되어있다.  
+위에선 하나의 테이블을 예제로 객체를 정의하였지만 실제 서비스를 구성할때에는 거미줄처럼 테이블간의 연관관계가 구성되어있다.  
 
-JPA에선 총 4가지로 관계를 구성한다.  
+JPA에선 총 4가지로 엔티티간의 관계를 구성한다.  
 
 1. `@OneToOne`   
 2. `@OneToMany`   
@@ -629,19 +628,20 @@ JPA에선 총 4가지로 관계를 구성한다.
 
 이런 참조관계는 유동적으로 지정할 수 있다.  
 
-`Board`와 `Reply`라는 클래스(테이블 정의)가 있을때 당연히 게시글당 `n`개의 댓글이 달리니 `N:1` 관계가 구성된다.  
+`Board`(게시글), `Reply`(댓글) 클래스(엔티티)가 있을때  
+당연히 게시글당 `n`개의 댓글이 달리니 `N:1` 관계가 구성된다.  
 
 게시글 입장에선 `@OneToMany`이고 댓글 입장에선 `@ManyToOne` 이다.  
 
-그렇다 해서 무조건 두 클래스다 서로를 가리키고 있을 필요는 없다.  
+그렇다 해서 무조건 두 클래스다 서로를 가리키고 있을 필요는 없다.
+(오히려 단방향 매핑을 권장)  
 
 `Board`를 통해 댓글을 가져와야 한다면 참조해야 되지만  
 만약 쿼리를 2번 호출해 `Board`와 `Reply`를 각각 가져온다면 서로 참조관계일 필요는 없다.  
 
-`Reply`역시 댓글을 검색할 때 게시글 정보도 가져오고 싶다면 참조관계로 클래스를 정의하면 되지만  
-쿼리를 2번 호출할경우 혹은 게시글 정보를 필요로 하지 않을경우 굳이 참조관계를 구성할 필요는 없다.  
+`Reply`역시 댓글을 검색할 때 게시글 정보도 가져오고 싶다면 참조관계로 클래스를 정의하면 되지만 그렇지 않을경우 매핑 어노테이션을 사용하지 않아도 된다.  
 
-일반적으로 `OneToMany`의 양방향 혹은 단방향 참조관계가 대부분이다.  
+> 일반적으로 `OneToMany`의 양방향 혹은 단방향 참조관계가 대부분이다.  
 (`Board` 를 검색하며 `Reply` 들을 가져옴)
 
 ```java
@@ -689,6 +689,7 @@ public class Reply {
     @UpdateTimestamp
     private Timestamp updatedate;
 
+    // 양방향 매핑, @JsonIgnore 로 서로간 serialize 제한
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     private Board board;
@@ -697,17 +698,25 @@ public class Reply {
 
 ### @OneToOne 관계에서 FetchMode.LAZY 적용하기  
 
+사용자가 구매신청(PurchaseLog)을 해서 결제까지 이루어지면 주문(Order) 이 생성된다 하였을때  
+
 ```java
+// 부모
+public class PurchaseLog {
+}
+
+// 자식
 public class Order {
     ...
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "order")
+    @JoinColumn(name = "purchaseLogId")
     private PurchaseLog purchaseLog;
     ...
 }
+
 ```
 
-`PurchaseLog`가 부모 엔티티  
-`Order`가 자식 엔티티 이다, 서로를 `@OneToOne` 관계로 바라보고 있다.
+`PurchaseLog`가 부모 엔티티 `Order`가 자식 엔티티 이다, 서로를 `@OneToOne` 관계로 바라보고 있다.
 
 `PurchaseLog` 의 `Order` 가 `null` 일 수 도 있는 상황,  
 `Order`입장에선 `PurchaseLog`가 무조건 있다.  
@@ -717,7 +726,7 @@ public class Order {
 
 분명 `FetchType.LAZY` 지정을 했음에도 `PurchaseLog`의 정보까지 `select` 되며 `N+1` 문제가 발생한다.  
 
-`Hibernate` 개발자는 자식이 부모에게 `@OneToOne` 관계를 갖는것을 권장하지 않는다.  
+`Hibernate` 개발진은 자식이 부모에게 `@OneToOne` 관계를 갖는것을 권장하지 않는다.  
 그럼에도 `@OneToOne` 관계를 부모엔티티에 적용하고 싶다면 아래 조건중 하나를 택해야 한다.  
 
 **부모엔티티를 통해 자식엔티티에 접근**  
@@ -737,7 +746,7 @@ public class Order {
 부모를 가리키는 칼럼이 생성되고 `not null`조건이 자동 적용된다.  
 
 
-## 연관관계용 테이블 추가 생성 문제 - @JoinColumn, @JoinTable, mappedBy 속성
+### 연관관계용 테이블 추가 생성 문제 - @JoinColumn, @JoinTable, mappedBy 속성
 
 단방향이던 양방향이던 별다른 어노테이션이나 속성 설정 없이  
 `@ManyToOne`, `@OneToMany` 어노테이션을 사용해서 관계 설정시 관계를 표시하기 위한 테이블이 추가로 생성된다.  
