@@ -21,7 +21,7 @@ toc_sticky: true
 ## Boot Admin
 
 > github: <https://github.com/codecentric/spring-boot-admin>
-> ref doc: <https://codecentric.github.io/spring-boot-admin/2.6.2/>
+> ref doc: <https://codecentric.github.io/spring-boot-admin/2.6.6/>
 
 spring actuator 를 사용한 오픈소스 모니터링 프로젝트  
 모니터링에 대해 별도의 운영환경이 없다면 사용해볼만한 프로젝트임.  
@@ -30,8 +30,8 @@ spring actuator 를 사용한 오픈소스 모니터링 프로젝트
 관제할 클라이언트로 사용할 `Boot Admin Client` 디펜던시가 따로 있다.  
 
 ```groovy
-implementation 'de.codecentric:spring-boot-admin-starter-server:2.6.2'
-implementation 'de.codecentric:spring-boot-admin-starter-client:2.6.2'
+implementation 'de.codecentric:spring-boot-admin-starter-server:2.6.6'
+implementation 'de.codecentric:spring-boot-admin-starter-client:2.6.6'
 ```
 
 ### Admin Server
@@ -39,7 +39,7 @@ implementation 'de.codecentric:spring-boot-admin-starter-client:2.6.2'
 ```groovy
 implementation 'org.springframework.boot:spring-boot-starter-web'
 implementation 'org.springframework.boot:spring-boot-starter-security'
-implementation 'de.codecentric:spring-boot-admin-starter-server:2.6.2'
+implementation 'de.codecentric:spring-boot-admin-starter-server:2.6.6'
 ```
 
 `Admin Server` 를 운영하기 위해 위 3개 `dependency` 는 필수  
