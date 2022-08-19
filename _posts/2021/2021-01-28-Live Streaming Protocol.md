@@ -16,6 +16,8 @@ toc_sticky: true
 
 # 개요  
 
+영상, 미디어에 관련된 용어를 간략히 설명한다.  
+
 ## H.264
 
 `VCEG(Video Coding Experts Group)`와 `MPEG(Moving Picture Experts Group)` 에서 만든 동영상 표준 압축 방식(코덱)
@@ -46,6 +48,12 @@ toc_sticky: true
 미디어 서버가 전송서버 역할까지 하는 경우가 있지만 시청자 수가 늘어다면 전송담당 서버를 사용해야함  
 많은 클라이언트가 요구하는 데이터의 경우 캐시에 담아 지원
 
+## 멀티비트 레이트  
+
+화질선택 기능을 지원하기 위한 기술  
+
+동영상을 화질별로 세그먼트, 매니페스트로 나누어 클라이언트에게 선택 재생 할 수 있도록 지원한다.  
+
 # 스트리밍 프로토콜 
 
 ## RTP, RTCP, RTSP
@@ -57,33 +65,64 @@ toc_sticky: true
 ![live-stream1](/assets/2021/live-stream1.png)  
 
 
-**RTP (Real-Time Transport Protocol)**  
-
-실제 동영상 전송을 위해 사용되는 프로토콜  
-`UDP` 프로토콜로 전송된다.  
+**RTP (Real-Time Transport Protocol)**   
+실제 동영상 전송을 위해 사용되는 프로토콜, `UDP` 프로토콜로 전송된다.  
 
 
 **RTCP (Real-Time Transport Control Protocol)**  
-
 `RTP` 와 같이 사용되며 `RTP` 의 전송 통계와 `QoS`를 모니터링  
 스트림의 동기화를 지원하기 위해 속도 조절 처리 등을 담당  
 
 
 **RTSP (Real-Time Streaming Protocol)**  
-
 미디어 플레이어가 사용하는 프로토콜로 응용계층의 프로토콜 `554 PORT` 를 사용한다.  
 `RTCP` 와 마찬가지로 `RTP` 데이터의 흐름을 제어  
-`PLAY, PAUSE, REPLAY, ROLLBACK` 등의 요청을 처리  
+`PLAY, PAUSE, REPLAY, ROLLBACK, MOVE` 등의 요청을 처리  
 
+현재 잘 사용하지 않는다.  
 
 ## RTMP(Real Time Messaging Protocol)
 
+RTSP 이후의 새로운 라이브 스트리밍 프로토콜로 현재 가장 많이 사용되고 있다.  
+대부분의 라이브 스트리밍 플랫폼(유튜브, 트위치, 아프리카 등) 이 해당 프로토콜로 라이브 스트리밍을 지원한다.  
+
 `Adobe` 에서 개발 `TCP` 기반 프로토콜로 `1935` 포트사용  
-`RTMP` 는 오디오, 비디오 밎 기타 데이터를 인터넷을 라이블 스트리밍할 때 사용  
+`RTMP` 는 오디오, 비디오 밎 기타 데이터를 인터넷을 라이브 스트리밍할 때 사용  
+
+오래된 규격,  H.265 등의 최신 비디오 코덱 지원 X, 암호화 불가능이라는 이슈등이 있어 서서히 사장되고 있는 프로토콜이기도 하다.  
+
+## SRT (Secure Reliable Transport) Protocol
+
+> 출처: <https://www.youtube.com/watch?v=2BkTLnHvH_g>
+
+
+Haivision 에서 2017 년 오픈소스로 공개한 프로토콜이다.  
+
+꼼꼼한 오류체크를 처리하기 때문에 높은 안전성을 가지며 암호화 전송 또한 가능하다.  
+
+범용성과 호환성이 떨어지지만 SRT 프로토콜이 오픈소스로 풀린 이상 금방 해결될 예정이다.  
+
+![live-stream3](/assets/2021/live-stream3.png)  
+
+실제 송신자(카메라)와 수신자(컴퓨터, 방송국)은 SRT 인코더와 디코더를 통해서 데이터를 송/수신 하기 때문에 이게 인터넷을 통해서 데이터가 오는지, SDI(Serial Digital Interface) 케이블이 직접 연결되어서 데이터가 오는지 모른다.  
+
+아래와 같이 인코더와 디코더가 H.264, H.265 등의 압축 기술로 데이터를 압축, 전송, 압축해제, 암호화(AES) 등의 작업을 원활히 해야 문제가 발생하지 않는다.   
+
+![live-stream4](/assets/2021/live-stream4.png)  
+
+인터넷을 통해 전송되다 보니 데이터 유실, 딜레이 등의 문제가 생기는데 SRT 의 인코더 디코더는 커다란 버퍼를 이용하여 에러체크를 진행하고 유실 데이터를 최소하 한다.  
+(단 가격이 비싸다)
+
+장비가 많이 필요하도 도입비용이 높은만큼 방송국과 같은 업체에서 많이 사용하며  
 
 
 
-## Adaptive HTTP Live Streaming
+**전송모드 - 리스너, 콜러**  
+IP주소가 고정되어 있는 인코더 혹은 디코더, 영상 전송 주체와는 상관없다.  
+대부분 영상을 수신받는 쪽(디코더)가 리스너가 된다.  
+
+
+## Adaptive HTTP Live Streaming (HLS, DASH)
 
 줄여서 `Adaptive Streaming` 이라고도 한다.  
 
@@ -181,7 +220,7 @@ HLS 유사하게 미디어 파일을 세그먼트로 나누고 이에 관한 매
 한번에 모든 세그먼트를 불러오게 되고 서버 부담으로 돌아온다. 이로 인해 Netflix 의 경우 IOS Safari 에선 서비스를 지원하지 않고  
 별도의 앱을 통해 동영상 실행을 지원한다.  
 
-### MP4
+### MP4 포맷
 
 브라우저에서 `<video>` 태그를 사용해 서버에 저장된 `MP4` 파일을 호출하면 아래와 같은 정보가 출력된다.  
 
@@ -202,12 +241,49 @@ Last-Modified: Sat, 16 May 2020 08:28:37 GMT
 Server: nginx/1.14.0 (Ubuntu)
 ```
 
-## 멀티비트 레이트  
+## WebRTC (Web Real-Time Communication)
 
-화질선택 기능을 지원하기 위한 기술  
+> https://www.wowza.com/blog/what-is-webrtc  
+> https://developer.mozilla.org/ko/docs/Web/API/WebRTC_API/Signaling_and_video_calling  
 
-동영상을 화질별로 세그먼트, 매니페스트로 나누어 클라이언트에게 선택 재생 할 수 있도록 지원한다.  
+`WebRTC` 는 웹소켓을 통한 프로토콜로 서버를 거치지 않고 클라이언트간 연결을 형성에 P2P 방식도 지원하여  
+따라서 delay 가 매우 짧으며 영상을 주고받는데에 좋다.  
+ 
+`STUN`, `TURN` 방식을 사용하여 `NAT`나 방화벽 환경에서 동작할 수 있도록 지원하기도 한다.  
 
+### STUN (Session Traversal Uilities for NAT)  
+
+> 출처: <https://alnova2.tistory.com/1110>
+
+`NAT` 환경에서 클라이언트 끼리 P2P 전송지원은 방화벽 등에 막힐 수 있어 다른방식으로 `WebRTC` 를 운형해야 하는데 
+
+![live-stream6](/assets/2021/live-stream6.png)  
+
+위 그림과 같이 P2P 전송 지원을 위해 
+STUN 서버를 통해 시그널링, 미디어 데이터를 송/수신 할 수 있는 Public IP/Port 정보를 주고받는다
+
+클라이언트는 STUN 으로부터 전달받은 데이터를 이용하여 
+
+
+### TURN (Traversal Using Relays around NAT)
+
+### Group calling architectures in WebRTC
+
+> <https://www.youtube.com/watch?v=d2N0d6CKrbk&t=1s>
+
+1:1 통신이라면 상관없지만 1:N, N:M 통신일 경우 uplink 와 downlink 의 숫자가 개인당 여러개씩 늘어나게 되는데  
+단순 P2P 통신으로만 구현할 경우 클라이언트 부하가 급속도로 늘어나게 된다.  
+
+상황에 맞춰 적절하게 Mesh, MCU(Multi-point Control Unit), SFU(Selective Forwarding Unit) 방식을 써야 한다.  
+
+![live-stream5](/assets/2021/live-stream5.png)  
+
+각 방식별로 Uplink 와 Downlink 를 보면 어떤 상황에서 어떤 아키텍처를 사용해야 하는지 판단할 수 있다. 
+
+
+### sample code 
+
+> https://github.com/Kouzie/WebRTC-SS
 
 # 인터넷 라이브 방송
 
@@ -297,30 +373,3 @@ $ docker run --rm -it -e RTSP_PROTOCOLS=tcp -p 8554:8554 aler9/rtsp-simple-serve
 ```
 rtsp://localhost:8554/mystream
 ```
-
-
-## WebRTC (Web Real-Time Communication)
-
-> https://www.wowza.com/blog/what-is-webrtc
-> https://developer.mozilla.org/ko/docs/Web/API/WebRTC_API/Signaling_and_video_calling  
-
-WebRTC 는 웹소켓을 통한 프로토콜로 서버를 거치지 않고  
-클라이언트간 연결을 형성에 peer2peer 방식으로 통신한다.  
-
-따라서 delay 가 매우 짧으며 영상을 주고받는데에 좋다.  
-
-### TURN, STURN, 
-
-### Group calling architectures in WebRTC: MCU, SFU & P2P
-
-> <https://www.youtube.com/watch?v=d2N0d6CKrbk&t=1s>
-
-1:1 통신이라면 상관없지만 1:N, N:M 통신일 경우 uplink 와 downlink 의 숫자가 개인당 여러개씩 늘어나게 되는데  
-단순 P2P 통신으로만 구현할 경우 클라이언트 부하가 급속도로 늘어나게 된다.  
-
-상황에 맞춰 적절하게 MCU, SFU 방식을 써야 하는데 
-
-
-### sample code 
-
-> https://github.com/Kouzie/WebRTC-SS
