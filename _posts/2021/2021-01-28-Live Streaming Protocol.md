@@ -203,7 +203,7 @@ HLS 유사하게 미디어 파일을 세그먼트로 나누고 이에 관한 매
 
 > HLS 의 경우 IOS 사파리만 자체 제공  
 
-따라서 HSL, DASH 의 경우 MSE 기능을 사용하는 브라우저에 한하여 
+따라서 `HSL`, `DASH` 의 경우 MSE 기능을 사용하는 브라우저에 한하여 
 
 `MSE` 는 `W3C` 에서 표준화 하고 있는 위 프로토콜을 사용할 수 있는 `자바스크립트 API` 이고  
 `hls.js, dash.js` 는 MSE 를 쉽게 사용할 수 있도록 구현된 라이브러리이다.  
@@ -243,47 +243,109 @@ Server: nginx/1.14.0 (Ubuntu)
 
 ## WebRTC (Web Real-Time Communication)
 
-> https://www.wowza.com/blog/what-is-webrtc  
-> https://developer.mozilla.org/ko/docs/Web/API/WebRTC_API/Signaling_and_video_calling  
+
+> 데모코드: <https://github.com/Kouzie/WebRTC-SS>
+
+> <https://www.wowza.com/blog/what-is-webrtc>
+> <https://www.wowza.com/blog/webrtc-signaling-servers>
+> <https://developer.mozilla.org/ko/docs/Web/API/WebRTC_API/Signaling_and_video_calling>
 
 `WebRTC` 는 웹소켓을 통한 프로토콜로 서버를 거치지 않고 클라이언트간 연결을 형성에 P2P 방식도 지원하여  
 따라서 delay 가 매우 짧으며 영상을 주고받는데에 좋다.  
  
-`STUN`, `TURN` 방식을 사용하여 `NAT`나 방화벽 환경에서 동작할 수 있도록 지원하기도 한다.  
+그렇다고 서버가 필요 없는 것은 아니다.  
+처음 2 개이상의 클라이언트가 연결되기 위해 `시그널링` 이라는 작업을 수행해야 하며  
+이때 `시그널링 서버` 가 필요하다.  
 
-### STUN (Session Traversal Uilities for NAT)  
+![live-stream6](/assets/2021/live-stream5-1.png)  
+
+시그널링 작업을 통해 각 클라이언트는 상대방의 공인IP 와 오픈된 port 를 알 수 있고  
+해당 주소로 미디어 데이터를 전송한다.  
+
+
+`NAT` 나 방화벽 환경에서 클라이언트 끼리 P2P 전송지원은 방화벽 등에 막힐 수 있어 다른방식으로 `WebRTC` 를 운형해야 하는데  
+
+`STUN`, `TURN` 방식을 사용하여 동작할 수 있도록 한다.  
+
+> <https://www.youtube.com/watch?v=ESZ4T2PSMc4&t=47s>
+
+### STUN (Session Traversal Utilities for NAT)  
 
 > 출처: <https://alnova2.tistory.com/1110>
 
-`NAT` 환경에서 클라이언트 끼리 P2P 전송지원은 방화벽 등에 막힐 수 있어 다른방식으로 `WebRTC` 를 운형해야 하는데 
+> STUN: `IETF RFC 5389`에 정의된 네트워크 프로토콜/패킷 포맷으로, 네트워크 환경에 대한 Discovery 를 위한 프로토콜
 
 ![live-stream6](/assets/2021/live-stream6.png)  
 
-위 그림과 같이 P2P 전송 지원을 위해 
-STUN 서버를 통해 시그널링, 미디어 데이터를 송/수신 할 수 있는 Public IP/Port 정보를 주고받는다
+NAT 안에 설치된 peer 는 본인이 NAT 안에 있는지, 공인네트워크상에 있는지 알지 못한다.  
+외부에 있는 시그널링 서버가 각 peer 의 NAT 상의 IP 를 알려주면 사설 네트워크 안에서도 영상을 송/수신 할 수 있다.   
+NAT 상의 `IP/Port` 정보 를 알려주는게 STUN 서버이다.  
 
-클라이언트는 STUN 으로부터 전달받은 데이터를 이용하여 
+그림과 같이 P2P 전송 지원을 위해 **STUN 서버를 통해 자신의 IP/Port 정보**를 받는다.  
+
+
+수신받은 자신의 `IP/port` 정보를 시그널링 서버로 전송하여 다른 peer 가 자신에게 미디어 데이터를 송신 할 수 있도록 한다.  
+
+
+즉 **STUN 으로부터 전달받은 종단간 NAT 의 Access 가능한 IP/Port** 를 사용하며 미디어 데이터를 주고받는다.
 
 
 ### TURN (Traversal Using Relays around NAT)
+
+> TURN: `IETF RFC 5766`, STUN 서버의 확장, 미디어 데이터를 릴레이하는 서버를 별도로 두어 엄격한 보안정책을 가진 NAT 안에서 동작할 수 있도록 하는 방식
+
+![live-stream7](/assets/2021/live-stream7.png)  
+
+방화벽, 물리적이유 등으로 **Peer 간 직접 미디어 데이터가 송/수신 안될경우 데이터 릴레이를 수행하는 TURN 서버를 사용**해야 한다.  
+
+`TURN 서버`에 접근하여 `TURN 클라이언트`와 P2P 연결이 이루어지는 구조이다.  
+
+### ICE(Interactive Connectivity Establishment)
+
+`STUN`, `TURN` 등으로 찾아낸 **연결 가능한 네트워크 주소들을 Candidate(후보)로 취급**  
+
+사용가능한 클라이언트의 모든 통신 가능한 주소를 식별한 후 가장 최적의 경로를 찾아서 연결하는 방식이다.  
+
 
 ### Group calling architectures in WebRTC
 
 > <https://www.youtube.com/watch?v=d2N0d6CKrbk&t=1s>
 
-1:1 통신이라면 상관없지만 1:N, N:M 통신일 경우 uplink 와 downlink 의 숫자가 개인당 여러개씩 늘어나게 되는데  
+1:1 통신이라면 상관없지만 1:N, N:M 통신일 경우 `uplink` 와 `downlink` 의 숫자가 개인당 여러개씩 늘어나게 되는데  
+
 단순 P2P 통신으로만 구현할 경우 클라이언트 부하가 급속도로 늘어나게 된다.  
 
-상황에 맞춰 적절하게 Mesh, MCU(Multi-point Control Unit), SFU(Selective Forwarding Unit) 방식을 써야 한다.  
+상황에 맞춰 적절하게 `Mesh`, `MCU(Multi-point Control Unit)`, `SFU(Selective Forwarding Unit)` 방식을 써야 한다.  
 
 ![live-stream5](/assets/2021/live-stream5.png)  
 
-각 방식별로 Uplink 와 Downlink 를 보면 어떤 상황에서 어떤 아키텍처를 사용해야 하는지 판단할 수 있다. 
+각 방식별로 `Uplink` 와 `Downlink` 를 보면 어떤 상황에서 어떤 아키텍처를 사용해야 하는지 판단할 수 있다. 
+
+MCU 의 경우 클라이언트별로 uplink 와 downlink 가 하나씩으로  
+업로드된 미디어스트림들을 mixing 하거나 변환하여 1개의 미디어스트림으로 내려주는 구조이다.  
+클라이언트의 트래픽 관점에서 효율적이나 서버 리소스를 많이 사용하는 단점이 있다.  
+
+위 3가지 방식은 WebRTC 의 한정되는 내용이 아니다.  
+zoom 의 경우 자체 개발 프로토콜로 영상을 전송하고 있으며  
+SFU 방식을 사용하여 1000명이 한번에 연결되어 회의 할 수 있도록 지원한다.  
+
+> 대신 클라이언트의 downlink 가 많아져 cpu 부담이 발생하여 데스크탑에서만 사용하기도 한다.  
 
 
-### sample code 
+### WebRTC Media Server 
 
-> https://github.com/Kouzie/WebRTC-SS
+Mesh 방식의 경우 완벽한 P2P 통신이기에 별도의 Media Server 가 필요없겠지만  
+
+대규모 사용자를 지원하기위해 MCU 혹은 SFU 방식을 지원해야하는 경우 성능좋은 Media Server 가 필요하다.  
+
+> <https://ourcodeworld.com/articles/read/1212/top-5-best-open-source-webrtc-media-server-projects>
+
+많은 Media Server 가 오픈소스로 제공되어 있으며 그중 `Ant-Media-Server` 를 알아보자.  
+
+> <https://github.com/ant-media/Ant-Media-Server>
+
+
+
 
 # 인터넷 라이브 방송
 
@@ -364,7 +426,9 @@ http://127.0.0.1:18080/dash/bbb.mpd
 
 ## RTSP 서버 
 
-> https://github.com/aler9/rtsp-simple-server
+> <https://github.com/aler9/rtsp-simple-server>
+> <https://github.com/Kouzie/nginx-rtmp-docker>
+
 
 ```
 $ docker run --rm -it -e RTSP_PROTOCOLS=tcp -p 8554:8554 aler9/rtsp-simple-server
