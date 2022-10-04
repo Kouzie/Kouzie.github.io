@@ -24,8 +24,10 @@ toc_sticky: true
 > https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-quartz
 > https://blog.advenoh.pe.kr/spring/Quartz-Job-Scheduler란/
 
-작업 스케줄링 으로 스프링 배치를 사용할 수 도 있지만 간단한 스케쥴링의 경우 `Quartz`를 사용하면 편하다.  
-단순 반복 작업이라면 `Quartz` 보다도 `spring scheduler` 를 사용하면 `@Scheduled` 어노테이션 하나로 작성 가능하다.  
+자바에서 가장 유명한 작업 스케줄링 라이브러리  
+단일 인스턴스 기준, 단순 반복 작업이라면 `Quartz` 보다도 `spring scheduler` 를 사용하면 더 쉽게 스케줄링 작업이 가능하다.  
+
+> `@Scheduled` 어노테이션 하나로 작성 가능하다.  
 
 ## 구조  
 
