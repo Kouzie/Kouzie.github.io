@@ -378,15 +378,15 @@ public class EndOfDayJobConfiguration {
     @Bean
     public Job endOfDay() {
         return this.jobBuilderFactory.get("endOfDay")
-    				.start(step1())
-    				.build();
+            .start(step1())
+            .build();
     }
 
     @Bean
     public Step step1() {
         return this.stepBuilderFactory.get("step1")
-    				.tasklet((contribution, chunkContext) -> null)
-    				.build();
+            .tasklet((contribution, chunkContext) -> null)
+            .build();
     }
 }
 ```
@@ -452,12 +452,19 @@ public class JobLauncherController {
 
 ![springboot_batch1](/assets/springboot/springboot_batch6.png)  
 
-### stepBuilderFactory
+마지막에 `Step` 의 종료코드 `ExitStatus` 를 반환함으로 끝이난다.  
 
-지금까지 `jobBuilderFactory` 에서 `next` 메서드를 사용해 이미 생성된 `step` 을 삽입해왔는데  
-이번엔 `stepBuilderFactory` 에서 step 을 구성하는것을 알아본다.  
+### StepBuilderFactory
+
+지금까지 `jobBuilderFactory` 에서 `next` 메서드를 사용해 이미 생성된 `Step` 을 삽입해왔는데  
+이번엔 `stepBuilderFactory` 에서 `Step` 을 구성하는것을 알아본다.  
 
 ```java
+DefaultTransactionAttribute attribute = new DefaultTransactionAttribute();
+attribute.setPropagationBehavior(Propagation.REQUIRED.value());
+attribute.setIsolationLevel(Isolation.DEFAULT.value());
+attribute.setTimeout(30);
+
 @Bean
 public Step sampleStep(PlatformTransactionManager transactionManager) {
     return this.stepBuilderFactory.get("sampleStep")
@@ -466,6 +473,15 @@ public Step sampleStep(PlatformTransactionManager transactionManager) {
         .reader(itemReader())
         .processor(itemProcessor())
         .writer(itemWriter())
+        .readerIsTransactionalQueue()
+        .transactionAttribute(attribute)
+        .faultTolerant()
+        .retryLimit(3)
+        .retry(DeadlockLoserDataAccessException.class)
+        .skipLimit(10)
+        .skip(Exception.class)
+        .noSkip(FileNotFoundException.class)
+        .noRollback(ValidationException.class)
         .allowStartIfComplete(true)
         .startLimit(1)
         .build();
@@ -481,17 +497,201 @@ public Step sampleStep(PlatformTransactionManager transactionManager) {
 **reader, processor, writer**
 `ItemReader` `ItemWriter` `ItemProcessor` 적용
 
-**repository**
-`StepExecution` and `ExecutionContext` 등의 step Context(Data Map) 를 주기적으로 저장할 JobRepository, `BatchConfigurer` 에서도 사용함  
+**readerIsTransactionalQueue**  
+`readerIsTransactionalQueue` 를 지정하면 향후 에러가 발생해 롤백할 경우에도 큐에서 데이터를 꺼내와 바로 덮어 씌울 수 있도록 한다.  
 
-**allowStartIfComplete**
-성공 혹은 오류로 종료된 step 을 다시 실행할 것인지 여부, `true` 로 설정하면 step 이 항상 실행되도록 설정한다.  
-`default` 값은 `false`
+**transactionAttribute**
+`isolation`, `propagation`, `timeout` 설정, 
+
+**repository**
+`StepExecution` and `ExecutionContext` 등의 `Step` `Context(Data Map)` 를 주기적으로 저장할 `JobRepository`, `BatchConfigurer` 에서도 사용함  
+
+**skip, noSkip, skipLimit**
+`faultTolerant()` 함수로부터 시작, 오류발생 시 `Step` 의 `skip` 여부 결정, `reader`, `writer`, `processor` 어디서든 예외발생 가능하며 발생시 다음 `chuck` 로 이동, `skipLimit` 개수에 다다르면 예외가 발생하며 step 이 실패처리된다.
+
+**retry, retryLimit**
+`faultTolerant()` 함수로부터 지삭, 오류발생 시 `Step` 의 `retry` 여부 걸졍, 재시도할 예외를 지정 가능
+
+**noRollback**
+`faultTolerant()` 함수로부터 지삭, 오류발생시 `ItemWriter` 작성한 내용에 대해 롤백하지 않음
 
 **startLimit**
-`default` 값은 `Integer.MAX_VALUE`, 시작 전에 수동 매뉴얼 시나리오가 있을 때
+`allowStartIfComplete()` 함수로부터 시작, 성공 혹은 오류로 종료된 `Step` 을 다시 실행할 것인지 여부, `true` 로 설정하면  이 항상 실행되도록 설정한다.  
+`startLimit` 의 `default` 값은 `Integer.MAX_VALUE`
+`default` 값은 `false`
+
 한번 실행 후 더이상 실행하지 못하도록 설정할 때 사용할 수 있다.  
 
+### Intercept Step Function
+
+다음과 같은 step 이 있을 때 
+
+```java
+@Bean
+public Step step1() {
+    return this.stepBuilderFactory.get("step1")
+        .<String, String>chunk(10)
+        .reader(reader())
+        .writer(writer())
+        .listener(myListner)
+        .build();
+}
+```
+
+`myListner` 의 종류는 아래와 같다.  
+
+> 함수명 대신 어노테이션으로 대체 가능
+
+```java
+public interface StepExecutionListener extends StepListener {
+    void beforeStep(StepExecution stepExecution);
+    ExitStatus afterStep(StepExecution stepExecution);
+}
+
+public interface ChunkListener extends StepListener {
+    void beforeChunk(ChunkContext context);
+    void afterChunk(ChunkContext context);
+    void afterChunkError(ChunkContext context);
+}
+
+public interface ItemReadListener<T> extends StepListener {
+    void beforeRead();
+    void afterRead(T item);
+    void onReadError(Exception ex);
+}
+
+public interface ItemProcessListener<T, S> extends StepListener {
+    void beforeProcess(T item);
+    void afterProcess(T item, S result);
+    void onProcessError(T item, Exception e);
+}
+
+public interface ItemWriteListener<S> extends StepListener {
+    void beforeWrite(List<? extends S> items);
+    void afterWrite(List<? extends S> items);
+    void onWriteError(Exception exception, List<? extends S> items);
+}
+
+public interface SkipListener<T,S> extends StepListener {
+    void onSkipInRead(Throwable t);
+    void onSkipInProcess(T item, Throwable t);
+    void onSkipInWrite(S item, Throwable t);
+}
+```
+
+특히나 `StepExecutionListener` 의 경우 향후 `Step` 흐름제어에서 사용하는 `ExitStatus` 를 처리하는 `Listener` 이기에 자주 사용된다.  
+
+### TaskletStep
+
+`chunk` 기반의 `ItemReader` `ItemProcessor` `ItemWriter` 로 `Step` 을 구성할 수 있지만  
+`item read` 는 하지 않고 `item write` 만 하는 등 chuck 프로세스에 어울리지 않는 배치작업이 있을 수 있다.  
+
+이때 `execute` 메서드 하나로만 구성되는 `Tasklet` 클래스를 step 에 사용하면 좀더 직관적으로 코드를 작성할 수 있다.  
+
+```java
+@Bean
+public Step step1() {
+    return this.stepBuilderFactory.get("step1")
+        .tasklet(myTasklet())
+        .build();
+}
+```
+
+`Tasklet` 의 구조는 아래와 같다.  
+
+```java
+public interface Tasklet {
+    RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception;
+}
+```
+
+위 `Tasklet` 인터페이스를 구현한 여러 어뎁터클래스가 있으며 그중 `MethodInvokingTaskletAdapter` 클래스를 보면  
+
+```java
+@Bean
+public MethodInvokingTaskletAdapter myTasklet() {
+    MethodInvokingTaskletAdapter adapter = new MethodInvokingTaskletAdapter();
+    adapter.setTargetObject(fooDao());
+    adapter.setTargetMethod("updateFoo");
+    return adapter;
+}
+```
+
+### Step 흐름제어
+
+단순 `start()`, `next()` 메서드를 사용하면 성공 실패 상관없이 step 은 순차적으로 실행된다.  
+
+![springboot_batch1](/assets/springboot/springboot_batch7.png)  
+
+만약 위 그림과 같이 `Step` 의 `ExitStatus` 에 따라 `Step` 실행에 조건을 두고 싶다면  
+
+```java
+@Bean
+public Job job() {
+    return this.jobBuilderFactory.get("job")
+        .start(stepA()).on("*").to(stepB()) // *: all condition
+        .from(stepA()).on("FAILED").to(stepC())
+        .end()
+        .build();
+}
+```
+
+`on`, `from`, `to`, `end` 등 여러가지 제어 함수, 그리고 `Step` 이 반환하는 `ExitStatus` 를 기반으로 step 의 흐름제어가 가능하다.  
+
+> **BatchStatus vs ExitStatus**  
+> **BatchStatus** 는 `JobExecution, StepExecution` 모두 에서 발생가능한 enum 형태의 데이터
+> `COMPLETED, STARTING, STARTED, STOPPING, STOPPED, FAILED, ABANDONED, UNKNOWN` 
+> 
+> **ExitStatus(String)** 는 `StepExecution` 에서 반환하는 문자열 형태의 종료코드, `StepExecutionListener` 애서 처리 생성
+> 문자열이지만 기본적으로 사용하는 고정 문자열들이 `ExitStatus` 클래스에 정의되어 있으며 `Step` 의 기본 종료코드로 사용됨
+>
+> 헷갈리면 안되는게 `ExitStatus` 가 모두 `FAILED` 라고 해도 `BatchStatus` 는 `COMPLETED` 일 수 있다.  
+
+흐름제어를 진행하는 함수의 목록은 아래와 같다. 
+
+**on()**
+`ExitStatus` 의 `pattern matching` 통해 다음 흐름의 실행여부 결정, `*, ?` 두가지 와일드카드 문자 사용
+
+**end()**
+흐름을 종료시키고 `ExitStatus=COMPLETE`, `BatchStatus=COMPLETE` 변환
+
+**fail()**
+흐름을 종료시키고 `ExitStatus=EARLY TERMINATION`, `BatchStatus=COMPLETE` 변환
+
+**stopAndRestart()**
+이전 흐름을 `ExitStatus=COMPLETE` 로 변경, `BatchStatus=STOPPED` 변환, 사용자의 추가 개입이 필요할 때 사용
+
+### Flow
+
+`Step` 모음을 `Flow` 객체로 표기
+
+```java
+@Bean
+public Flow flow1() {
+    return new FlowBuilder<SimpleFlow>("flow1")
+        .start(step1())
+        .next(step2())
+        .build();
+}
+
+@Bean
+public Flow flow2() {
+    return new FlowBuilder<SimpleFlow>("flow2")
+        .start(step3())
+        .build();
+}
+
+@Bean
+public Job job(Flow flow1, Flow flow2) {
+    return this.jobBuilderFactory.get("job")
+        // SimpleAsyncTaskExecutor 로 step 동시실행
+        .start(flow1).split(new SimpleAsyncTaskExecutor())
+        .add(flow2)
+        .next(step4())
+        .end()
+        .build();
+}
+```
 
 ## Meta Table  
 
@@ -507,78 +707,78 @@ ERD는 위와 같다.
 ```sql
 -- JobInstance 관련 데이터 저장, 
 CREATE TABLE BATCH_JOB_INSTANCE  (
-  JOB_INSTANCE_ID BIGINT  PRIMARY KEY , -- 식별 ID
-  VERSION BIGINT , -- 버전, 업데이트될 때 마다 증가
-  JOB_NAME VARCHAR(100) NOT NULL , -- Job 개체 이름
-  JOB_KEY VARCHAR(32) NOT NULL -- Job 인스턴스 고유키
+    JOB_INSTANCE_ID BIGINT  PRIMARY KEY , -- 식별 ID
+    VERSION BIGINT , -- 버전, 업데이트될 때 마다 증가
+    JOB_NAME VARCHAR(100) NOT NULL , -- Job 개체 이름
+    JOB_KEY VARCHAR(32) NOT NULL -- Job 인스턴스 고유키
 );
 
 CREATE TABLE BATCH_JOB_EXECUTION_PARAMS  (
-	JOB_EXECUTION_ID BIGINT NOT NULL ,
-	TYPE_CD VARCHAR(6) NOT NULL ,
-	KEY_NAME VARCHAR(100) NOT NULL ,
-	STRING_VAL VARCHAR(250) ,
-	DATE_VAL DATETIME DEFAULT NULL ,
-	LONG_VAL BIGINT ,
-	DOUBLE_VAL DOUBLE PRECISION ,
-	IDENTIFYING CHAR(1) NOT NULL ,
-	constraint JOB_EXEC_PARAMS_FK foreign key (JOB_EXECUTION_ID)
-	references BATCH_JOB_EXECUTION(JOB_EXECUTION_ID)
+    JOB_EXECUTION_ID BIGINT NOT NULL ,
+    TYPE_CD VARCHAR(6) NOT NULL ,
+    KEY_NAME VARCHAR(100) NOT NULL ,
+    STRING_VAL VARCHAR(250) ,
+    DATE_VAL DATETIME DEFAULT NULL ,
+    LONG_VAL BIGINT ,
+    DOUBLE_VAL DOUBLE PRECISION ,
+    IDENTIFYING CHAR(1) NOT NULL ,
+    constraint JOB_EXEC_PARAMS_FK foreign key (JOB_EXECUTION_ID)
+    references BATCH_JOB_EXECUTION(JOB_EXECUTION_ID)
 );
 
 CREATE TABLE BATCH_JOB_EXECUTION  (
-  JOB_EXECUTION_ID BIGINT  PRIMARY KEY ,
-  VERSION BIGINT,
-  JOB_INSTANCE_ID BIGINT NOT NULL,
-  CREATE_TIME TIMESTAMP NOT NULL,
-  START_TIME TIMESTAMP DEFAULT NULL,
-  END_TIME TIMESTAMP DEFAULT NULL,
-  STATUS VARCHAR(10),
-  EXIT_CODE VARCHAR(20),
-  EXIT_MESSAGE VARCHAR(2500),
-  LAST_UPDATED TIMESTAMP,
-  JOB_CONFIGURATION_LOCATION VARCHAR(2500) NULL,
-  constraint JOB_INSTANCE_EXECUTION_FK foreign key (JOB_INSTANCE_ID)
-  references BATCH_JOB_INSTANCE(JOB_INSTANCE_ID)
+    JOB_EXECUTION_ID BIGINT  PRIMARY KEY ,
+    VERSION BIGINT,
+    JOB_INSTANCE_ID BIGINT NOT NULL,
+    CREATE_TIME TIMESTAMP NOT NULL,
+    START_TIME TIMESTAMP DEFAULT NULL,
+    END_TIME TIMESTAMP DEFAULT NULL,
+    STATUS VARCHAR(10),
+    EXIT_CODE VARCHAR(20),
+    EXIT_MESSAGE VARCHAR(2500),
+    LAST_UPDATED TIMESTAMP,
+    JOB_CONFIGURATION_LOCATION VARCHAR(2500) NULL,
+    constraint JOB_INSTANCE_EXECUTION_FK foreign key (JOB_INSTANCE_ID)
+    references BATCH_JOB_INSTANCE(JOB_INSTANCE_ID)
 );
 
 CREATE TABLE BATCH_STEP_EXECUTION  (
-  STEP_EXECUTION_ID BIGINT  PRIMARY KEY ,
-  VERSION BIGINT NOT NULL,
-  STEP_NAME VARCHAR(100) NOT NULL,
-  JOB_EXECUTION_ID BIGINT NOT NULL,
-  START_TIME TIMESTAMP NOT NULL ,
-  END_TIME TIMESTAMP DEFAULT NULL,
-  STATUS VARCHAR(10),
-  COMMIT_COUNT BIGINT ,
-  READ_COUNT BIGINT ,
-  FILTER_COUNT BIGINT ,
-  WRITE_COUNT BIGINT ,
-  READ_SKIP_COUNT BIGINT ,
-  WRITE_SKIP_COUNT BIGINT ,
-  PROCESS_SKIP_COUNT BIGINT ,
-  ROLLBACK_COUNT BIGINT ,
-  EXIT_CODE VARCHAR(20) ,
-  EXIT_MESSAGE VARCHAR(2500) ,
-  LAST_UPDATED TIMESTAMP,
-  constraint JOB_EXECUTION_STEP_FK foreign key (JOB_EXECUTION_ID)
-  references BATCH_JOB_EXECUTION(JOB_EXECUTION_ID)
+    STEP_EXECUTION_ID BIGINT  PRIMARY KEY ,
+    VERSION BIGINT NOT NULL,
+    STEP_NAME VARCHAR(100) NOT NULL,
+    JOB_EXECUTION_ID BIGINT NOT NULL,
+    START_TIME TIMESTAMP NOT NULL ,
+    END_TIME TIMESTAMP DEFAULT NULL,
+    STATUS VARCHAR(10),
+    COMMIT_COUNT BIGINT ,
+    READ_COUNT BIGINT ,
+    FILTER_COUNT BIGINT ,
+    WRITE_COUNT BIGINT ,
+    READ_SKIP_COUNT BIGINT ,
+    WRITE_SKIP_COUNT BIGINT ,
+    PROCESS_SKIP_COUNT BIGINT ,
+    ROLLBACK_COUNT BIGINT ,
+    EXIT_CODE VARCHAR(20) ,
+    EXIT_MESSAGE VARCHAR(2500) ,
+    LAST_UPDATED TIMESTAMP,
+    constraint JOB_EXECUTION_STEP_FK foreign key (JOB_EXECUTION_ID)
+    references BATCH_JOB_EXECUTION(JOB_EXECUTION_ID)
 );
 
 CREATE TABLE BATCH_JOB_EXECUTION_CONTEXT  (
-  JOB_EXECUTION_ID BIGINT PRIMARY KEY,
-  SHORT_CONTEXT VARCHAR(2500) NOT NULL,
-  SERIALIZED_CONTEXT CLOB,
-  constraint JOB_EXEC_CTX_FK foreign key (JOB_EXECUTION_ID)
-  references BATCH_JOB_EXECUTION(JOB_EXECUTION_ID)
+    JOB_EXECUTION_ID BIGINT PRIMARY KEY,
+    SHORT_CONTEXT VARCHAR(2500) NOT NULL,
+    SERIALIZED_CONTEXT CLOB,
+    constraint JOB_EXEC_CTX_FK foreign key (JOB_EXECUTION_ID)
+    references BATCH_JOB_EXECUTION(JOB_EXECUTION_ID)
 );
 
 CREATE TABLE BATCH_STEP_EXECUTION_CONTEXT  (
-  STEP_EXECUTION_ID BIGINT PRIMARY KEY,
-  SHORT_CONTEXT VARCHAR(2500) NOT NULL,
-  SERIALIZED_CONTEXT CLOB,
-  constraint STEP_EXEC_CTX_FK foreign key (STEP_EXECUTION_ID)
-  references BATCH_STEP_EXECUTION(STEP_EXECUTION_ID)
+    STEP_EXECUTION_ID BIGINT PRIMARY KEY,
+    SHORT_CONTEXT VARCHAR(2500) NOT NULL,
+    SERIALIZED_CONTEXT CLOB,
+    constraint STEP_EXEC_CTX_FK foreign key (STEP_EXECUTION_ID)
+    references BATCH_STEP_EXECUTION(STEP_EXECUTION_ID)
 );
 ```
 
