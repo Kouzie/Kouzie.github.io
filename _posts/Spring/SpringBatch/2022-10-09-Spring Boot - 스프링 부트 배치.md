@@ -42,12 +42,12 @@ toc_sticky: true
 
 ![springboot_batch1](/assets/springboot/springboot_batch2.png)  
 
-`Job` 클래스는 배치작업을 캡슐화한 엔티티로 전반적인 작업구성이 정의된다.  
+`Job` 클래스는 **배치작업을 캡슐화**한 엔티티로 전반적인 작업구성이 정의된다.  
 
-`JobInstance` 는 `Job` 엔티티를 기반으로 실행시킨 논리적 단위  
-**시작시간**과 `JobParameters` 를 기반으로 생성되는 인스턴스이다.  
+`JobInstance` 는 `Job` 엔티티를 기반으로 실행시킨 **Job의 실행단위**  
+**시작시간**과 `JobParameters` 를 기반으로 생성된다.  
 
-`JobExecution` 은 실행된 `JobInstance` 인스턴스의 실행 단위  
+`JobExecution` 은 실행된 **`JobInstance` 인스턴스의 실행단위**  
 단번에 배치작업이 성공하면 `JobInstance` 와 `JobExecution` 는 1:1 매칭되겠지만  
 만약 배치작업이 실패한다면 다시 `JobInstance` 에 대한 새로운 `JobExecution` 을 생성해야 한다.  
 
@@ -55,15 +55,16 @@ toc_sticky: true
 
 ![springboot_batch1](/assets/springboot/springboot_batch3.png)  
 
-`Step` 클래스는 `Job` 의 배치작업중 여러 단계를 캡슐화하는 엔티티
-`Job` 간단하다면 하나의 `Step` 으로 정의할 수 있지만 복잡하다면 여러개의 `Step` 으로 나누어 처리해야 한다.  
+`Step` 클래스는 `Job` 의 **배치작업의 여러 단계를 캡슐화**하는 엔티티
+`Job` 이 매우 간단해서 하나의 과정만 있다면 하나의 `Step` 으로 정의할 수 있지만  
+복잡하다면 여러개의 `Step` 으로 나누어 처리해야 한다.  
 
-`StepExecution` 은 `Step` 의 실행단위인
+`StepExecution` 은 **Step 의 실행단위**
 `Job` 하나당 N개의 `Step` 이 정의된다면 `JobExecution * N` 개 만큼 인스턴스가 생성될 수 있다.  
 
 ### ExcutionContext
 
-`JobExecution` 부터 `StepExecution` 까지 계속 유지되어야할 **Context(Data Map)** 가 필요할 때 `ExcutionContext` 에 데이터를 넣으면 된다.  
+`JobExecution` 부터 `StepExecution` 까지 계속 유지되어야할 **Context(Data Map, 문맥정보)** 가 필요할 때 `ExcutionContext` 에 데이터를 넣으면 된다.  
 
 ```java
 executionContext.putLong(getKey(LINES_READ_COUNT), reader.getPosition());
@@ -73,9 +74,9 @@ ExecutionContext ecJob = jobExecution.getExecutionContext();
 //ecStep does not equal ecJob
 ```
 
-위 코드처럼 `JobExecution`, `StepExecution` 마다 `ExcutionContext` 이 존재하며  
+위 코드처럼 `JobExecution`, `StepExecution` 마다 `ExcutionContext`  존재하며  
 모두 여러개의 인스턴스가 생성될 수 있는 클래스인 만큼  
-`ExcutionContext` 도 많은 인스턴스가 생성될 수 있다.  
+`ExcutionContext` 도 여러개의 인스턴스가 생성될 수 있다.  
 
 ### JobLauncher
 
@@ -92,7 +93,13 @@ public JobExecution run(Job job, JobParameters jobParameters);
 ### JobRepository
 
 위에 언급한 `Job`, `Step`, `ExecutionContext`, `JobLauncher` 에 대한 데이터를 저장하고 지속하기 위한 메커니즘으로  
-`CRUD` 작업을 제공한다.  
+
+각 추상 엔티티에 대한 `CRUD` 작업을 제공하여 데이터의 지속성을 유지시킨다.  
+
+내부에 의존주입받은 `DAO` 객체를 통해 메모리에 데이터를 지속시킬지  
+JPA 기반으로 데이터를 지속시킬지 설정할 수 있다.  
+
+> 주의: 메모리 기반 DAO 클래스들은 `H2DB` 로 대체되어 `Deprecation` 될 예정 
 
 ### ItemReader, ItemProcessor, ItemWriter
 
@@ -436,6 +443,54 @@ public class JobLauncherController {
 ```
 
 서버에서 실행하는 경우는 `Async` 방식을 주로 쓴다.  
+
+## Step 구성  
+
+**Spring Batch 구조** 그림을 보면 Step 은 `ItemReader`, `ItemProcessor`, `ItemWriter` 로 구성된다.  
+
+시퀀스 다이어 그램을 보면 n번의 read, n번의 process, m번의 wirte 가 이루어진다.  
+
+![springboot_batch1](/assets/springboot/springboot_batch6.png)  
+
+### stepBuilderFactory
+
+지금까지 `jobBuilderFactory` 에서 `next` 메서드를 사용해 이미 생성된 `step` 을 삽입해왔는데  
+이번엔 `stepBuilderFactory` 에서 step 을 구성하는것을 알아본다.  
+
+```java
+@Bean
+public Step sampleStep(PlatformTransactionManager transactionManager) {
+    return this.stepBuilderFactory.get("sampleStep")
+        .transactionManager(transactionManager)
+        .<String, String>chunk(10)
+        .reader(itemReader())
+        .processor(itemProcessor())
+        .writer(itemWriter())
+        .allowStartIfComplete(true)
+        .startLimit(1)
+        .build();
+}
+```
+
+**transactionManager**
+스프링 부트의 트랜잭션 매니저 설정, `BatchConfigurer` 에서도 사용함
+
+**chunk**
+`item-base` 의 `SimpleStepBuilder` 를 반환하며 아래의 `reader`, `processor`, `writer` 함수를 쓸 수 있게 된다. 트랜잭션이 커밋되기 전에 처리할 항목 수 지정 가능.
+
+**reader, processor, writer**
+`ItemReader` `ItemWriter` `ItemProcessor` 적용
+
+**repository**
+`StepExecution` and `ExecutionContext` 등의 step Context(Data Map) 를 주기적으로 저장할 JobRepository, `BatchConfigurer` 에서도 사용함  
+
+**allowStartIfComplete**
+성공 혹은 오류로 종료된 step 을 다시 실행할 것인지 여부, `true` 로 설정하면 step 이 항상 실행되도록 설정한다.  
+`default` 값은 `false`
+
+**startLimit**
+`default` 값은 `Integer.MAX_VALUE`, 시작 전에 수동 매뉴얼 시나리오가 있을 때
+한번 실행 후 더이상 실행하지 못하도록 설정할 때 사용할 수 있다.  
 
 
 ## Meta Table  
