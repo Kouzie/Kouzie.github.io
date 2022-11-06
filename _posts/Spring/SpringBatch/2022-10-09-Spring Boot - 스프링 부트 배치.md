@@ -4,17 +4,12 @@ title:  "Spring Boot - 스프링 부트 배치!"
 read_time: false
 share: false
 author_profile: false
+toc: true
+toc_sticky: true
 # classes: wide
 
 categories:
-  - Spring
-
-tags:
-  - Spring
-
-toc: true
-toc_sticky: true
-
+  - springbatch
 ---
 
 ## Spring Batch 개요

@@ -8,10 +8,7 @@ author_profile: false
 
 # classes: wide
 categories:
-  - Java
-tags:
-  - Java
-  - 문법
+  - java
 ---
 
 # java.time 클래스

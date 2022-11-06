@@ -8,10 +8,7 @@ author_profile: false
 
 # classes: wide
 categories:
-  - Java
-tags:
-  - Java
-  - 문법
+  - java
 ---
 
 ## 클래스 멤버 변수(필드)의 초기화 순서

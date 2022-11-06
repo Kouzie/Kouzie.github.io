@@ -4,16 +4,12 @@ title:  "도커 - docker command!"
 read_time: false
 share: false
 author_profile: false
+toc: true
+toc_sticky: true
 # classes: wide
 
 categories:
-  - docker
-
-tags:
-
-toc: true
-toc_sticky: true
-
+  - tools
 ---
 
 # docker 개요

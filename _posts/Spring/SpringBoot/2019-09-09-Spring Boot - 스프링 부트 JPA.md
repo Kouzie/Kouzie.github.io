@@ -4,18 +4,12 @@ title:  "Spring Boot - 스프링 부트 JPA!"
 read_time: false
 share: false
 author_profile: false
+toc: true
+toc_sticky: true
 # classes: wide
 
 categories:
-  - Spring
-
-tags:
-  - Spring
-  - java
-
-toc: true
-toc_sticky: true
-
+  - springboot
 ---
 
 ## JPA 개념

@@ -7,7 +7,7 @@ author_profile: false
 # classes: wide
 
 categories:
-  - JavaScript
+  - javaScript
 
 tags:
   - web

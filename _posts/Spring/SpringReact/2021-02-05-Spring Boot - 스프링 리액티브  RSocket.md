@@ -4,18 +4,12 @@ title:  "Spring Boot - RSocket!"
 read_time: false
 share: false
 author_profile: false
+toc: true
+toc_sticky: true
 # classes: wide
 
 categories:
-  - Spring
-
-tags:
-  - reative
-  - spring
-
-toc: true
-toc_sticky: true
-
+  - spring-reative
 ---
 
 # 개요  

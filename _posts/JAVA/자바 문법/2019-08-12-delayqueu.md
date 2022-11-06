@@ -4,17 +4,12 @@ title:  "java - DelayQueue!"
 read_time: false
 share: false
 author_profile: false
+toc: true
+toc_sticky: true
 # classes: wide
 
 categories:
   - java
-
-tags:
-  - Collection
-
-toc: true
-toc_sticky: true
-
 ---
 
 `DelayQueue`는 `BlockingQueue`와 `PriorityQueue`의 기능을 가지고 있는 구현체이다.

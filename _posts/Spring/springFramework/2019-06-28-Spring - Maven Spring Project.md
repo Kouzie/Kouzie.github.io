@@ -4,18 +4,12 @@ title:  "Spring - Maven Spring Project!"
 read_time: false
 share: false
 author_profile: false
+toc: true
+toc_sticky: true
 # classes: wide
 
 categories:
-  - Spring
-
-tags:
-  - Spring
-  - java
-
-toc: true
-toc_sticky: true
-
+  - spring-framework
 ---
 
 ## 스프링 프로젝트 시작  

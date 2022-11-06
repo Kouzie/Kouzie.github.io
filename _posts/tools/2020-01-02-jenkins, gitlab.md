@@ -4,17 +4,12 @@ title:  "CI/CD jenkins, gitlab!"
 read_time: false
 share: false
 author_profile: false
+toc: true
+toc_sticky: true
 # classes: wide
 
 categories:
-  - ci/cd
-
-tags:
-  - 
-
-toc: true
-toc_sticky: true
-
+  - tools
 ---
 
 ## jenkins

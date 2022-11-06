@@ -8,10 +8,7 @@ author_profile: false
 
 # classes: wide
 categories:
-  - Java
-tags:
-  - RxJava
-  - 문법
+  - java
 ---
 
 # Java 9 - Flow

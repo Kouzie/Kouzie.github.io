@@ -4,18 +4,12 @@ title:  "구글 grpc, protocol buffers!"
 read_time: false
 share: false
 author_profile: false
+toc: true
+toc_sticky: true
 # classes: wide
 
 categories:
-  - 잡담
-
-tags:
-  - protocol buffers
-  - spring-cloud
-
-toc: true
-toc_sticky: true
-
+  - tools
 ---
 
 

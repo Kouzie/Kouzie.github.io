@@ -4,18 +4,12 @@ title:  "Spring Boot - 스프링 부트 개요!"
 read_time: false
 share: false
 author_profile: false
+toc: true
+toc_sticky: true
 # classes: wide
 
 categories:
-  - Spring
-
-tags:
-  - Spring
-  - java
-
-toc: true
-toc_sticky: true
-
+  - springboot
 ---
 
 ## 스프링 부트

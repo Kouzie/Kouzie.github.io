@@ -4,17 +4,12 @@ title:  "gitignore!"
 read_time: false
 share: false
 author_profile: false
+toc: true
+toc_sticky: true
 # classes: wide
 
 categories:
-  - Spring
-
-tags:
-  - Spring
-  - git
-toc: true
-toc_sticky: true
-
+  - tools
 ---
 
 

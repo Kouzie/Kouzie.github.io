@@ -4,17 +4,12 @@ title:  "MTQQ, AMQP!"
 read_time: false
 share: false
 author_profile: false
+toc: true
+toc_sticky: true
 # classes: wide
 
 categories:
-  - spring
-
-tags:
-  - mtqq
-
-toc: true
-toc_sticky: true
-
+  - springboot
 ---
 
 ## MTQQ 개요
