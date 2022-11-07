@@ -1,5 +1,5 @@
 ---
-title:  "java with redis!"
+title:  "Spring Boot - 스프링 부트 Redis!"
 
 read_time: false
 share: false
@@ -17,8 +17,6 @@ categories:
 > Redis is an open source (BSD licensed), in-memory data structure store, used as a database, cache and message broker.
 
 메모리 공간에 저장되는 휘발성 데이터베이스, Persistence 속성을 통해 메모리의 내용을 파일로 덤프할 수도 있다.  
-
-key, value 기반의 데이터베이스임으로 mongoDB와 같은 NoSQL처럼 사용할 수 있다.
 
 redis 설치는 brew 등의 명령으로 간단히 설치 가능하고 docker를 사용해도 된다.  
 
@@ -76,6 +74,8 @@ public class RedisRepoConfig extends CachingConfigurerSupport {
 `redis`를 위한 스프링 설정이 끝났고 어떤 데이터를 어떤 테이블에 저장할지 domain객체를 생성
 
 
+`CrudRepository` 구현체도 사용 가능하다.  
+
 ```java
 @AllArgsConstructor
 @ToString
@@ -93,16 +93,13 @@ public class Point {
         }
     }
 }
-```
 
-`redis`의 좋은점은 정말 DB처럼 사용할 수 있기때문에 `CrudRepository` 구현체도 사용 가능하다.  
-> `@RedisHash`가 JPA `@Entity`에 해당하는 어노테이션이다.  
-
-```java
 public interface PointRedisRepository extends CrudRepository<Point, String> {
 }
-
 ```
+
+
+> `@RedisHash`가 JPA `@Entity`에 해당하는 어노테이션이다.  
 
 ```java
 @RunWith(SpringRunner.class)

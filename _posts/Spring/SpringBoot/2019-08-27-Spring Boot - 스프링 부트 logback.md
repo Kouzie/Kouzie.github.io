@@ -1,5 +1,5 @@
 ---
-title:  "스프링부트 logback!"
+title:  "Spring Boot - 스프링 부트 logback!"
 
 read_time: false
 share: false
