@@ -37,7 +37,7 @@ spring.jackson.property-naming-strategy=CAMEL_CASE
 public static class ZonedDateTimeDeserializer extends JsonDeserializer<ZonedDateTime> {
     @Override
     public ZonedDateTime deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-        return ZonedDateTime.parse(jsonParser.getText(), formatter);
+       return ZonedDateTime.parse(jsonParser.getText(), formatter);
     }
 }
 
@@ -46,8 +46,8 @@ public ObjectMapper objectMapper() {
     ObjectMapper objectMapper = new ObjectMapper();
     // for zone date time
     SimpleModule module = new JavaTimeModule()
-            .addSerializer(ZonedDateTime.class, new ZonedDateTimeSerializer(formatter))
-            .addDeserializer(ZonedDateTime.class, new ZonedDateTimeDeserializer());
+          .addSerializer(ZonedDateTime.class, new ZonedDateTimeSerializer(formatter))
+          .addDeserializer(ZonedDateTime.class, new ZonedDateTimeDeserializer());
     objectMapper.registerModule(module);
     objectMapper.setTimeZone(TimeZone.getTimeZone(zoneId));
 
@@ -56,9 +56,9 @@ public ObjectMapper objectMapper() {
     // WRITE_DATES_AS_TIMESTAMPS JSON에서 날짜를 문자열로 표시
     objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     objectMapper.setVisibility(objectMapper
-                    .setSerializationInclusion(JsonInclude.Include.NON_NULL) // null 필드는 변환 X
-                    .setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE) // 네이밍 전략
-                    .getVisibilityChecker()
+                .setSerializationInclusion(JsonInclude.Include.NON_NULL) // null 필드는 변환 X
+                .setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE) // 네이밍 전략
+                .getVisibilityChecker()
     );
     // UnrecognizedPropertyException 처리, 알수없는 필드 처리 X
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -88,17 +88,17 @@ public enum SearchType {
 
     @JsonCreator
     public static SearchType forValue(String key) {
-        for (SearchType value : values()) {
-            if (value.getKey().equals(key)) {
-                return value;
-            }
-        }
-        return null;
+       for (SearchType value : values()) {
+          if (value.getKey().equals(key)) {
+             return value;
+          }
+       }
+       return null;
     }
 
     @JsonValue
     public String toValue() {
-        return key;
+       return key;
     }
 }
 ```
@@ -158,7 +158,7 @@ Jackson 에서 제공하는 `ObjectMapper` 의 기본 네이밍 전략은 `lower
 ![springboot_serialize1](/assets/springboot/springboot_serialize1.png)  
 <https://en.wikipedia.org/wiki/ISO_8601>
 
-이중 ISO 8601 의 가장 많이 사용하는 format 문자열은 Local Time Format 을 표현하는 `yyyy-MM-dd'T'HH:mm:ss` 이다.  
+이중 ISO 8601 의 가장 많이 사용하는 format 문자열은 `LocalTimeFormat` 을 표현하는 `yyyy-MM-dd'T'HH:mm:ss` 이다.  
 
 스프링에서 `DateTimeFormatter.ISO_DATE_TIME` 를 formatter 로 사용하면 된다.  
 
@@ -166,20 +166,21 @@ Jackson 에서 제공하는 `ObjectMapper` 의 기본 네이밍 전략은 `lower
 public static final DateTimeFormatter ISO_DATE_TIME;
 static {
     ISO_DATE_TIME = new DateTimeFormatterBuilder()
-            .append(ISO_LOCAL_DATE_TIME) // yyyy-MM-dd'T'HH:mm:ss.SSS
-            .optionalStart()
-            .appendOffsetId() // 'Z', "+HH:MM:ss"
-            .optionalStart()
-            .appendLiteral('[')
-            .parseCaseSensitive()
-            .appendZoneRegionId() // zone id
-            .appendLiteral(']')
-            .toFormatter(ResolverStyle.STRICT, IsoChronology.INSTANCE);
+          .append(ISO_LOCAL_DATE_TIME) // yyyy-MM-dd'T'HH:mm:ss.SSS
+          .optionalStart()
+          .appendOffsetId() // 'Z', "+HH:MM:ss"
+          .optionalStart()
+          .appendLiteral('[')
+          .parseCaseSensitive()
+          .appendZoneRegionId() // zone id
+          .appendLiteral(']')
+          .toFormatter(ResolverStyle.STRICT, IsoChronology.INSTANCE);
 }
 ```
 
-각종 optional 조건들을 사용하여 zone 관련된 내용이 들어가 웬만한 문자열을 날자 객체로 desieralize 하는데에는 문제가 없다.  
-하지만 serialize 의 경우 아래와 같이 출력된다.  
+각종 **optional 조건**들을 사용하여 `ZoneDateTime`, `LocalDateTime` 포멧 상관없이 웬만한 문자열을 날짜객체로 `desieralize` 한다.  
+
+하지만 `serialize` 의 경우 아래와 같이 출력된다.  
 
 ```java
 DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME;
@@ -188,12 +189,27 @@ System.out.println(dtf.format(zonedDateTime));
 // 2022-07-22T00:37:36.368955+09:00[Asia/Seoul]
 ```
 
+따라서 `serialize` 용 Formatter 는 직접 만들어 `ObjectMapper Serializer` 에 설정하는 것을 권장  
+
+```java
+// 2022-08-10T10:36:50+09:00
+private static DateTimeFormatter dateTimeFormat = 
+   DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX").withZone(zone); 
+
+ObjectMapper objectMapper = new ObjectMapper();
+    // for zone date time
+    SimpleModule module = new JavaTimeModule()
+       .addSerializer(ZonedDateTime.class, new ZonedDateTimeSerializer(dateTimeFormat))
+       .addDeserializer(ZonedDateTime.class, new ZonedDateTimeDeserializer());
+    objectMapper.registerModule(module);
+    objectMapper.setTimeZone(zone);
+```
+
 ### Time Format String  
 
-컴팩트한 문자열로 seiralize 하기를 원한다면 `ObjectMapper` 에 `deserialize` 객체는 별도로 지정하길 권장한다.  
 
 `DateTimeFormatter.ISO_DATE_TIME` 와 같이 미리 제공된 Formatter 말고  
-직접 time format 문자열을 사용해서 Formatter 를 생성하고 싶다면 날짜를 표현하는 여러가지 문자 및 기호를 알아야 한다.  
+직접 **타임포멧문자열** 을 사용해서 `Formatter` 를 생성하고 싶다면 날짜를 표현하는 여러가지 문자 및 기호를 알아야 한다.  
 
 > 아래 url 참고  
 <https://pro.arcgis.com/en/pro-app/2.8/help/mapping/time/convert-string-or-numeric-time-values-into-data-format.htm>
@@ -205,32 +221,32 @@ format 을 Optional 하게 설정하고 싶다면 `[`, `]` 특수문자를 사�
 ```java
 ZonedDateTime zdt = ZonedDateTime.now();
 String[] pattern = {
-    "G",     // 서기             연대 (BC, AD)                  
-    "y",     // 2017            년도                  
-    "M",     // 6               월 (1~12 또는 1월~12월)              
-    "q",     // 2               분기(quarter)              
-    "w",     // 24              년의 몇 번째 주 (1~53)              
-    "W",     // 3               월의 몇 번째 주 (1~5)              
-    "D",     // 163             년의 몇 번째 일 (1~366)              
-    "d",     // 12              월의 몇 번째 일 (1~31)              
-    "F",     // 5               월의 몇 번째 요일 (1~5)              
-    "e",     // 2               요일              
-    "a",     // 오후             오전/오후 (AM/PM)                      
-    "H",     // 15              시간 (0~23)              
-    "h",     // 3               시간 (1~12)              
-    "k",     // 15              시간 (1~24)              
-    "K",     // 3               시간 (0~11)              
-    "m",     // 53              분 (0~59)              
-    "s",     // 4               초 (0~59)              
-    "S",     // 5               1/1000초 (0~999)              
-    "A",     // 57184516        1/1000초 (그 날의 0시 0분 0초 부터의 시간)                      
-    "n",     // 516000000       나노초 (0~999999999)                      
-    "N",     // 57185416000000  나노초 (그 날의 0시 0분 0초 부터의 시간)                          
-    "z",     // KST             시간대 ID(VV)              
-    "O",     // GMT+9           시간대(Time zone) 이름                  
-    "Z",     // +0900           지역화된 zone-offset                  
-    "x",     // +09             zone-offset              
-    "XX",    // +0900           zone-offset(Z는 +00:00를 의미)                  
+    "G",    // 서기           연대 (BC, AD)               
+    "y",    // 2017          년도               
+    "M",    // 6            월 (1~12 또는 1월~12월)            
+    "q",    // 2            분기(quarter)            
+    "w",    // 24            년의 몇 번째 주 (1~53)            
+    "W",    // 3            월의 몇 번째 주 (1~5)            
+    "D",    // 163           년의 몇 번째 일 (1~366)            
+    "d",    // 12            월의 몇 번째 일 (1~31)            
+    "F",    // 5            월의 몇 번째 요일 (1~5)            
+    "e",    // 2            요일            
+    "a",    // 오후           오전/오후 (AM/PM)                  
+    "H",    // 15            시간 (0~23)            
+    "h",    // 3            시간 (1~12)            
+    "k",    // 15            시간 (1~24)            
+    "K",    // 3            시간 (0~11)            
+    "m",    // 53            분 (0~59)            
+    "s",    // 4            초 (0~59)            
+    "S",    // 5            1/1000초 (0~999)            
+    "A",    // 57184516       1/1000초 (그 날의 0시 0분 0초 부터의 시간)                  
+    "n",    // 516000000      나노초 (0~999999999)                  
+    "N",    // 57185416000000  나노초 (그 날의 0시 0분 0초 부터의 시간)                     
+    "z",    // KST           시간대 ID(VV)            
+    "O",    // GMT+9         시간대(Time zone) 이름               
+    "Z",    // +0900         지역화된 zone-offset               
+    "x",    // +09           zone-offset            
+    "XX",    // +0900         zone-offset(Z는 +00:00를 의미)               
     "XXX",   // +09:00
 };
 
@@ -241,52 +257,52 @@ for (int i = 0; i < pattern.length; i++) {
 }
 ```
 
-
 ### Zone
 
-여러 국가에서 지원하는 서비스의 Local Time 만 표기하는 것이 아니라  
+여러 국가에서 지원하는 서비스의 경우 서버가 위치한 `Local Time` 보다는  
 `Universal Time Coordinated(UTC: 세계 협정시)` 을 지원해야 한다.  
 
 그리니치 표준시라고도 하는데 런던 웰링턴의 그리니치 시계탑을 기준으로 표준시를 결정했기 때문  
-
 Zulu time 이라고도 하는데 군에서 UTC 를 뜻하는 단어이다.  
-> ISO 8601 의 특수문자 Z 가 Zulu time 을 뜻한다.  
+> ISO 8601 의 마지막 특수문자 `Z` 가 Zulu time 을 뜻한다.  
 
 대표적인 나라 도시의 `UTC Time Zone` 은 아래와 같다.  
 
 ```
-0:00     GMT/LON(런던)     GMT+0
-1:00     PAR(파리)     GMT+1
-2:00     CAI/JRS(카이로/예루살렘)     GMT+2
-3:00     JED(제다)     GMT+3
-3:30     THR(테헤란)     GMT+3.5
-4:00     DXB(두바이)     GMT+4
-4:30     KBL(카불)     GMT+4.5
-5:00     KHI(카라치)     GMT+5
-5:30     DEL(델리)     GMT+5.5
-6:00     DAC(다카)     GMT+6
-6:30     RGN(양곤)     GMT+6.5
-7:00     BKK(방콕)     GMT+7
-8:00     HKG(홍콩)     GMT+8
-9:00     SEL(서울)     GMT+9
-9:30     ADL(다윈)     GMT+9.5
-10:00     SYD(시드니)     GMT+10
-11:00     NOU(누메아)     GMT+11
-12:00     WLG(웰링턴)     GMT+12
+0:00     GMT/LON(런던)      GMT+0
+1:00     PAR(파리)          GMT+1
+2:00     CAI/JRS(카이로)    GMT+2
+3:00     JED(제다)          GMT+3
+3:30     THR(테헤란)        GMT+3.5
+4:00     DXB(두바이)        GMT+4
+4:30     KBL(카불)          GMT+4.5
+5:00     KHI(카라치)        GMT+5
+5:30     DEL(델리)          GMT+5.5
+6:00     DAC(다카)          GMT+6
+6:30     RGN(양곤)          GMT+6.5
+7:00     BKK(방콕)          GMT+7
+8:00     HKG(홍콩)          GMT+8
+9:00     SEL(서울)          GMT+9
+9:30     ADL(다윈)          GMT+9.5
+10:00    SYD(시드니)        GMT+10
+11:00    NOU(누메아)        GMT+11
+12:00    WLG(웰링턴)        GMT+12
 ```
 
-> 더많은 도시의 Time Zone 을 확인하고 싶다면 아래 url 참고
+> 더많은 도시의 타임존 을 확인하고 싶다면 아래 url 참고
 <https://jp.cybozu.help/general/en/admin/list_systemadmin/list_localization/timezone.html>
 
-Time Zone 을 표기하기 위해서 time format 문자열에 Zone 을 표기할 수 있는 문자열을 추가해야 한다.  
+타임존 을 표기하기 위해서 타임포멧문자열에 `Zone` 을 표기할 수 있는 문자열을 추가해야 한다.  
 
 `2011-08-12T20:17:46.384Z` - 뒤에 Z(Zulu Time) 특수문자가 붙어서 표준시를 뜻함. 
 
-위 time format 을 표현할 수 있는 Formatter 를 만들고 싶다면 아래 코드 참고  
+`UTC` 를 위한 `Formatter` 는 아래 참고  
 
 ```java
-SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 format.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX").withZone(ZoneId.of("UTC"));
 ```
 
 `'Z'` 는 일반 문자열, 그리고 TimeZone 을 UTC 로 설정해서 Formatter 를 구현하면 된다.  
@@ -308,7 +324,7 @@ format.setTimeZone(TimeZone.getTimeZone("UTC"));
 `ZoneDateTime` 이라 하더라도 반드시 `ZoneId` 를 넣을 필요는 없기에  
 가장 범위가 작은 `LocalDateTime`, 가장 범위가 큰 `ZoneDateTime` 둘중 하나를 자주 사용한다.  
 
-DateTimeFormatter 에 이미 여러가지 형식을 지정해두었는데
+`DateTimeFormatter` 에 이미 여러가지 형식을 지정해두었는데
 어떻게 출력되는지 알아보자.  
 
 ```java
@@ -356,10 +372,11 @@ ISO_DATE_TIME = (new DateTimeFormatterBuilder())
 
 구현부를 보면 `offsetId` 가 `optional` 한지 아닌지 정도 차이이다.  
 
-`ZoneId` 까지 출력하는건 불필요한 경우가 많아 
-사실상 가장 많이 사용하는 것은 `ISO_LOCAL_DATE_TIME` `ISO_DATE_TIME` 정도이다.  
+`ZoneId` 문자열을 `deseiralize` 하는 경우는 많이 없기 때문에  
+가장 많이 사용하는 것은 `ISO_LOCAL_DATE_TIME` `ISO_DATE_TIME` 정도.  
 
 `ISO_DATE_TIME` 가 `optional` 설정에 묶인 정보가 가장 많기 때문에 웬만한 포멧은 다 처리 가능하다.  
+
 `ZondId` 가 지정되어 있지 않은 `ZonedDateTime` 의 경우 `ZondId` 가 출력되지 않는다.  
 
 ```java
@@ -384,7 +401,10 @@ System.out.println(zdt.withZoneSameLocal(zoneId)); // 2019-03-10T02:30+09:00[Asi
 
 #### TemporalAccessor
 
-TemporalAccessor 를 사용하면 아래와 같이 LocalDateTime 과 ZoneDateTime 포멧 문자열을 모두 다룰 수 있다.  
+`TemporalAccessor` 를 사용하면 아래와 같이 `LocalDateTime` 과 `ZoneDateTime` 포멧 문자열을 모두 다룰 수 있다.  
+
+`LocalDateTime` 문자열을 `ZoneDateTime` 포멧으로 변경시도하면 에러가 발생하는데  
+객체 변환 전에 Offset 정보가 있는지 미리 확인 후 문자열 포멧에 맞는 날짜객체로 변환한다.  
 
 ```java
 public static void main(String[] args) {
@@ -400,17 +420,17 @@ public static void main(String[] args) {
 public static ZonedDateTime convertAllString(String isoDateTime) {
     TemporalAccessor accessor = DateTimeFormatter.ISO_DATE_TIME.parse(isoDateTime);
     if (accessor.isSupported(ChronoField.OFFSET_SECONDS)) {
-        return ZonedDateTime.from(accessor);
+       return ZonedDateTime.from(accessor);
     } else {
-        // return LocalDateTime.from(accessor).atZone(ZoneId.of("Asia/Seoul"));
-        return LocalDateTime.from(accessor).atZone(ZoneId.systemDefault());
+       // return LocalDateTime.from(accessor).atZone(ZoneId.of("Asia/Seoul"));
+       return LocalDateTime.from(accessor).atZone(ZoneId.systemDefault());
     }
 }
 ```
 
 ### @DateTimeFormatter
 
-Request Parameter 에서 문자열을 바로 날짜 객체로 변환하고 싶을때 `@DateTimeFormat` 어노테이션을 사용  
+요청파라미터 에서 문자열을 바로 날짜 객체로 변환하고 싶을때 `@DateTimeFormat` 어노테이션을 사용  
 
 ```java
 @GetMapping("/board")
@@ -449,8 +469,8 @@ public class GetController {
 
     @GetMapping
     public Object testGet(@Valid TestRequestDto requestDto) {
-        log.info(requestDto.toString());
-        return requestDto;
+       log.info(requestDto.toString());
+       return requestDto;
     }
 }
 ```
@@ -533,19 +553,19 @@ public class ZonedDateTimeConverter implements Converter<String, ZonedDateTime> 
 
     @Override
     public ZonedDateTime convert(String source) {
-        log.info("Parsing string {}", source);
-        return convertAllString(source);
+       log.info("Parsing string {}", source);
+       return convertAllString(source);
     }
 
     public static ZonedDateTime convertAllString(String isoDateTime) {
-        DateTimeFormatter parser = DateTimeFormatter.ISO_DATE_TIME;
-        TemporalAccessor accessor = parser.parse(isoDateTime);
-        if (accessor.isSupported(ChronoField.OFFSET_SECONDS)) {
-            return ZonedDateTime.from(accessor);
-        } else {
-            // return LocalDateTime.from(accessor).atZone(ZoneId.of("Asia/Seoul"));
-            return LocalDateTime.from(accessor).atZone(ZoneId.systemDefault());
-        }
+       DateTimeFormatter parser = DateTimeFormatter.ISO_DATE_TIME;
+       TemporalAccessor accessor = parser.parse(isoDateTime);
+       if (accessor.isSupported(ChronoField.OFFSET_SECONDS)) {
+          return ZonedDateTime.from(accessor);
+       } else {
+          // return LocalDateTime.from(accessor).atZone(ZoneId.of("Asia/Seoul"));
+          return LocalDateTime.from(accessor).atZone(ZoneId.systemDefault());
+       }
     }
 }
 
@@ -554,7 +574,7 @@ public class ZonedDateTimeConverter implements Converter<String, ZonedDateTime> 
 public class WebMvcConfiguration implements WebMvcConfigurer {
     @Override
     public void addFormatters(FormatterRegistry registry) {
-        registry.addConverter(new ZonedDateTimeConverter());
+       registry.addConverter(new ZonedDateTimeConverter());
     }
 }
 ```

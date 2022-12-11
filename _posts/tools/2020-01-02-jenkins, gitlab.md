@@ -112,11 +112,9 @@ services:
             - JENKINS_OPTS:"--prefix=/jenkins"
 ```
 
-추가적으로 권한설정과 `docker-cli` 설치가 필요하다.  
-
-```
-$ apt-get install -y docker-ce-cli
-```
+> `usermod -aG docker jenkins` 진행하여도 docker sock 권한그룹이 host 와 docker jenkins 그룹이 다를 수 있다.  
+> 그럴경우 /var/run/docker.sock 에 777 권한을 설정하는 것을 추천
+ 
 
 
 ### git, ssh 연동
