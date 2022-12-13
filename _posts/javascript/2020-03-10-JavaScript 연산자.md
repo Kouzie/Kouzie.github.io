@@ -53,7 +53,7 @@ console.log(name2 == name3); // false
 
 JS 내부에서 어떻게 형변화을 시키는지 모두 알기 힘듬으로 동등비교(`==`)보다 일치비교(`===`)를 권장한다.  
 
-부동등비교 `!=` 역시 권장하지 않는다.  
+> 부동등비교 `!=` 역시 권장하지 않는다.  
 
 ## 일치 비교(strict equality)  
 
@@ -81,7 +81,7 @@ console.log('100' < '12') // true
 
 숫자형식 문자열과 `number` 를 비교할 땐 문자열이 `number` 로 **자동 형변환** 되어 비교한다.  
 
-숫자가 아닌 문자열과 `number`를 비교할땐 ASCII와 상관없이 무조건 `false` 반환.  
+NaN 문자열과 `number`를 비교할땐 ASCII와 상관없이 무조건 `false` 반환.  
 
 문자열끼리 비교할 때에는 항상 **ASCII 순으로 비교** 한다.  
 
@@ -143,7 +143,7 @@ var value = elem && elem.value;
 
 ## null 병합연산자(nullish coalescing)
 
-`ES11(ECMAScript2020)` 추가된 된 null 병합연산자  
+> `ES11(ECMAScript2020)` 추가됨
 
 피연산자가 `null` 또는 `undefined` 인 경우 우항의 피연산자
 
@@ -194,3 +194,45 @@ console.log(first, last, age) // ko zie [ 27, 'hello', 'world' ]
 
 ## 스프레드 연산자(spread syntax)
 
+> `ES6` 추가됨
+
+하나로 뭉쳐 있는 이터러블 객체를 펼쳐서 개별적인 값들의 목록으로 반환  
+
+```js
+const array = [1, 2, 3];
+console.log(...array); // 1 2 3
+console.log(..."hello"); // h e l l o
+```
+
+스프레드로 목록화된 값들은 함수의 가변인자에 적용될 수 있다.  
+
+```js
+const array = [1, 2, 3];
+
+console.log(Math.max(array)); // NaN
+console.log(Math.max(...array)); // 3
+```
+
+배열병합, 배열복사(얕은복사)에서도 간결하게 표현 가능하다.  
+
+```js
+const arr1 = [...[1, 2], ...[3, 4]];
+const arr2 = [...arr1];
+
+console.log(arr1); // [ 1, 2, 3, 4 ]
+console.log(arr2); // [ 1, 2, 3, 4 ]
+```
+
+객체병합, 객체복사에서도 사용 가능하다.  
+
+```js
+const merged = { x: 1, y: 2, ...{ a: 3, b: 4 } };
+console.log(merged); // { x: 1, y: 2, a: 3, b: 4 }
+
+const obj = { x: 1 , y: 2 }; 
+const copy = { ...obj };
+console.log(obj); // { x: 1, y: 2 }
+console.log(copy); // { x: 1, y: 2 }
+```
+
+객체간의 연산에 한하여 이터러블인 아닌 객체에서도 스프레드 연산자를 허용한다.  

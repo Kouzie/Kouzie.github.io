@@ -348,8 +348,6 @@ num1 = 20; // TypeError: Assignment to constant variable.
 
 ## 타입 변환 
 
-
-
 ### 명시적 타입변환(explicit coercion)
 
 타입캐스팅(type casting) 이라고도 하며 타입변환을 코드로 명시하는 것  
@@ -480,3 +478,4 @@ console.log(Boolean(''))        // false
 console.log(Boolean(1))     // true
 console.log(Boolean('str')) // true
 ```
+

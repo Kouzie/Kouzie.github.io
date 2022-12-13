@@ -1,5 +1,5 @@
 ---
-title:  "JavaScript 실행 컨텍스트, 클로저!"
+title:  "JavaScript 클래스!"
 
 read_time: false
 share: false
