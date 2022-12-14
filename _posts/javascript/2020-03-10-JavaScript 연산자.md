@@ -68,6 +68,14 @@ console.log(3 !== '3')  // true
 console.log(4 !== 3)    // true
 ```
 
+객체와 같은 참조형태의 데이터 공간이 다르면 `false` 로 출력 
+
+```js
+let obj1 = { test: "hi" };
+let obj2 = { test: "hi" };
+console.log(obj1 === obj2) // false
+```
+
 ## 대소 비교
 
 ```js

@@ -434,6 +434,88 @@ acc:10, cur:5, acc:4, acc:1,2,3,4,5
 */
 ```
 
+## Set
+
+`===` 연산자를 통해 중복을 허용하지 않는다.  
+
+```js
+const s1 = new Set([1, 2, 3, 3]);
+console.log(s1); // Set(3) {1, 2, 3}
+
+console.log(s1.size) // 3
+console.log(s1.has(1)) // true
+console.log(s1.delete(2)) // true
+```
+
+## Map
+
+`key-value` 형태의 데이터 타입,  
+
+`key` 의 일치여부는 `===` 연산자로 확인한다.  
+
+```js
+const m1 = new Map();
+m1
+    .set('key1', 'value1')
+    .set('key2', 'value2')
+    .set('key0');
+
+const m2 = new Map([
+    ['key1', 'value1'],
+    ['key2', 'value2']
+]);
+
+console.log(m1); // Map(3) { 'key0' => undefined, 'key1' => 'value1', 'key2' => 'value2' }
+console.log(m2); // Map(2) { 'key1' => 'value1', 'key2' => 'value2' }
+
+console.log(m1.has("key1")) // true
+console.log(m1.get("key1")) // value1
+console.log(m1.delete("key0")) // true
+```
+
+`Map` 은 이터러블임음로 순회하는 방법은 `forEach` 문과 `for...in`
+
+```js
+const m1 = new Map();
+m1
+    .set('key1', 'value1')
+    .set('key2', 'value2')
+    .set('key0');
+
+m1.forEach((v, k, map) => {
+    console.log(`value:${v}, key:${k}`);
+})
+/* 
+value:value1, key:key1
+value:value2, key:key2
+value:undefined, key:key0
+*/
+
+for(const entry of m1.entries()) {
+    let k = entry[0]
+    let v = entry[1];
+    console.log(`value:${v}, key:${k}`);
+}
+/* 
+value:value1, key:key1
+value:value2, key:key2
+value:undefined, key:key0
+*/
+```
+
+key 와 value 를 순회할 수 있는 iterator 를 가져올 수 있다.  
+
+```js
+const m1 = new Map();
+m1
+    .set('key1', 'value1')
+    .set('key2', 'value2')
+    .set('key0');
+
+console.log(m1.keys()); // [Map Iterator] { 'key1', 'key2', 'key0' }
+console.log(m1.values()); // [Map Iterator] { 'value1', 'value2', undefined }
+```
+
 
 ## Date
 
