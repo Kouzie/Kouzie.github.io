@@ -19,6 +19,8 @@ toc_sticky: true
 
 ## 읽을거리 - 자바 스크립트 시리즈
 
+> 자바스크립트 엔진은 V8(크롬과 Node), SpiderMonkey(파이어폭스), JavaScriptCore(사파리) 등 다양한 종류가 있으며, 모든 자바스크립트 엔진은 ECMAScript 사양을 준수한다
+
 >https://engineering.huiseoul.com/자바스크립트는-어떻게-작동하는가-엔진-런타임-콜스택-개관-ea47917c8442   
 자바스크립트는 어떻게 작동하는가: 엔진, 런타임, 콜스택 개관  
 How JavaScript works: an overview of the engine, the runtime, and the call stack  

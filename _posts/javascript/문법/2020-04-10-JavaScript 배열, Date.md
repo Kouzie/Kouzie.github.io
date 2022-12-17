@@ -10,9 +10,7 @@ categories:
   - HTML
 
 tags:
-  - web
-  - html
-  - javascript
+  - javaScript
 
 toc: true
 toc_sticky: true
