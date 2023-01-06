@@ -7,7 +7,7 @@ author_profile: false
 # classes: wide
 
 categories:
-  - HTML
+  - javaScript
 
 tags:
   - javaScript
@@ -31,8 +31,10 @@ JS 는 WEB 에서 단순 보조기능을 위해 사용되었지만 NodeJS 나 SP
 - CommonJS
 - ESM(ES Module, ES6 Module)
 
-> AMD(Asynchronous Module Definition) 도 있지만 거의 사용안함
 > `CommonJS` 는 `NodeJS` 백앤드 진영에서 표준으로 사용된다 
+
+> AMD(Asynchronous Module Definition)
+> 브라우저에서 동작하지만 대부분 프로젝트가 NodeJS 에서 개발됨으로 거의 사용하지 않음  
 
 클라이언트 사이드에선 `ESM` 을 주로 사용한다.  
 

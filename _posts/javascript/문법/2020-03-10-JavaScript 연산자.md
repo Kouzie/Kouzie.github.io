@@ -233,6 +233,8 @@ console.log(arr2); // [ 1, 2, 3, 4 ]
 
 객체병합, 객체복사에서도 사용 가능하다.  
 
+> 필드명이 중복될경우 덮어씌어짐  
+
 ```js
 const merged = { x: 1, y: 2, ...{ a: 3, b: 4 } };
 console.log(merged); // { x: 1, y: 2, a: 3, b: 4 }

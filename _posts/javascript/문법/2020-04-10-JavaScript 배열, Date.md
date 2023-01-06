@@ -7,7 +7,7 @@ author_profile: false
 # classes: wide
 
 categories:
-  - HTML
+  - javaScript
 
 tags:
   - javaScript
@@ -430,6 +430,26 @@ acc:3, cur:3, acc:2, acc:1,2,3,4,5
 acc:6, cur:4, acc:3, acc:1,2,3,4,5
 acc:10, cur:5, acc:4, acc:1,2,3,4,5
 */
+```
+
+### filter  
+
+콜백 함수의 반환값이 true 인 요소로만 구성된 새로운 배열을 반환  
+
+```js
+const numbers = [1, 2, 3, 4, 5];
+const odds = numbers.filter(item => item % 2);
+console.log(odds); // [1, 3, 5]
+```
+
+다른 함수와 마찬가지로 결국 모든 요소를 순회하기 때문에
+`item`, `index`, `arr` 매개변수 사용이 가능하다.  
+
+```js
+[1, 2, 3].filter((item, index, arr) => {
+  console.log(`요소값: ${item}, 인덱스: ${index}, this: ${JSON.stringify(arr)}`);
+  return item % 2;
+});
 ```
 
 ## Set

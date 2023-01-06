@@ -78,7 +78,7 @@ var s1 = {
     sayName1: function () {
         return `hello ${this.name}`
     },
-    sayName2() { // 축약표현
+    sayName2() { // 축약표현 method shorthand
         return `hello ${this.name}`
     }
 };
