@@ -24,6 +24,9 @@ toc_sticky: true
 
 > <https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Promise>
 
+`then`, `catch`, `finally` 3가지 콜백함수 등록이 가능  
+
+> `finally` 는 ES2018 에 추가됨  
 
 ```js
 var p = new Promise(function (resolve, reject) {
@@ -40,6 +43,8 @@ p.then(function (num) {
     console.log("resolve invoked, num:", num); // 작업 성공 콜백
 }).catch(function (num) {
     console.log("reject invoked, num:", num); // 작업 실패 콜백
+}).finalnny(() => {
+    console.log("Done!")
 })
 ```
 
@@ -54,7 +59,7 @@ p.then(
 );
 ```
 
-### Promise Chaining
+### Promise Chaining - all
 
 위의 `then`, `catch` 메서드는 또다른 `Promise` 객체를 반환하기 때문에 `then`, `catch` 를 여러개 묶을 수 있다.  
 
@@ -85,9 +90,10 @@ Promise.all([promiseFirst, promiseSecond]).then(result => console.log(result))
 
 ### async, await
 
-`async`, `await` 문법을 사용하면 `Promise` 를 좀 더 편하게 사용할 수 있음
+`async`, `await` 문법을 사용하면 `Promise` 를 좀 더 편하게 사용할 수 있다.  
 
 함수 앞에 비동기 함수임을 뜻하는 `async` 키워드 사용  
+
 값을 반환할 필요는 없지만 반환값이 있을경우 항상 `Promise` 객체로 감싸서 반환한다.  
 
 ```js
@@ -103,6 +109,7 @@ f().then(alert); // 1
 
 `await` 키워드는 `async` 메서드 내부에서만 사용가능하며 `Promise` 를 동기적으로 동작하도록 구성한다.  
 
+
 ```js
 async function foo() {
     await 1
@@ -114,7 +121,7 @@ async function foo() {
 f().then(alert); // 1
 ```
 
-
+`await` 는 주로 네트워크 요청이나 파일읽기 같은 시간이 오래걸리는 함수호출문 앞에 사용한다.  
 
 ```js
 const fs = require('fs');
@@ -190,3 +197,40 @@ async function test() {
 
 test();
 ```
+
+### 비동기 반복  
+
+반복문 내부에 비동기 구문이 있을 경우  
+반복문의 완료여부를 기다리고 싶을 때 **비동기 반복문**을 사용
+
+```js
+import axios from "axios";
+
+const params = [1, 2, 3, 4];
+
+const resArray = [];
+params.forEach(async param => {
+  const res = await axios.get(`https://jsonplaceholder.typicode.com/todos/${param}`);
+  resArray.push(res.data);
+});
+
+console.log(resArray); // []
+```
+
+위처럼 비동기반복문을 사용할 경우 빈 배열이 출력된다.  
+
+```js
+import axios from "axios";
+
+const params = [1, 2, 3, 4];
+
+const resArray = [];
+for await (const param of params) {
+  const res = await axios.get(`https://jsonplaceholder.typicode.com/todos/${param}`);
+  resArray.push(res.data);
+}
+
+console.log(resArray); // [x, x, x, x]
+```
+
+`for await ...of` 구문을 사용하면 반복문 내부의 모든 비동기함수가 완료될 때 까지 다음 구문을 대기한다.  

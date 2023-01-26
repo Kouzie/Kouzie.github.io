@@ -233,16 +233,64 @@ console.log(arr2); // [ 1, 2, 3, 4 ]
 
 객체병합, 객체복사에서도 사용 가능하다.  
 
+객체간의 연산에 한하여 이터러블인 아닌 객체에서도 스프레드 연산자를 허용한다.  
+
 > 필드명이 중복될경우 덮어씌어짐  
 
 ```js
-const merged = { x: 1, y: 2, ...{ a: 3, b: 4 } };
-console.log(merged); // { x: 1, y: 2, a: 3, b: 4 }
+let obj1 = { k1: "v1", k3: "v3" }
+let obj2 = { k2: "v2", k4: "v4" }
+let obj3 = { ...obj1, ...obj2 } 
+// { k1: 'v1', k3: 'v3', k2: 'v2', k4: 'v4' }
 
-const obj = { x: 1 , y: 2 }; 
-const copy = { ...obj };
-console.log(obj); // { x: 1, y: 2 }
-console.log(copy); // { x: 1, y: 2 }
+const merged = { x: 1, y: 2, ...{ a: 3, b: 4 } };
+// { x: 1, y: 2, a: 3, b: 4 }
 ```
 
-객체간의 연산에 한하여 이터러블인 아닌 객체에서도 스프레드 연산자를 허용한다.  
+인덱스 기반으로 객체생성 가능.  
+
+```js
+let values = ['v1', 'v2', 'v3']
+let map1 = { ...values }
+console.log(map1) // { '0': 'v1', '1': 'v2', '2': 'v3' }
+```
+
+## 옵셔널 체이닝(optional chaining)
+
+`nullable` 한 변수를 `optional` 하게 처리할 수 있는 방법으로 `?.` 연산자를 사용  
+
+
+깊은 레벨의 객체도 `?.` 를 연속으로 사용하여 간단하고 안전하게 값을 가져올 수 있다.  
+
+```js
+const user1 = {
+    name: 'Alberto',
+    age: 27,
+    work: {
+        title: 'software developer',
+        location: 'Vietnam',
+    }
+};
+const user2 = {
+    name: 'Tom',
+    age: 27,
+};
+const t1 = user1.work?.title;
+const t2 = user2.work?.title;
+
+console.log(t1) // software developer
+console.log(t2) // undefined
+```
+
+## null 병합 연산자(nullish coalescing operator)
+
+`??` `null 병합 연산자`는 왼쪽 피연산자가 `nullish` 값인 경우 오른쪽 피연산자를 반환한다.
+
+> 여기서 `nullish` 는 `null` 과 `undefined` 를 뜻함
+
+```js
+const n = null ?? "it's null";
+console.log(n); // it's null 
+const u = undefined ?? "it's undefined";
+console.log(u); // it's undefined
+```

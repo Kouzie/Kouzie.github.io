@@ -16,7 +16,6 @@ toc_sticky: true
 
 ## Vue 와 `axios`
 
-
 `axios` 는 여러 컴포넌트에게 자주 사용되기 때문에 각 컴포넌트에 `import` 하기 보다 `main.js` 에 한번만 `import` 해서 사용하는 것이 깔끔하다.  
 
 또한 프로토 타입으로 등록해 다른 뷰 인스턴스에서 쉽게 접근할 수 있도록 설정한다.  
@@ -40,7 +39,7 @@ this.$axios.put(...)
 
 일반적으로 vue 같은 클라이언트 서버는 단독으로 데이터를 출력하기 보단 별도의 서비스 제공자와 협력하여 클라이언트에게 데이터를 뿌리기 때문에 `CORS` 에러가 발생할 수 있다.  
 
-![vue15](/assets/vue/vue15.png){: .shadow}   
+![vue15](/assets/vue/vue15.png){: .shadow}  
 
 서비스 제공자에 `axios` 를 사용해 리소스를 가져오는데 위와같은 사항때문에 때에 따라 프록시 서버 설정이 필요하다.  
 
@@ -72,8 +71,6 @@ moudel.exports = {
 `vue.config.js` 파일 생성후 위와 같이 작성,  
 
 개발용 서버(자기자신의 프록시 서버)에 `/api/contacts` 로 요청하면 서비스 제공자 `sample.bmaster.kro.kr/contacts` 로의 접근을 자신을 경유해 요청 전달.
-
-
 
 ## vue-router
 
@@ -292,13 +289,11 @@ const router = new VueRouter({
 });
 ```
 
-
 ### router.push  
 
 `<router-view>` 위치에 `vue 컴포넌트` 를 표기하기 위해 반드시 `<router-link>` 에 URL 을 설정해서 클릭시킬 필요는 없다.  
 
-JS 프로그래밍 방식의 라우팅 제어가 가능하다.    
-
+JS 프로그래밍 방식의 라우팅 제어가 가능하다.
 
 `router.push` 메서드를 사용하면 JS 를 통해 라우팅처리 가능하다.  
 
@@ -493,8 +488,8 @@ const router = new VueRouter({
 
 ## Navigation Guards
 
-라우팅 이동 전, 후 에 메서드를 사용해 라우팅을 취소, 혹은 
-라우팅을 제어하는 방법이 있다. `Navigation Guards` 라 한다.  
+라우팅 이동전, 이동후 훅과 같은 메서드를 사용해  
+라우팅을 취소, 제어하는 방법을 `Navigation Guards` 라 한다.  
 
 ### vue 라우터 Navigation Guards
 

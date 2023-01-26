@@ -1,5 +1,5 @@
 ---
-title:  "JavaScript 배열, Date!"
+title:  "JavaScript 배열, 맵, Date!"
 
 read_time: false
 share: false
