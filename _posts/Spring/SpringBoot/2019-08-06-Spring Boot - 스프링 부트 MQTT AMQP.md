@@ -90,8 +90,8 @@ MQTT 프로토콜은 메시지를 해당 `Topic`에 발행(`Publish`) 하고 해
 
 docker run -d -p 5672:5672 -p 15672:15672 -p 1883:1883 \
 --restart=unless-stopped --name rabbitmq \
--e RABBITMQ_DEFAULT_USER=beyless \
--e RABBITMQ_DEFAULT_PASS=ws-beyless \
+-e RABBITMQ_DEFAULT_USER=guest \
+-e RABBITMQ_DEFAULT_PASS=guest \
 -v /data/rabbitmq/lib:/var/lib/rabbitmq \
 -v /data/rabbitmq/log:/var/log/rabbitmq rabbitmq:management
 
@@ -299,97 +299,6 @@ message arrived amd
 message arrived samsung
 ```
 
-<!-- 
-> 보안설정을 통해서 로그인한 사용자만 mqtt메세지를 발행할 수 도 있다.  
-> 구독자나 발행자나 모두 클라이언트이다. `mqttClient`의 `publish("topic", "message")` 메서드를 통해 다른 mqtt클라이언트에게 메세지 발행이 가능하다.  
-
-
-하나의 clientID로 여러번 connect하면 순간 연결을 될 수도 있다. (물론 안될수도 있음)  
-그리고 `MqttCallback` 클레스에서 `connectionLost()`가 바로 호출하게 된다.  
-(하나의 클라이언트ID는 하나의 서버에서만 사용하자.)
-
-cmd 실행시 docker가 바로 꺼져버림
-
-```
-docker run -dit --restart=always --name emq \
--p 18083:18083 \
--p 8083:8083 \
--p 1883:1883 \
---hostname emq emqttd:2.3.11 /bin/bash
-
-/emqttd/bin/emqttd start
-```
-
-귀찮지만 일일이 들어가서 start해주자.  
-
-```
-docker run -dit --restart=always --name emq-sub1 \
--p 18082:18083 \
--p 8082:8083 \
--p 1882:1883 \
---hostname emq-sub1 emqttd:2.3.11 /bin/bash
-
-docker run -dit --restart=always --name emq-sub2 \
--p 18081:18083 \
--p 8081:8083 \
--p 1881:1883 \
---hostname emq-sub2 emqttd:2.3.11 /bin/bash
-```
-
-erl -name emqtt@127.0.0.1
-erl -name emqtt-sub1@127.0.0.1
-erl -name emqtt-sub2@127.0.0.1
-
-
-```conf
-FROM ubuntu:16.04
-MAINTAINER "kouzie"
-
-RUN ["apt-get", "update"]
-RUN ["apt-get", "install", "-y", "wget"]
-RUN ["apt-get", "install", "-y", "net-tools"]
-RUN ["apt-get", "install", "-y", "iputils-ping"]
-RUN ["apt-get", "install", "-y", "vim"]
-RUN ["apt-get", "install", "-y", "erlang"]
-# RUN "apt-get update & apt-get install lksctp-tools"
-COPY emqttd/ /emqttd/
-COPY .erlang.cookie /root/.erlang.cookie
-# emqx will occupy these port:
-# - 1883 port for MQTT
-# - 8080 for mgmt API
-# - 8083 for WebSocket/HTTP
-# - 8084 for WSS/HTTPS
-# - 8883 port for MQTT(SSL)
-# - 11883 port for internal MQTT/TCP
-# - 18083 for dashboard
-# - 4369 for port mapping
-# - 5369 for gen_rpc port mapping
-# - 6369 for distributed node
-EXPOSE 1883 8080 8083 8084 8883 11883 18083 4369 5369 6369
-
-# WORKDIR /usr/bin/emqttd
-
-# CMD [ "service", "emitted", "start"]
-```
-
-
-~/.erlang.cookie 파일 권한 변경후 beyless로 수정 후 다시 400 권한으로 변경  
-
-아래 명령으로 쿠키확인  
-erlang:get_cookie().
-
-서로 연결가능한지 erlang으로 접속후 ping태스트
-net_adm:ping('host@ipaddress').
-
-/emqttd/bin/emqttd_ctl cluster join emq-main@172.17.0.2
-/emqttd/bin/emqttd_ctl cluster join emq-sub1@172.17.0.3
-/emqttd/bin/emqttd_ctl cluster join emq-sub2@172.17.0.4
-
-참고로 join 순서가 중요
-
-main과 sub1를 묶었다면 sub2와 sub1를 묶어라 아마? 여러번의 시행착오 필요  
-
-실패했다면 기존정보 rm -rf /emqttd/data/mnesia/* 를 지우고 시작  -->
 
 아래와 같이 하나의 인스턴스를 추가 실행해서 동작시켜 놓으면 2개의 서버에서 모두 메세지를 받아 출력한다.  
 
