@@ -250,6 +250,6 @@ spring.boot.admin.context-path=/admin
 spring.boot.admin.ui.public-url=https://custom.domain.com/admin
 ```
 
-## Demo
+## 데모 코드
 
-<https://github.com/Kouzie/boot-admin-demo>
+> <https://github.com/Kouzie/spring-boot-demo/tree/main/admin-demo>

@@ -12,7 +12,7 @@ categories:
   - springboot
 ---
 
-# Quartz
+## Quartz
 
 > Quartz는 다양한 Java 애플리케이션에 통합 될 수있는 작업 스케줄링 라이브러리입니다 - 위키
 > https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-quartz
@@ -23,7 +23,7 @@ categories:
 
 > `@Scheduled` 어노테이션 하나로 작성 가능하다.  
 
-## 구조  
+### 구조  
 
 **Job**  
 스케줄링할 실제 작업을 구현한 객체
@@ -387,8 +387,6 @@ schedulerFactoryBean.setAutoStartup(appQuartzEnable);
 - 매일 1시 15분에 실행 : `0 15 1 * * ?`
 - 4시간마다 실행 : `0 0 */4 ? * *`
 
+## 데모코드
 
-
-# 데모코드
-
-> https://github.com/Kouzie/spring-quartz-sample/tree/boot-quartz
+> <https://github.com/Kouzie/spring-boot-demo/tree/main/quartz-demo>

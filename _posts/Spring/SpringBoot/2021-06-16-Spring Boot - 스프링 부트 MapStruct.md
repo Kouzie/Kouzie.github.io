@@ -12,7 +12,7 @@ categories:
   - springboot
 ---
 
-# MapStruct
+## MapStruct
 
 > https://mapstruct.org/
 
@@ -28,7 +28,7 @@ categories:
 성능 또한 `MapStruct` 가 더 우세하다고 한다.  
 > 출처: https://better-dev.netlify.app/java/2020/10/26/compare_objectmapper/
 
-## Usage
+### Usage
 
 
 `MapStruct` 역시 Lombok 과 같이 `annotation` 을 기반으로 `annotation processor` 가 구현체를 `auto generate` 한다.  
@@ -95,7 +95,7 @@ public void shouldMapCarToDto() {
 }
 ```
 
-## EntityMapper  
+### EntityMapper  
 
 `jhipster` 를 사용하면 좀더 효율적으로 스프링부트에서 `MapStruct` 작성을 할 수 있도록 여러 인터페이스를 자동 작성해주는데  
 Car 를 예제로 들면 아래처럼 수정해서 사용할 수 있다.  
@@ -285,39 +285,29 @@ public class CarController {
 }
 ```
 
-# 샘플 프로젝트  
+## @Valid - 칼럼에 대한 각종 제약조건 설정  
 
-> https://github.com/Kouzie/mapstruct-sample
+`@Column`어노테이션 만으로 제약조건 지정이 부족하다면 아래 어노테이션들을 사용한다.  
 
-실행 후 curl 을 통해 테스트  
+어노테이션|설명|사용예
+|---|---|---|
+`@AssertFalse` | 값이 무조건 `false` 여야함 | @AssertFalse<br>boolean isUnsupported;
+`@AssertTrue` | 값이 무조건 true여야함 | @AssertTrue<br>boolean isActive;
+`@DecimalMax` | 10진수 최대값이 n값 이하 실수여야함 | @DecimalMax("30.00")<br>BigDecimal discount;
+`@DecimalMin` | 10진수 최소값이 n값 이하 실수여야함 | @DecimalMin("5.00")<br>BigDecimal discount;
+`@Digits` | 정수와 실수 자리수 지정 | @Digits(integer=6, fraction=2)<br>BigDecimal price;
+`@Future` | 해당날짜가 현재보다 미래여야함 | @Future<br>Date eventDate;
+`@Past` | 해당 날짜가 현재보다 과거여야함 | @Past<br>Date birthday;
+`@Max` | n값 이하여야함 | @Max(10)<br>int quantity;
+`@Min` | n값 이상이어야함 | @Min(5)<br>int quantity;
+`@NotNull` | 값이 null일수 없음 | @NotNull<br>String username;
+`@Null` | 값이 null이어아햠 | @Null<br>String unusedString;
+`@Pattern` | 정규식을 만족해야함 | @Pattern(regexp="(d{3})d{3}-d{4}")<br>String phoneNumber;
+`@Size` | 최소크기, 최대크기를 지정 | @Size(min=2, max=240)<br>String briefMessage;
 
-```
-$ curl 'http://127.0.0.1:8080/car' -i -X POST \
-    -H 'Content-Type: application/json;charset=UTF-8' \
-    -d '{"make":"hyundai","seat_count":4,"type":"SEDAN"}'
-HTTP/1.1 200
-Content-Type: application/json
-Transfer-Encoding: chunked
-Date: Wed, 16 Jun 2021 07:39:57 GMT
+> http://www.thejavageek.com/2014/05/24/jpa-constraints/
 
-{"car_id":2,"make":"hyundai","seat_count":4,"type":"SEDAN"}
 
-$ curl 'http://127.0.0.1:8080/car/2' -i -X GET \
-    -H 'Content-Type: application/json;charset=UTF-8'
-HTTP/1.1 200
-Content-Type: application/json
-Transfer-Encoding: chunked
-Date: Wed, 16 Jun 2021 07:40:30 GMT
+## 샘플 프로젝트  
 
-{"car_id":2,"make":"hyundai","seat_count":4,"type":"SEDAN"}
-
-$ curl 'http://127.0.0.1:8080/car/2' -i -X PATCH \
-    -H 'Content-Type: application/json;charset=UTF-8' \
-    -d '{"seat_count":3}'
-HTTP/1.1 200
-Content-Type: application/json
-Transfer-Encoding: chunked
-Date: Wed, 16 Jun 2021 07:41:01 GMT
-
-{"car_id":2,"make":"hyundai","seat_count":3,"type":"SEDAN"}
-```
+> <https://github.com/Kouzie/spring-boot-demo/tree/main/mapper-demo>

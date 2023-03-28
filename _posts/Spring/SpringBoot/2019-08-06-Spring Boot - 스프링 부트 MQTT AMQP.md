@@ -12,203 +12,100 @@ categories:
   - springboot
 ---
 
-## MTQQ 개요
+## MTQQ
 
-`Message Queuing Telemetry Transport`의 약자로서 많은 IoT 기기들에 최적화된 가벼운 메세징 프로토콜.  
-기존에 웹에서 통신하던 HTTP등의 프로토콜보다 제한적이고 특수한 상황에서 사용할 수 있는 모바일 특화 프로토콜.  특히 IoT 영역에서 주목받고 있다.  
+`Message Queuing Telemetry Transport`, 많은 IoT 에 최적화된 가벼운 메세징 프로토콜.  
 
-> https://wnsgml972.github.io/mqtt/mqtt.html
+기존에 통신 프로토콜보다 제한적이고 특수한 상황에서 사용할 수 있는 모바일 특화 프로토콜.  
+특히 IoT 영역에서 주목받고 있다.  
 
-## MTQQ 구성
+### MTQQ 구성
 
 MQTT 프로토콜은 메시지를 해당 `Topic`에 발행(`Publish`) 하고 해당 `Topic`에 구독(`Subscribe`)하는 모양으로 이루어진다.
 
 개설된 `Topic`에 `message`를 발행하면 해당 `Topic`을 구독하는 `client` 들에게 `message`를 전송,  
 따라서 one to multi 또는 one to one message 전송을 모두 지원할 수 있다. 
 
-![mqtt1](/assets/2019/mqtt1.png){: .shadow}  
+![mqtt1](/assets/springboot/springboot_amqp1.png)
 
 `MQTT` 에선 서버역할로 `Borker`가 존재.    
 발행자(`Publisher`)가 지정된 `Topic`에 대한 메세지를 `Broker`에게 전달하면 `Broker`에 붙어있는 여러 구독자(`Subscriber`)에게 해당 메세지를 전달한다.    
 
 
-## QOS
+토픽은 `/`로 구분된 계층구조를 갖으며 와일드카드문자를 지원한다.  
 
-![mqtt2](/assets/2019/mqtt2.png){: .shadow}  
+- `computer/part/cpu`  
+- `computer/part/ram`  
+- `computer/part/gpu`  
+- `computer/part/cooler`  
+
+만약 하위의 토픽들을 모두 선택하고 싶다면 `#`을 사용  
+`+`는 1레벨의 모든 토픽을 의미한다.
+
+`computer/part/#`
+`computer/+/gpu`
+
+### QOS
+
+![mqtt2](/assets/springboot/springboot_amqp2.png)
 
 그림과 같이 총 3개 레벨의 `QOS`가 있다.  
 
-### Level 0 (At most once)
+**Level 0** (At most once)
 
 메시지는 한번만 전달된다. Fire and Forget이라고도 한다. 즉 보내고 잊는다. 한번만 전달하지만 전달여부는 확인하지 않는 레벨이다.  
 
-### Level 1 (At least once)
+**Level 1** (At least once)
 
 메시지는 최소 한번은 전달된다. 유일하게 핸드셰이킹 같은 연결 여부를 확인하지 않고 메시지를 전달하는 레벨이다.
 위에 그림을 보면 메시지를 성공적으로 전달하면 `Broker`가 `Publisher`에게 PUBACK을 보내어 전달 성공을 알리지만  
 만약 정상적 통신이 이루어지지 않을 경우 `Loss`가 발생하여 `PUBACK`을 받지 못하여 `Publisher`는 적정 시간이 지나 실패로 알고 다시 메시지를 보내어  
 `Subscribe`에게 중복메시지를 보내는 경우가 생기게 된다. (무료 라이브러리는 대부분 `Level1`까지 지원한다)   
 
-### Level 2 (Exactly once)
+**Level 2** (Exactly once)
 
 메시지는 반드시 한번 전달된다. 위에 있는 `PUBACK` 과정을 `PUBREC`으로 핸드 셰이킹을 함으로서 메시지가 정확히 한번만 가는 레벨이다.
 만약 위의 과정처럼 `Broker`가 `PUBREC`을 전달 받지 못해 `Loss`가 일어나게 되어도 `Broker`는 이미 보냈다는 사실을 알고 있기 때문에 새로 보내지 않는다.  
 
-## Topic
 
-구독자가 어떤 메세지를 구독할 건지, 발행자가 어떤 메세지를 발행할 건지 `Topic`을 통해 지정할 수 있다.  
+### MQTT Broker
 
-토픽은 `/`로 구분된 계층구조를 갖으며 와일드카드문자를 지원한다.  
+브로커 종류는 굉장히 많지만 `rabbitMQ`를 사용
 
-`computer/part/cpu`  
-`computer/part/ram`  
-`computer/part/gpu`  
-`computer/part/cooler`  
-위와같은 토필들이 존재할 때 `computer/part/*`로 토픽을 지정하면 4개의 토픽을 모두 구독할 수 있다.  
-
-`*` 은 `/` 사이사이에도 들어갈 수 있다.  
-
-`computer/part/cpu/intel`  
-`computer/part/cpu/amd`  
-
-만약 하위의 토픽들을 모두 선택하고 싶다면 `#`을 사용  
-
-`computer/part/#` cpu의 하위까지 모두 구독한다.  
-
-`+`는 1레벨의 모든 토픽을 의미하고 `computer/+/gpu` 이런식으로 사용 가능하다.  
-
-## RabbitMQ
-
-브로커 종류는 굉장히 많지만 `rabbitMQ`를 사용해보자.  
-
-> https://www.rabbitmq.com/download.html
-> https://www.rabbitmq.com/install-generic-unix.html
-
-설치하는 여러방법 `docker`, `brew` 등이 있지만 컴파일된 바이너리 파일로 설치하는것이 깔끔하다.  
-> 현버전 3.8.5
-
-
-docker run -d -p 5672:5672 -p 15672:15672 -p 1883:1883 \
---restart=unless-stopped --name rabbitmq \
--e RABBITMQ_DEFAULT_USER=guest \
--e RABBITMQ_DEFAULT_PASS=guest \
--v /data/rabbitmq/lib:/var/lib/rabbitmq \
--v /data/rabbitmq/log:/var/log/rabbitmq rabbitmq:management
-
-
-<!-- > https://developer.emqx.io/docs/broker/v3/en/install.html#macos
-
-```
-emqx start
-emqx stop
-``` -->
-
-대충 적절한 위치에 압출 풀어서 저장(`/usr/local/etc`) 및 실행  
-```
-./rabbitmq-plugins enable rabbitmq_management
-./rabbitmq-plugins enable rabbitmq_mqtt
-./rabbitmq-server
-
-  ##  ##      RabbitMQ 3.8.5
-  ##  ##
-  ##########  Copyright (c) 2007-2020 VMware, Inc. or its affiliates.
-  ######  ##
-  ##########  Licensed under the MPL 1.1. Website: https://rabbitmq.com
-```
-
+> <https://www.rabbitmq.com/download.html>  
+> <https://www.rabbitmq.com/install-generic-unix.html>  
+> <https://www.rabbitmq.com/mqtt.html>
 
 `rabbitMQ`는 저전력모델을 위한 `MQTT` 브로커가 아닌 단순 메세지 브로커 역할로 `AMQP` 라는 프로토콜을 지원하는 브로커이다.  
 
 플러그인을 사용하면 `MQTT` 프로토콜을 지원할 수 있다.   
-> https://www.rabbitmq.com/mqtt.html
 
-### MQTT 설정  
+> 설치방법은 아래 데모코드 참고
 
-```conf
-# /usr/local/etc/rabbitmq/etc/rabbitmq/rabbitmq.conf
-
-mqtt.listeners.tcp.default = 1883
-## Default MQTT with TLS port is 8883
-# mqtt.listeners.ssl.default = 8883
-
-# anonymous connections, if allowed, will use the default
-# credentials specified here
-mqtt.allow_anonymous  = true
-mqtt.default_user     = guest
-mqtt.default_pass     = guest
-
-mqtt.vhost            = /
-mqtt.exchange         = amq.topic
-# 24 hours by default
-mqtt.subscription_ttl = 86400000
-mqtt.prefetch         = 10
-```
-
-`rabbitmq.conf` 파일 생성후 서버 재실행  
-
-### rabbitMQ dashboard
-
-
-`rabbitmq_management` 플러그인 설치했다면 대시보드 접속이 가능할 것이다.  
-
-서버를 실행하고 http://localhost:15672/#/ 에 접속.  
-
-기본 `id/pw`는 `guest/guest` 이다.  
-
-계정을 추가하고 싶다면 아래처럼 설정  
+MQTT Client 프로그램으로 `mosquitto` 설치하고 간단히 `topic` 을 지정해 `message` 을 발행, 구독 가능
 
 ```
-$ ./rabbitmqctl add_user new_user
-$ ./rabbitmqctl set_user_tags new_user administrator
+brew install mosquitto
+
+mosquitto_sub -h 127.0.0.1 -p 1883 -t test_topic -q 2
+
+mosquitto_pub -h 127.0.0.1 -p 1883 -t test_topic -m "Hello RabbitMQ"
 ```
 
-### MQTT Client - publisher, consumer 
-
-`MQTT Client` 프로그램으로 `mosquitto` 설치하고 간단히 `topic` 을 지정해 `message` 을 발행, 구독해보자.  
-
-```
-$ brew install mosquitto
-```
-
-```
-$ mosquitto_sub -h 127.0.0.1 -p 1883 -t test_topic -q 2
-```
-
-`mosquitto_sub` 를 통해 `test_topic` 이름으로 구독
-
-
-```
-$ mosquitto_pub -h 127.0.0.1 -p 1883 -t test_topic -m "Hello RabbitMQ"
-```
-
+`mosquitto_sub` 를 통해 `test_topic` 이름으로 구독  
 다른 터미널을 띄우고 `mosquitto_pub` 을 통해 `test_topic` 이름으로 메세지 발행
 
+`rabbitMQ` 대시보드에서 MQTT Client 연결 확인 가능  
 
-![mqtt3](/assets/2019/mqtt3.png){: .shadow}  
+![mqtt3](/assets/springboot/springboot_amqp3.png){: .shadow}  
 
 `mosquitto_sub` 을 2개 실행해 두면 위처럼 바인딩된 큐가 2개 생성된것을 확인할 수 있다.  
 
-### rabbitMQ MQTT 작동 방식  
+### Paho client
 
-> https://www.rabbitmq.com/mqtt.html#implementation
+`MQTT`는 `c/c++`, `python`, `java` 등 여러 언어를 지원하고 수많은 엔드포인트 디바이스가 사용가능한 프로토콜.  
 
-사실 `rabbitMQ`를 사용하려는 가장 큰 이유는 `MQTT client` 들과 `AMQP client` 들이 연동되기 때문이다.  
-
-`MQTT` 는 기본적으로 `1:N` 방식으로 `multicast` 형식으로 이루어지기 때문에 중복처리 방지가 불가능하다.  
-
-중복처리를 위해서 `rabbitMQ`의 시스템을 사용해  
-메세지를 처리하는 `consumer` 들은 `AMQP Client` 로,  
-발행자들은 `MQTT client` 로 등록하여 설정해보자.  
-
-## Java 와 MQTT
-
-우선은 `AMQP` 외에 `MQTT - MQTT` 형식으로 연결을 구성해보자.  
-
-`MQTT`는 디바이스, 네트워크 환경에 구애받지 않은 프로토콜로 `c/c++`, `python`, `java` 등 여러 언어를 지원하고 수많은 엔드포인트 디바이스가 사용가능한 프로토콜이다.  
-
-서버에서 `Java`로 어떻게 `MQTT` 구독자, 발행자를 만들고 브로커와 연결하는지 알아보자.  
-
-`MQTT` 클라이언트를 위한 `dependency` 설정  
+`Java` 의 paho 클라이언트로 `MQTT` 구독자, 발행자를 만들고 브로커와의 연결 테스트 진행.  
 
 ```xml
 <dependency>
@@ -220,30 +117,27 @@ $ mosquitto_pub -h 127.0.0.1 -p 1883 -t test_topic -m "Hello RabbitMQ"
 
 ```java
 @Slf4j
-@Component("mqttComponent")
+@Component
 public class MqttComponent {
 
     private String brokerAddress = "tcp://localhost";
 
     private String id = "guest";
-    private String password = "guest";
-    @Value("${client.id}")
-    private String clientID;
 
     @PostConstruct
     public void init() {
         log.info("MQTT init begin.");
         MemoryPersistence persistence = new MemoryPersistence();
         try {
-            MqttClient mqttClient = new MqttClient(brokerAddress, clientID, persistence);
+            MqttClient mqttClient = new MqttClient(brokerAddress, "spring boot", persistence);
             MqttConnectOptions connOpts = new MqttConnectOptions();
             connOpts.setCleanSession(false); //기존에 있던 세션을 지움(구독중인 메세지, 구독옵션등 모두 사라짐)
             connOpts.setConnectionTimeout(10); //10초동안 연결되지 않을경우 타임아웃
             connOpts.setKeepAliveInterval(3);
             connOpts.setAutomaticReconnect(true); //클라이언트가 서버를 찾지 못할경우 자동 재연결
             connOpts.setUserName(id);
-            connOpts.setPassword(password.toCharArray());
-            mqttClient.setCallback(new MessageCallback());
+            connOpts.setPassword(id.toCharArray());
+            mqttClient.setCallback(new MqttMessageCallback());
             mqttClient.connect(connOpts);
             String[] topics = {
                     "/computer/part/cpu",
@@ -257,6 +151,7 @@ public class MqttComponent {
             log.info("MQTT init success.");
         } catch (MqttException e) {
             log.error("MQTT init failed BROKER_ADDRESS = " + brokerAddress + " error :" + e.getMessage());
+            log.error(" error : " + e.getCause());
         }
     }
 }
@@ -264,7 +159,7 @@ public class MqttComponent {
 
 ```java
 @Slf4j
-public class MessageCallback implements MqttCallback {
+public class MqttMessageCallback implements MqttCallback {
     @Override
     public void connectionLost(Throwable cause) {
         log.info("connection lost.....");
@@ -272,8 +167,7 @@ public class MessageCallback implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-        log.info(message.getId());
-        log.info("message arrived " + new String(message.getPayload(), "UTF-8"));
+        log.info("message arrived, id:" + message.getId() + ", payload: " + new String(message.getPayload(), "UTF-8"));
     }
 
     @Override
@@ -284,6 +178,7 @@ public class MessageCallback implements MqttCallback {
 ```
 
 cli환경에서 `mosquitto` 클라이언트를 사용해서 `topic`에 해당하는 `MQTT` 메세지 발행
+
 ```
 > mosquitto_pub -h 127.0.0.1 -p 1883 -t /computer/part/cpu -q 1 -m "intel cpu"
 > mosquitto_pub -h 127.0.0.1 -p 1883 -t /computer/part/keyboard -q 1 -m "ducky"
@@ -292,6 +187,7 @@ cli환경에서 `mosquitto` 클라이언트를 사용해서 `topic`에 해당하
 ```
 
 출력값
+
 ```
 message arrived intel cpu
 message arrived ducky
@@ -299,30 +195,83 @@ message arrived amd
 message arrived samsung
 ```
 
+### 데모 코드  
 
-아래와 같이 하나의 인스턴스를 추가 실행해서 동작시켜 놓으면 2개의 서버에서 모두 메세지를 받아 출력한다.  
+> <https://github.com/Kouzie/spring-boot-demo/tree/main/mqtt-demo>
 
-```
-$ java -Dclient.id=consumer2 -Dserver.port=9080 -DINSTANCE=1 -jar target/mtqq-0.0.1-SNAPSHOT.jar
-```
+## AMQP
 
-![mqtt4](/assets/2019/mqtt4.png){: .shadow}  
+> <https://www.rabbitmq.com/tutorials/tutorial-four-java.html>
+> RabbitMQ 의 기본제공 프로토콜이 AMQP  
 
-실제로 client 별로 큐가 하나씩 생성되어 있고 수많은 라우팅 키가 각 큐를 가리키고 있다.  
-또한 `topic` 이름을 `/computer/part/cpu` 설정했는데 `.computer.part.cpu` 로 변경되어 있다.  
-
-`exchange` 에서 `MQTT` 토픽 라우팅 룰을 그대로 사용하지 않고 `AMQP` 방식의 라우팅 룰로 변환된다.  
+`Advanced Message Queing Protocol`, 메시지 큐를 사용하는 네트워크 프로토콜  
 
 
+### Exchanges and Exchange Types  
 
-## AMQP 클라이언트
+![stream5](/assets/springboot/stream5.png)
 
-`publisher` 는 여전히 `mqtt` 를 사용하면 `mosquitto`로 설정하고 `consumer` 는 `rabbit` 과 `AMQP` 로 연결할 수 있도록 설정  
+전체적인 구조는 위와 같다.  
 
-> sample code: https://www.rabbitmq.com/api-guide.html  
-> rabbitMQ API: https://rabbitmq.github.io/rabbitmq-java-client/api/current/index.html  
+`Exchange` : 발행한 모든 메시지가 처음 도달하는 지점으로 메시지가 목적지에 도달할 수 있도록 **라우팅 규칙** 적용  
+`Queue` : 메시지가 소비되기 전 대기하고 있는 최종 지점으로 `Exchange` 라우팅 규칙에 의해 단일 메시지가 복사되거나 다수의 큐에 도달  
+`Binding` : `Exchange` 와 `Queue` 간의 가상 연결  
+`Channel` : 발행자와 소비자, `Broker` 사이의 논리적인 연결, 하나의 `Connectoin` 내에 다수의 `Channel` 설정 가능  
+
+**라우트 규칙**은 `exchange type`에 의해 결정되며 `bindings`라고도 부른다. `exchange type` 에 따라 몇가지씩 위 그림에서 추가된다.  
+
+
+#### Direct exchange type 
+
+라우팅 와 바인딩 키가 완벽하게 일치하는 경우에 전달  
+
+![stream6](/assets/springboot/stream6.png)  
+
+큐는 클라이언트(`Channel`)가 연결될 때 마다 생성된다.  
+
+![stream7](/assets/springboot/stream7.png)  
+
+만약 2개의 클라이언트가 동일한 라우팅키로 연결시에 `exchange` 는 2개의 큐에 메세지를 모두 전달하게 되고  
+2개의 클라이언트가 모두 메세지를 받는다.  
+
+만약 메세지에 대한 중복처리를 하고 싶다면 아래 그림처럼 `consumer group` 을 설정해 하나의 큐에 2개 이상의 `channel` 을 구성하도록 설정하면 된다.  
+
+![stream10](/assets/springboot/stream10.png)  
+
+
+
+#### Fanout exchange type
+
+`1:N` 관계로 메시지를 브로드캐스트, `Exchange`에 바인딩 된 모든 `Queue`에 라우팅키 상관없이 메시지를 전달  
+
+![stream8](/assets/springboot/stream8.png)   
+
+
+#### Topic exchange type
+
+Topic 의 경우 조금 아래 그림처럼 조금 특별한 라우팅 키를 사용한다.  
+
+![stream9](/assets/springboot/stream9.png) 
+
+`Multicast` 방식, `Exchange`에 바인딩 된 `Queue` 중에서 메시지의 라우팅 키가 패턴에 맞는 `Queue`에게 모두 메시지를 전달
+
+### AMQP 클라이언트
+
+> <https://www.rabbitmq.com/api-guide.html>
 
 아래에 쓰이는 각종 메서드는 위의 API문서에 자세히 나와있다.  
+
+java 의 `amqp-client` 라이브러리를 사용하거나  
+
+```xml
+<dependency>
+  <groupId>com.rabbitmq</groupId>
+  <artifactId>amqp-client</artifactId>
+  <version>5.17.0</version>
+</dependency>
+```
+
+`spring-boot-starter` 라이브러리를 사용해도 좋다.  
 
 ```xml
 <dependency>
@@ -331,241 +280,8 @@ $ java -Dclient.id=consumer2 -Dserver.port=9080 -DINSTANCE=1 -jar target/mtqq-0.
 </dependency>
 ```
 
+> RabbitMQ 와 Spring 모두 VMware 에서 만들었기 때문에 연동성이 좋음
 
-```java
-@Profile("!mqtt") // profile mqtt 일 경우 생성하지 않음 
-@Configuration
-public class AMQPConfig {
+### 데모 코드
 
-    private String userName = "guest";
-    private String password = "guest";
-    private String hostName = "127.0.0.1";
-    private int portNumber = 5672;
-
-    @Bean
-    public ConnectionFactory connectionFactory() {
-        ConnectionFactory factory = new ConnectionFactory();
-        // "guest"/"guest" by default, limited to localhost connections
-        factory.setUsername(userName);
-        factory.setPassword(password);
-        factory.setVirtualHost("/");
-        factory.setHost(hostName);
-        factory.setPort(portNumber);
-        return factory;
-    }
-}
-```
-
-```java
-
-@Slf4j
-@Profile("!mqtt")
-@Component
-public class AMQPComponent {
-
-    @Autowired
-    private ConnectionFactory factory;
-    @Value("${client.id}")
-    private String clientId;
-
-    private String exchangeName = "amq.topic";
-    private Channel channel;
-
-    @PostConstruct
-    public void init() {
-        log.info("AMQPComponent init begin. " + clientId);
-        try {
-            String queueName = "mqtt_to_amqp";
-            log.info("init queueName:" + queueName);
-            Connection conn = factory.newConnection();
-            channel = conn.createChannel();
-            //queueName, durable,  exclusive, autoDelete, arguments
-            queueName = channel.queueDeclare(queueName, true, false, false, null).getQueue();
-            // queueName: 큐의 이름
-            // durable: 서버 재시작에도 살아남을 튼튼한(?) 큐로 선언할 것인지 여부
-            // exclusive: 현재의 연결에 한정되는 배타적인 큐로 선언할 것인지 여부
-            // autoDelete: 사용되지 않을 때 서버에 의해 자동 삭제되는 큐로 선언할 것인지 여부
-            // arguments: 큐를 구성하는 다른 속성
-            log.info("bind queueName:" + queueName);
-            channel.queueBind(queueName, exchangeName, ".computer.part.cpu");
-            channel.queueBind(queueName, exchangeName, ".computer.part.monitor");
-            channel.queueBind(queueName, exchangeName, ".computer.part.keyboard");
-            channel.queueBind(queueName, exchangeName, ".computer.part.gpu");
-            channel.queueBind(queueName, exchangeName, ".computer.part.ram");
-            // '/' -> '.' 으로 topic 이 변환되기 때문에 
-            // channel.queueBind(queueName, exchangeName, ".computer.part.*"); 와일드 카드 적용도 가능
-            // kafka 에선 일정 시간마다 받은 메세지 한번에 수신확인 처리하는데 rabbitMQ에서도 비슷한듯?
-            // 수동으로 수신처리함수 호출기위해 설정
-            boolean autoAck = false;
-            channel.basicConsume(queueName, autoAck, new AMQPConsumer(channel));
-            // channel.basicCancel(queueName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public boolean publishingMessage(String message, String routingKey) {
-        try {
-            byte[] messageBodyBytes = message.getBytes();
-            boolean mandatory;
-            // null부분은 basicProperties 가 들어가는데 header 와 같은 역할이다.
-            channel.basicPublish(exchangeName, routingKey, null, messageBodyBytes);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-}
-```
-
-```java
-@Slf4j
-public class AMQPConsumer extends DefaultConsumer {
-
-    public AMQPConsumer(Channel channel) {
-        super(channel);
-    }
-
-    @Override
-    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-        String routingKey = envelope.getRoutingKey();
-        String contentType = properties.getContentType();
-        long deliveryTag = envelope.getDeliveryTag();
-        // (process the message components here ...)
-        log.info("message body:" + new String(body));
-        // 메세지 수신여부를 broker 에게 알림
-        this.getChannel().basicAck(deliveryTag, false);
-    }
-}
-```
-
-![mqtt1](/assets/2019/mqtt5.png){: .shadow}  
-
-위에서 지정한 `mqtt_to_amqp` `exchange` 를 보면 설정한 큐, `routing key` 가 매핑되어 있음을 확인 가능하다.  
-
-![mqtt1](/assets/2019/mqtt6.png){: .shadow}  
-
-동시에 2개의 `channel` 연결시에도 하나의 큐에 2개의 `channel` 이 붙어 중복처리 되지 않는다.  
-
-마찬가지로 `mosquitto_pub` 명령어로 테스트 진행  
-
-### Spring AMQP
-
-위처럼 `rabbitMQ` 라이브러리에서 지원해주는 `ConnectionFactory`, `Connection`, `Channel` 을 가져다 쓰는것도 좋지만 `spring-boot-starter-amqp` 에서 제공하는 스프링에 조금더 추상화된 클래스들을 사용하는 것도 좋다.  
-
-> https://www.rabbitmq.com/tutorials/tutorial-five-spring-amqp.html
-
-```java
-@Slf4j
-@Profile("spring-amqp")
-@Configuration
-public class SpringAMQPConfig {
-
-    String queueName = "mqtt_to_amqp";
-
-    @Bean
-    public TopicExchange exchangeTopic() {
-        return new TopicExchange("amq.topic");
-    }
-
-    @Bean
-    public Queue queue() {
-        // durable, exclusive, autoDelete
-        return new Queue(queueName, true, false, false);
-    }
-
-    @Bean
-    public Binding binding(TopicExchange exchangeTopic, Queue queue) throws JsonProcessingException {
-        log.info("biding invoked, queueName:" + queue.getName());
-        return BindingBuilder.bind(queue).to(exchangeTopic).with(".computer.part.*");
-    }
-
-    @Bean
-    public SpringAMQPReceiver springAMQPReceiver() {
-        return new SpringAMQPReceiver();
-    }
-
-    @Bean
-    public SpringAMQPSender springAMQPSender() {
-        return new SpringAMQPSender();
-    }
-}
-```
-
-전체적인 구성은 비슷하다, `channel` 생성/연결 과정이 따로 없을뿐 `exchange` 생성, `queue`생성 및 바인딩 처리하는 것은 똑같다.  
-
-단점은 바인딩처리를 한번에 못하고 `Binding`객체를 모두 `bean` 으로 등록해야 한다.  
-
-사용되는 패키지명이 조금씩 다르다.  
-
-```java
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
-```
-
-메세지 수신처리는 아래와 갔다.  
-
-```java
-@Slf4j
-public class SpringAMQPReceiver {
-
-    // bean factory 에서 queue 이름의 빈객체를 찾아 등록
-    @RabbitListener(queues = "#{queue.name}")
-    public void receive(byte[] payload) throws InterruptedException {
-        log.info("message:" + new String(payload));
-    }
-}
-```
-
-`@RabbitListener` 어노테이션으로 빈으로 등록한 큐를 지정하고 처리하면 된다.  
-
-AMQP 메세지는 전송하는 Sender 클래스는 아래와 같다.  
-
-```java
-public class SpringAMQPSender {
-
-    @Autowired
-    private RabbitTemplate template;
-
-    @Autowired
-    private TopicExchange topic;
-
-    AtomicInteger index = new AtomicInteger(0);
-    AtomicInteger count = new AtomicInteger(0);
-
-    private final String[] topics = {
-            ".computer.part.cpu",
-            ".computer.part.monitor",
-            ".computer.part.keyboard",
-            ".computer.part.gpu",
-            ".computer.part.ram"};
-
-    @Scheduled(fixedDelay = 1000, initialDelay = 500)
-    public void send() {
-        if (this.index.incrementAndGet() == topics.length) this.index.set(0);
-        String key = topics[this.index.get()];
-        String message = "Hello RabbitMQ, key:" + key + ", index:" + index;
-        template.convertAndSend(topic.getName(), key, message.getBytes());
-        System.out.println("send message:" + message);
-    }
-}
-```
-
-`topic` 을 변경해가며 `AMQP` 메세지를 전송한다.  
-
-`mosquitto_sub` 으로 `SpringAMQPSender` 가 보내는 메세지 확인  
-
-```
-$ mosquitto_sub -h 127.0.0.1 -p 1883 -t "/computer/part/*" -q 2
-Hello RabbitMQ, key:.computer.part.monitor, index:1
-Hello RabbitMQ, key:.computer.part.keyboard, index:2
-Hello RabbitMQ, key:.computer.part.gpu, index:3
-Hello RabbitMQ, key:.computer.part.ram, index:4
-...
-...
-```
+> <https://github.com/Kouzie/spring-boot-demo/tree/main/amqp-demo>

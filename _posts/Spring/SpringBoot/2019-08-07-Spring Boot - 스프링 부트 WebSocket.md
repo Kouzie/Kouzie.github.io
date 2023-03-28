@@ -415,20 +415,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
 ws://localhost:8080/websocket/197/dvkiyrn1/websocket
 ```
 
-외부 라이브러리는 `maven, gralde` 등의 의존성을 통해 내부에 생성된 `jar` 파일에서도 가져올 수 있다.  
-
-```html
-<script src="/webjars/sockjs-client/sockjs.min.js"></script>
-```
-
-```xml
-<dependency>
-    <groupId>org.webjars</groupId>
-    <artifactId>sockjs-client</artifactId>
-    <version>1.0.2</version>
-</dependency>
-```
-
 ## STOMP 웹 소켓 예제
 
 단순한 웹 소켓 처리는 `톰캣 웹소켓` 혹은 `스프링 웹소켓` 라이브러리로 작성할 수 있다.  
@@ -544,17 +530,6 @@ public class MessageHandler {
 
 > 간단한 구성의 경우 자유자재로 `session` 관리가 가능한 톰캣, 스프링 웹소켓이 더 편할 수 있다.  
 
-
-`SockJS` 와 마찬가지로 의존성을 통해 내부 `jar` 에서 가져올 수 있음.
-
-```xml
-<dependency>
-    <groupId>org.webjars</groupId>
-    <artifactId>stomp-websocket</artifactId>
-    <version>2.3.3</version>
-</dependency>
-```
-
 ## Websocket Client  
 
 Spring 에서 소켓 서버가 아닌 클라이언트를 사용하고 싶을때 `WebSocketHandler`, `WebSocketSession` 클래스를 사용한다.  
@@ -663,6 +638,6 @@ public class WebSocketSender {
 }
 ```
 
-## 샘플 코드 URL
+## 데모 코드
 
-https://github.com/Kouzie/websocket-sample
+> <https://github.com/Kouzie/spring-boot-demo/tree/main/websock-demo>
