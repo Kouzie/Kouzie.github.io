@@ -9,15 +9,15 @@ toc_sticky: true
 # classes: wide
 
 categories:
-  - springbatch
+  - springboot
 ---
 
 ## Spring Batch 개요
 
 > <https://docs.spring.io/spring-batch/docs/current/reference/html/index-single.html>
-> 
+>
 > 엔터프라이즈 도메인 내의 많은 애플리케이션은 미션 크리티컬 환경에서 비즈니스 운영을 수행하기 위해 대량 처리가 필요합니다. 이러한 비즈니스 운영에는 다음이 포함됩니다.
-> 
+>
 > Spring Batch는 로깅/추적, 트랜잭션 관리, 작업 처리 통계, 작업 재시작, 건너뛰기, 리소스 관리 등 대용량 레코드 처리에 필수적인 재사용 가능한 기능을 제공합니다
 
 스프링 배치의 경우 내부구조가 복잡하여 진입장벽이 있음으로 위의 가이드 문서를 읽고 진행하는 것은 권장한다.  

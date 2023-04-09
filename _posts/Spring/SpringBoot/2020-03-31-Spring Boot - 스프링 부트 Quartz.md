@@ -14,16 +14,14 @@ categories:
 
 ## Quartz
 
-> Quartz는 다양한 Java 애플리케이션에 통합 될 수있는 작업 스케줄링 라이브러리입니다 - 위키
-> https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-quartz
-> https://blog.advenoh.pe.kr/spring/Quartz-Job-Scheduler란/
+Java 애플리케이션에 통합 될 수있는 작업 스케줄링 라이브러리로 가장 유명한 작업 스케줄링 라이브러리  
 
-자바에서 가장 유명한 작업 스케줄링 라이브러리  
-단일 인스턴스 기준, 단순 반복 작업이라면 `Quartz` 보다도 `spring scheduler` 를 사용하면 더 쉽게 스케줄링 작업이 가능하다.  
-
-> `@Scheduled` 어노테이션 하나로 작성 가능하다.  
+> <https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-quartz>
+> <https://blog.advenoh.pe.kr/spring/Quartz-Job-Scheduler란/>
 
 ### 구조  
+
+![springboot_quartz1](/assets/springboot/springboot_quartz1.png)  
 
 **Job**  
 스케줄링할 실제 작업을 구현한 객체
@@ -65,18 +63,67 @@ categories:
 **SchedulerFactory**  
 Scheduler 인스턴스를 생성하는 역할, 스프링 부트에선 `application.properties` 를 사용해 다양한 설정을 통해 자동으로 구현가능하다.  
 
-### Quartz Initialize
+`Quartz Scheduler` 는 `Job`, `Trigger`, `JobStore` 와 같은 리소스를 관리(저장/삭제)하며  
+`Quartz Scheduler Thread` 가 시작될 `Trigger` 보고있다가 관련 `Job` 을 실행시키는 구조이다.  
 
-> https://stackoverflow.com/questions/64101847/spring-boot-quartz-jdbc-tables-are-always-initailized
+`Trigger` 의 `fire` 시점에 따라 `ThreadPool` 에 있는 `Worker` 노드에게 해당 `Job` 을 실행하도록 명령한다.  
 
+클래스 관계도는 아래와 같다.  
 
-```conf
-spring.quartz.jdbc.initialize-schema=always
+![springboot_quartz2](/assets/springboot/springboot_quartz2.png)  
+
+> <https://www.javarticles.com/2016/03/quartz-scheduler-model.html>
+
+즉 `JobStore` 로부터 실행할 `Job` 과 `Trigger` 를 계속 지켜보고 있다가 실행시키는 것이기에
+`Scheduler` 의 `schedule()` 함수를 통해 데이터만 입력하면 해당 스케줄은 `Quartz Scheduler Thread` 가 이어서 해준다.  
+
+## Spring Boot Quartz 설정
+
+유명하다보니 `spring-boot-starter` 프로젝트안에 Quartz 가 존재한다.  
+
+```groovy
+dependencies {
+  implementation 'org.springframework.boot:spring-boot-starter-quartz'
+}
 ```
 
-위와 같은 설정 사용시 기존에 있던 테이블을 삭제하고 다시 생성하는데 MSA 환경에선 곤란할 때가 많다.  
+`Spring Boot` 의 경우 `application.properties` 파일에서 `Quartz` 에 간략한 설정은 모두 지정 가능하다.  
 
-테이블이 없을경우에만 생성하고 없을때는 넘어가게 하고 싶을 때 직접 quartz initial SQL 쿼리를 정의할 수 있다.  
+마이크로 서비스같이 서버가 여러개 돌아가는 상황에서 스케줄링을 하고 싶다면  
+단 한번만 실행될 수 있게 설정해야 하고 실행 결과를 `jdbc` 로 저장할 수 있도록 설정한다.  
+
+```conf
+# spring quartz config
+#
+spring.quartz.scheduler-name=MyScheduler
+spring.quartz.job-store-type=jdbc
+# 자동으로 테이블이 생성된다, 이미 생성된 테이블은 삭제처리
+spring.quartz.jdbc.initialize-schema=always
+# 생성된 작업 덮어 쓰기
+spring.quartz.overwrite-existing-jobs=true
+단위테스트, Quartz 비활성화를 필요시 아래 속성을 false 로 지정
+spring.quartz.auto-startup=true
+```
+
+만약 spring.quartz 외에 추가적인 설정이 필요하다면  
+`spring.quartz.properties` 속성을 사용해서 아래와 같이 사용  
+
+```conf
+spring.quartz.properties.org.quartz.jobStore.isClustered=true
+# jobdata string 으로 저장, blob 로 저장시 객체 바이트화 가능
+spring.quartz.properties.org.quartz.jobStore.useProperties=true
+```
+
+더 많은 `spring.quartz.properties` 설정은 아래 URL 참고  
+
+> <http://www.quartz-scheduler.org/documentation/quartz-2.3.0/configuration/ConfigMain.html>
+
+수동으로 테이블 생성시 아래 url 참고
+> <https://github.com/quartz-scheduler/quartz/blob/master/quartz-core/src/main/resources/org/quartz/impl/jdbcjobstore/tables_mysql.sql>
+
+`spring.quartz.jdbc.initialize-schema=always` 설정 사용시 기존에 있던 테이블을 삭제하고 다시 생성하는데 MSA 환경에선 곤란할 때가 많다.  
+
+테이블이 없을경우에만 생성하고 없을때는 넘어가게 하고 싶을 때 직접 `quartz initial SQL` 쿼리를 정의할 수 있다.  
 
 ```conf
 spring.quartz.jdbc.initialize-schema=always
@@ -99,100 +146,38 @@ CREATE TABLE IF NOT EXISTS QRTZ_JOB_DETAILS
 ...
 ```
 
+> 참고: <https://stackoverflow.com/questions/64101847/spring-boot-quartz-jdbc-tables-are-always-initailized>
 
-## 실행 프로세스  
-
-![springboot_quartz1](/assets/springboot/springboot_quartz1.png)  
-
-`Quartz Scheduler` 는 `Job`, `Trigger`, `JobStore` 와 같은 리소스를 관리(저장/삭제)하며  
-`Quartz Scheduler Thread` 가 시작될 `Trigger` 보고있다가 관련 `Job` 을 실행시키는 구조이다.  
-
-`Trigger` 의 `fire` 시점에 따라 `ThreadPool` 에 있는 `Worker` 노드에게 해당 `Job` 을 실행하도록 명령한다.  
-
-클래스 관계도는 아래와 같다.  
-
-![springboot_quartz2](/assets/springboot/springboot_quartz2.png)  
-> https://www.javarticles.com/2016/03/quartz-scheduler-model.html  
-> 
-
-즉 `JobStore` 로부터 실행할 `Job` 과 `Trigger` 를 계속 지켜보고 있다가 실행시키는 것이기에
-`Scheduler` 의 `schedule()` 함수를 통해 데이터만 입력하면 해당 스케줄은 `Quartz Scheduler Thread` 가 이어서 해준다.  
-
-
-## 설정 (with mysql)
-
-```gradle
-dependencies {
-  ...
-  implementation 'org.springframework.boot:spring-boot-starter-quartz'
-}
-```
-
-스프링에서 `Quartz` 를 사용하는 방법은 여러가지 이지만 
-`Spring Boot` 의 경우 `application.properties` 파일에서 `Quartz` 에 간략한 설정은 모두 지정 가능하다.  
-
-마이크로 서비스같이 서버가 여러개 돌아가는 상황에서 스케줄링을 하고 싶다면  
-단 한번만 실행될 수 있게 설정해야 하고 실행 결과를 jdbc 로 저장할 수 있도록 설정한다. 
-
-```conf
-# spring quartz config
-#
-spring.quartz.scheduler-name=MyScheduler
-spring.quartz.job-store-type=jdbc
-# 자동으로 테이블이 생성된다, 이미 생성된 테이블은 삭제처리
-spring.quartz.jdbc.initialize-schema=always
-# 생성된 작업 덮어 쓰기
-spring.quartz.overwrite-existing-jobs=true
-```
-
-스프링 부트에선 위와 같은 방식으로 설정과 함께 bean 을 만들어 주어 위 방식을 추천하지만  
-만약 더 상세한 정보를 설정해야 한다면 `spring.quartz.properties` 속성을 사용해서 아래와 같이 사용  
-
-```
-spring.quartz.properties.org.quartz.jobStore.isClustered=true
-# jobdata string 으로 저장, blob 로 저장시 객체 바이트화 가능
-spring.quartz.properties.org.quartz.jobStore.useProperties=true
-```
-
-> 더 많은 `spring.quartz.properties` 설정은 아래 URL 참고  
-http://www.quartz-scheduler.org/documentation/quartz-2.3.0/configuration/ConfigMain.html
-
-왠만하면 직접 `SchedulerFactoryBean` 를 구현하지 말자.  
-속성을 통해 만들지 않을경우 여러개의 Bean 을 다시 의존주입받아서 생성해야 한다.  
-
-또한 `spring.quartz.properties` 역시 아래처럼 별도의 파일 `quartz.properties` 로 빼서 설정해야 한다.  
+`spring.quartz` 속성으로 `SchedulerFactoryBean` 등록하지 않고 직접 생성하고 싶다면  
+`Spring.quartz.properties` 역시 아래처럼 별도의 파일 `quartz.properties` 로 빼서 설정해야 한다.  
 
 ```java
 SchedulerFactoryBean schedulerFactory = new SchedulerFactoryBean();
 schedulerFactory.setConfigLocation(new ClassPathResource("quartz.properties"));
-...
-...
 schedulerFactory.setDataSource(dataSource);
+...
+...
 return schedulerFactory;
 ```
 
-> 수동으로 테이블 생성시 아래 url 참고
-https://github.com/quartz-scheduler/quartz/blob/master/quartz-core/src/main/resources/org/quartz/impl/jdbcjobstore/tables_mysql.sql
+> `datasource` 외에도 등록해야 되는 객체가 많음으로 웬만하면 `spring.quartz` 속성 사용을 권장  
 
-### DB Tables
+## DB Tables
 
+`Quartz` 의 `Jobstore` 를 DB 로 설정하고 생성되는 테이블 목록은 아래와 같다.  
 
-백문의 불여일견 Quartz 의 Jobstore 를 DB 로 설정하고 
-생성되는 테이블 목록과 데이터를 확인해보자.  
-
-총 10개의 테이블이 생성된다.  
-```
+```sql
 QRTZ_BLOB_TRIGGERS
 QRTZ_CALENDARS
-QRTZ_CRON_TRIGGERS # 
-QRTZ_FIRED_TRIGGERS # 
-QRTZ_JOB_DETAILS # 
-QRTZ_LOCKS # 
+QRTZ_CRON_TRIGGERS
+QRTZ_FIRED_TRIGGERS
+QRTZ_JOB_DETAILS
+QRTZ_LOCKS
 QRTZ_PAUSED_TRIGGER_GRPS
 QRTZ_SCHEDULER_STATE
-QRTZ_SIMPLE_TRIGGERS # 
-QRTZ_SIMPROP_TRIGGERS 
-QRTZ_TRIGGERS # 
+QRTZ_SIMPLE_TRIGGERS
+QRTZ_SIMPROP_TRIGGERS
+QRTZ_TRIGGERS
 ```
 
 단순한 `log print` 를 하는 `Job` 생성하고 어떻게 DB에 저장되는지 확인  
@@ -250,18 +235,17 @@ public class QuartzTestConfig {
 }
 ```
 
-출력값  
-
-```  
-2021-12-14 11:12:05.897  INFO 45035 --- [eduler_Worker-1] c.b.u.a.demo.schedule.job.HelloJob   : RequestContractJob execute invoked, job-detail-key:hello-group.hello1, fired-time:Tue Dec 14 11:12:05 KST 2021, num:1
-2021-12-14 11:12:05.897  INFO 45035 --- [eduler_Worker-1] c.b.u.a.demo.schedule.job.HelloJob   : RequestContractJob execute complete
-2021-12-14 11:12:05.900  INFO 45035 --- [eduler_Worker-2] c.b.u.a.demo.schedule.job.HelloJob   : RequestContractJob execute invoked, job-detail-key:hello-group.hello2, fired-time:Tue Dec 14 11:12:05 KST 2021, num:2
-2021-12-14 11:12:05.901  INFO 45035 --- [eduler_Worker-2] c.b.u.a.demo.schedule.job.HelloJob   : RequestContractJob execute complete
 ```
+RequestContractJob execute invoked, job-detail-key:hello-group.hello1, fired-time:Tue Dec 14 11:12:05 KST 2021, num:1
+RequestContractJob execute complete
+RequestContractJob execute invoked, job-detail-key:hello-group.hello2, fired-time:Tue Dec 14 11:12:05 KST 2021, num:2
+RequestContractJob execute complete
+```
+
 위와같이 `Schduler`, `Trigger`, `JobDetail` 을 설정하고 실행하였을때 
 다음 5개의 테이블에 데이터가 저장된다.  
 
-```sql 
+```sql
 SELECT * FROM QRTZ_FIRED_TRIGGERS;
 SELECT * FROM QRTZ_JOB_DETAILS;
 SELECT * FROM QRTZ_LOCKS;
@@ -270,12 +254,6 @@ SELECT * FROM QRTZ_TRIGGERS;
 ```
 
 ![springboot_quartz1](/assets/springboot/springboot_quartz3.png)  
-
-출력된 데이터를 기반으로 테이블 한개씩 데이터를 확인해보면  
-
-
-> 예제: https://github.com/Kouzie/spring-quartz-sample/tree/boot-quartz
-
 
 ## Job 중단  
 
@@ -330,25 +308,8 @@ public class GradeRatingCronJob extends QuartzJobBean implements InterruptableJo
 
 만약 특정상황이 발생하면 Job 을 중지시키고 특정 이벤트를 호출해야 한다면 `InterruptableJob`을 상속받고 위처럼 구현  
 
-
-> https://github.com/Flipkart/quartz/blob/master/distribution/examples/src/main/java/org/quartz/examples/example7/DumbInterruptableJob.java  
+> <https://github.com/Flipkart/quartz/blob/master/distribution/examples/src/main/java/org/quartz/examples/example7/DumbInterruptableJob.java>  
 위의 URL 에 해당 예제 외에도 다른 여러 예제가 많으니 참고
-
-
-### 조건값으로 Quartz 비활성화  
-
-단위테스트나  dev, stg 상태에서 실행할 때 `Quartz` 비활성화를 하고 싶을 경우 아래 속성을 사용하면 된다.  
-
-```conf
-spring.quartz.auto-startup=true
-```
-
-
-만약 직접 `SchedulerFactoryBean` 인스턴스를 생성해야 한다면 아래 코드 사용 
-
-```java
-schedulerFactoryBean.setAutoStartup(appQuartzEnable);
-```
 
 ## Crone Expression  
 

@@ -14,7 +14,7 @@ categories:
 
 ## JPA(Java Persisitence API)  
 
-> 참고: 
+> 참고  
 > <https://www.datanucleus.org/products/accessplatform/index.html>
 > <https://www.datanucleus.org/products/accessplatform/jpa/annotations.html>
 
@@ -120,8 +120,7 @@ public interface BoardRepository extends CrudRepository<Board, Long> {
 간단한 `CRUD` 작업은 `CrudRepository`  
 각종 조건문이 들어간 복잡한 쿼리는  `JPA Query Methods` 로 수행한다  
 
-
-```
+```console
 find..by..
 read..by..
 query..by..
@@ -202,7 +201,7 @@ list2.forEach(board->{
 페이징에서 정렬은 필수이니 어떤 방식을 사용하건 정렬기능을 추가해야한다.  
 
 `thymleaf` 와 같이 HTML템플릿 까지 지원하는 경우  
-서버에서 페이징 처리까지 모두 해주는 `Page` 클래스를 사용하면 템플릿 뷰에서 페이지를 출력하기 편하다.   
+서버에서 페이징 처리까지 모두 해주는 `Page` 클래스를 사용하면 템플릿 뷰에서 페이지를 출력하기 편하다.  
 
 | 메서드                          | 설명                |
 | ---------------------------- | ----------------- |
@@ -249,7 +248,7 @@ System.out.println("result.nextPageable(): " + result.nextPageable());
 System.out.println("result.previousPageable(): " + result.previousPageable());
 ```
 
-```
+```console
 Hibernate: select board0_.bno as bno1_0_, board0_.content as content2_0_, board0_.regdate as regdate3_0_, board0_.title as title4_0_, board0_.updatedate as updateda5_0_, board0_.writer as writer6_0_ from tbl_boards board0_ where board0_.bno>? order by board0_.bno desc limit ?
 Hibernate: select count(board0_.bno) as col_0_0_ from tbl_boards board0_ where board0_.bno>?
 Board(bno=200, title=제목...199, writer=user09, content=내용...199채우기, regdate=2019-08-08 17:01:36.0, updatedate=2019-08-08 17:01:36.0)
@@ -332,8 +331,6 @@ public interface PDSBoardRepository extends CrudRepository<PDSBoard, Long> {
 
 `@Query`는 기본적으로 `SELECT`구문만을 지원하지만 `@Modifying` 어노테이션으로 `UPDATE, DELETE`구현이 가능하다.  
 
-
-
 ### JPA Custom DTO
 
 > <https://stackoverflow.com/questions/36328063/how-to-return-a-custom-object-from-a-spring-data-jpa-group-by-query>
@@ -381,8 +378,6 @@ public interface SurveyRepository extends CrudRepository<Survey, Long> {
 `@Param` 으로 SQL 쿼리에 동적으로 변수를 매핑할 수 있지만  
 SQL 조건문도 동적으로 추가할 수 있어야 한다.  
 
-JPA 공식 지원라이브러리는 `criteria` 이지만 불편해서 `querydsl` 을 주로 쓴다.  
-
 아래와 같이 build 과정에서 `Qclass` 를 자동생성, `querydsl` 문법을 지원한다.  
 
 ```java
@@ -422,9 +417,8 @@ public class QBoard extends EntityPathBase<Board> {
 }
 ```
 
-기존의 정수, 문자열 변수들이 `NumberPath`, `StringPath` 과 같은 객체형으로 변경되었다.   
+기존의 정수, 문자열 변수들이 `NumberPath`, `StringPath` 과 같은 객체형으로 변경되었다.  
 내부적으로 조건문 처리를 할 수 있는 함수들이 정의되어있다.  
-
 
 ```java
 @Test
@@ -451,8 +445,7 @@ public void testPredicate() {
     }
 ```
 
-`QuerydslPredicateExecutor` 를 상속하면 `CrudRepository` 에서도 Qclass 사용이 가능하다.  
-
+`QuerydslPredicateExecutor` 를 상속하면 `CrudRepository` 에서도 `Qclass` 사용이 가능하다.  
 
 ```java
 public interface BoardRepository extends 
@@ -461,6 +454,9 @@ public interface BoardRepository extends
     ...
 }
 ```
+
+> JPA 의 공식 지원 라이브러리인 `Criteria` 도 `Specifications` 동적쿼리 생성방법이 있으니 참고  
+> <https://www.baeldung.com/rest-api-search-language-spring-data-specifications>
 
 <!-- 
 ### path, expression
@@ -580,10 +576,10 @@ restartStatus = deviceRestartLog.getStatus();
 위에선 하나의 테이블을 예제로 객체를 정의하였지만 실제 서비스를 구성할때에는 거미줄처럼 테이블간의 연관관계가 구성되어있다.  
 총 4가지로 엔티티간의 관계를 구성한다.  
 
-1. `@OneToOne`   
-2. `@OneToMany`   
-3. `@ManyToOne`   
-4. `@ManyToMany`   
+1. `@OneToOne`  
+2. `@OneToMany`  
+3. `@ManyToOne`  
+4. `@ManyToMany`  
 
 이런 참조관계는 유동적으로 지정할 수 있다.  
 
@@ -594,7 +590,6 @@ restartStatus = deviceRestartLog.getStatus();
 
 > 그렇다 해서 무조건 두 클래스다 서로를 가리키고 있을 필요는 없다, 오히려 단방향 매핑을 권장함  
 > 일반적으로 `@OneToMany`의 양방향 혹은 단방향 참조관계가 대부분이다.  
-
 
 ```java
 @Getter
@@ -772,7 +767,7 @@ public class Reply {
 }
 ```
 
-#### @OneToMany with mappedBy 
+#### @OneToMany with mappedBy
 
 기존 방식대로 `@OneToMany` 에 `mappedBy` 속성 사용  
 
@@ -846,6 +841,24 @@ public class Thumbnail {
 
 `@JoinColumn` 을 사용하는 엔티티가 자식엔티티가 되며  
 `@OneToOne` 사용시 부모엔티티에서 단방향 매핑하는 방법은 없다.  
+
+`@OneToOne` 의 경우 `mappedBy` 를 사용하면 N+1 문제가 발생한다.  
+
+아래처럼 양방향 매핑을하면 자동으로 조인쿼리가 발생할것 같지만 실제 `board` 테이블에 `thumbnail_id` 가 들어가있지 않기때문에  
+`LAZY`, `EAGER` 상관없이 `thumbnail_id` 를 얻기위해 `board` 개수만큼 `thumbnail` 을 검색한다.  
+
+```java
+public class Board {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long bno;
+    ...
+    @OneToOne(mappedBy = "board", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    private Thumbnail thumbnail;
+}
+```
+
+사용하지 않는걸 제일 권장하고 꼭 필요하다면 JPQL 쿼리를 별도로 작성해야 한다...
 
 ### FetchMode.LAZY, FetchMode.EAGER  
 
@@ -1187,7 +1200,7 @@ public class ShippingInfo {
 ### @CollectionTable, @ElementCollection
 
 `@Embeddable` 을 사용하는 **벨류타입이지만** `1:N`, `M:N` 매핑을 구성할 때  
-`Convert` 사용하기에는 데이터가 너무 많을때 별도의 테이블로 나눠야 한다.  
+`@Convert` 사용하기에는 데이터가 너무 많을때 별도의 테이블로 나눠야 한다.  
 
 벨류타입에서 `@OneToMany`, `@ManyToMany` 방식보단 `@CollectionTable` 을 사용하는게 간결할 수 있다.  
 
@@ -1383,9 +1396,222 @@ create table image
 )
 ```
 
+### @Access
+
+DB데이터 매핑시 `getter`, `setter` 없이도 매핑할 수 있도록 `@Access` 어노테이션 사용  
+
 ## 트랜잭션
+
+**논리적인 하나의 작업단위가 트랜잭션**이다.  
+
+위의 `Order` 와 `OrderLine` 이 같이 `insert` 되는 것도 하나의 작업단위이기에 하나의 트랜잭션이라 할 수 있다.  
+
+![springboot2_1](/assets/springboot/springboot_jpa_5.png)  
+
+구현체별로 다르겠지만 JPA 사용시 `JpaTransactionManager` 을 사용할 것  
+
+`TransactionManager` 을 직접사용할 경우는 없지만 내부적으로 결국 `TransactionManager` `commit()`, `rollback()` 을 사용해 트랜잭션 처리가 진행되는 구조이다.  
+
+![springboot2_1](/assets/springboot/springboot_jpa_5.png)  
+
+구현체별로 다르겠지만 JPA 사용시 `JpaTransactionManager` 을 사용할 것  
+
+`TransactionManager` 내부적으로 결국 JDBC 의 `commit()`, `rollback()` 을 사용해 트랜잭션 처리가 진행되는 구조이다.  
+
+```java
+Connection conn = null;
+try {
+    conn = ConnectionProvider.getConncection();
+    conn.setAutoCommit(false);
+    // TODO Somthing
+    conn.commit();
+} catch (Exception e) {
+    JdbcUtil.rollback(conn);
+    throw new RuntimeException(e);
+} finally {
+    JdbcUtil.close(conn);
+}
+```
+
+### 트랜잭션 전파
+
+**트랜잭션 전파**란 **특정 A프랜잭션이 처리되는 과정 안에서 또다른 B트랜잭션 이 처리되는 경우** 에러가 발생할 경우 각 트랜잭션에 에러전파 하는것을 뜻한다.  
+
+**전파방식** | **의미**
+|---|---|
+`REQUIRED(default)` | 트랜잭션 상황에서 실행되어야 한다. 진행 중인 트랜잭션이 있다면 이 트랜잭션에서 실행된다. 없는 경우에는 트랜잭션이 새로 시작된다.
+`MANDATORY` | 호출 전에 반드시 진행 중인 트랜잭션이 존재해야 한다. 진행 중인 트랜잭션이 존재하지 않을 경우 예외 발생
+`REQUIRED_NEW` | 자신만의 트랜잭션 상황에서 실행되어야 한다. 이미 진행 중인 트랜잭션이 있으면 그 트랜잭션은 해당 메소드가 반환되기 전에 잠시 중단된다.
+`SUPPORTS` | 진행 중인 트랜잭션이 없더라도 실행 가능하고, 트랜잭션이 있는 경우에는 이 트랜잭션 상황에서 실행된다.
+`NOT_SUPPORTED` | 트랜잭션이 없는 상황에서 실행 만약 진행 중인 트랜잭션이 있다면 해당 메소드가 반환되기 전까지 잠시 중단한다.
+`NEVER` | 트랜잭션 진행 상황에서 실행 될 수 없다. 만약 이미 진행 중인 트랜잭션이 존재하면 예외 발생
+`NESTED` | 이미 진행 중인 트랜잭션이 존재하면 중첩된 트랜잭션에서 실행되어야 함을 나타낸다. 중첩된 트랜잭션은 본 트랜잭션과 독립적으로 커밋되거나 롤백될 수 있다. 만약 본 트랜잭션이 없는 상황이라면 이는 `REQUIRED`와 동일하게 작동한다. 그러나 이 전파방식은 DB 벤더 의존적이며, 지원이 안되는 경우도 많다.  
+
+트랜잭션 전파방삭에 따라 A, B 의 `rollback` 결정이 달라진다.  
+
+### 트랜잭션 격리
+
+**트랜잭션 격리** 는 트랜잭션 처리 과정에서 두개 이상의 트랜젝션이 **동시에 같은 공유 자원 접근시(Race Condition)** 처리방안이다.  
+
+> 일반적으로 `DB Connection` 생성이후 DB 리소스에 접근과 동시해 격리방식에 따라 해당 리소스에 대해 `lock` 이 처리된다.  
+> `lock` 은 향후 `commit`, `rollback` 이후 풀리게 된다.  
+
+
+
+예로 아래와 같은 2가지 메서드가 있는데  
+
+1. `hitup()` - 조회수 1 증가 메서드  
+2. `gethit()` - 조회수를 읽어오는 함수  
+
+한 트랜잭션에서 `hitup()` 도중에 또 다른 트랜잭션이 `gethit()` 할 경우  
+트랜잭션 격리방식에 따라 결과가 달라진다.  
+
+### 격리레벨(isolation level)
+
+|**격리레벨**|**설명**|**Dirty Read**|**Nonrepeatable Read**|**Phantom Read**
+|---|---|:-----:|:-----:|:-----:
+`lv0 READ_UNCOMMITED` | 다른 트랜잭션에서 커밋하지 않은 데이터 read 가능. | 발생 | 발생 | 발생  
+`lv1 READ_COMMITTED` | 다른 트랜잭션에 의해 커밋된 데이터만 read 가능. | X | 발생 | 발생  
+`lv2 REPEATABLE_READ` | 처음에 읽어온 데이터와 두 번째 읽어온 데이터가 동일한 값을 갖는다. | X | X | 발생  
+`lv3 SERIALIZABLE` | 동일한 데이터에 대해서 동시에 두개 이상의 트랜잭션이 수행될 수 없다. | X | X | X  
+
+![springboot2_1](/assets/springboot/springboot_jpa_6.gif)  
+
+> MySQL InnoDB 의 경우 모든 수준의 격리레벨을 제공하고 기본 격리레벨은 `REPEATABLE READ` 을 제공한다.  
+
+높은 레벨일수록 고립도가 높아지며 성능이 떨어진다.  
+
+각 격리레벨에 따라 아래와 같은 이슈가 발생할 수 있다.  
+
+#### Dirty Read  
+
+`READ_UNCOMMITED` 가능할 경우 `commit` 되기전 정보를 `read` 할 수 있다.  
+이 과정에서 오류가 발생되어 읽어온 정보가 `rollback` 된다면  
+`read` 된 정보는 잘못된 정보가 되어버린다.  
+
+이렇게 잘못된 정보를 읽는 것 을 `Dirty read` 라 한다.  
+
+- `hitup()` 통해 조회수 증가 `10 -> 11`  
+- `gethit()` 에서 `11 read`  
+- `hitup()` 에서 `rollback` 발생 `11 -> 10`  
+- `gethit()` 에서 `11 read` 는 `Dirty Read` 가 되버림  
+
+`READ_COMMITTED` 으록 설정하면 `Dirty Read` 가 발생하지 않는다.  
+
+#### Nonrepeatable Read
+
+`A트랜잭션` 의 시작 끝에서 `gethit()` 2번 호출  
+그 사이에 `B트랜잭션` 에서 `hitup()` 을 통해 조회수를 증가  
+첫번째 `gethit()` 과 두번째 `gethit()` 결과가 다르다.  
+
+이렇게 처음 읽어드린 값과 후에 읽어드린 값이 다른 상황을 `Nonrepeatable Read` 이라한다.  
+
+`REPEATABLE_READ` 를 사용하면 트랜잭션의 DB 리소스 진입접에서 `Shared Lock` 이 걸려  
+해당 리소스에 다른 트랜잭션 접근을 정지시킨다.  
+
+> `MySQL` 이 기본적으로 `REPEATABLE_READ` 을 사용한다.  
+
+#### Phantom Read
+
+여러개의 레코드를 `read` 하는 경우에서 발생하는 이슈  
+
+`A트랜잭션` 의 시작 끝에서 게시글 `read` 하는 쿼리 2번 호출  
+그 사이에 `B트랜잭션` 에서 게시글 하나 `delete` 혹은 `insert`  
+두 `read` 쿼리의 결과값이 달라진다.  
+
+이런 상황을 `Phantom Read` 라 한다.  
+
+모든 레코드에 `Shared Lock` 이 걸리기에 동싱성이 매우 떨어진다.  
 
 ### @Transactional
 
-`rollbackFor` - 특정 `Exception` 발생 시 `rollback` 하도록 설정
-`noRollbackFor` - 특정 `Exception` 발생 시 `rollback` 하지 않도록 설정
+`@Transactional` 어노테이션이 있으면 `Spring AOP` 가 알아서 `TransactionManager` 기반으로 `commit`, `rollback` 을 진행한다.  
+`@Transactional` 어노테이션을 사용하는 메서드에서 데이터 소스에 접근하는 쿼리를 실행할 때 락이 걸린다.  
+
+- `rollbackFor`: 특정 `Exception` 발생 시 `rollback` 하도록 설정
+- `noRollbackFor`: 특정 `Exception` 발생 시 `rollback` 하지 않도록 설정
+
+`@Transactional` 은 모든 예외발생시 `rollback` 하지 않고 `RuntimeException`, `Error` 를 상속한 예외 발생시에만 `rollback` 한다.  
+위 전제조건을 토대로 상황에 맞게 `rollbackFor`, `noRollbackFor` 을 사용한다.  
+
+- `propagation`: 위 트랜잭션 전파 참고하여 설정, `Propagation.REQUIRED` 가 default  
+- `isolation`: 위 트랜잭션 격리 참고하여 설정, `Isolation.DEFAULT` 가 default  
+
+> `Isolation.DEFAULT` 는 DBMS 에 설정된 격리수준을 사용한다는 뜻  
+
+#### 지연로딩 with @Transactional
+
+JPA 에선 트랜잭션 내에서 `영속성 컨텍스트`를 유지시킨다.  
+
+보통 `Service` 에서 `@Transactional` 을 사용해 `영속성 컨텍스트`를 생성하고  
+`Controller` 나 외부 컴포넌트에선 `준영속 컨텍스트`가 된다.  
+
+`준영속 컨텍스트`에선 `지연로딩` 사용이 불가능하다.  
+
+지연로딩 기법을 자주 사용한다면 `@Transactional` 사용을 자세하게 설계해야 한다.
+
+#### @Lock, @Version
+
+스레드가 애그리거트를 read, write 하는 동안  
+다른 스레드가 수정할 수 없도록 설정하기 위한 기능  
+
+> `Pessimistic Lock` 선점잠금, 비관적잠금  
+> `Optimistic Lock` 비선점잠금, 낙관적잠금  
+
+![jpa7](/assets/springboot/springboot_jpa_7.png)
+
+
+`DB row` 에 잠금을 걸어 스레드를 block 시키는 **선점 잠금** 방식이 있고  
+`version` 정보를 통해 이전 정보 업데이트를 제한시키는 **비선점 잠금** 방식이 있다.  
+
+> 선점 잠금 방식의 경우 교착상태가 발생가능하니 타임아웃 설정을 권장한다.  
+
+선점 잠금에선 `@Lock` 을 사용한다.  
+쿼리위에 선점잠금을 명시  
+
+```java
+@Lock(LockModeType.PESSIMISTIC_WRITE)
+public YourEntity findEntityById(Long id) {
+    return entityManager.find(YourEntity.class, id);
+}
+
+@Lock(LockModeType.PESSIMISTIC_WRITE)
+@Query(“select m from Member m where m.id = :id”) 
+Optional<Member> findByIdForUpdate(@Param(“id”) MemberId memberId);
+```
+
+비전섬 잠금에서 `@Version` 을 사용한다.  
+사용하는 `Entity` 에 필드를 추가한다.  
+
+```java
+@Entity
+@Table(name = "tbl_boards")
+@EqualsAndHashCode(of = "bno")
+@ToString(exclude = {"replies", "thumbnail"})
+public class Board {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long bno;
+
+    @Version
+    private Long version;
+}
+```
+
+업데이트시 사용하는 `SQL` 은 아래와 같다.  
+
+```sql
+UPDATE tbl_boards SET {SOMETHING..., version = version + 1}
+WHERE bno=? AND version=?
+```
+
+비선점잠금은 필드를 하나 추가하는 대신 `Lock` 성능 관련해서 이점을 가져간다.  
+
+또한 `@OneToMany` 와 같은 관계에서 자식엔티티를 수정하고 부모엔티티의 `version` 을 증가시키고 싶다면  
+`@Lock` 을 사용해 조회쿼리 호출시 강제로 `version` 을 증가시키면 된다.  
+
+```java
+@Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
+@Override
+Optional<Board> findById(Long id);
+```
