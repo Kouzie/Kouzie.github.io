@@ -1,5 +1,5 @@
 ---
-title:  "Spring Boot - 스프링 부트 배치!"
+title:  "Spring Boot - 배치!"
 
 read_time: false
 share: false

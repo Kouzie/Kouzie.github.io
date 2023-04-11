@@ -1,5 +1,5 @@
 ---
-title:  "Spring Boot - 스프링 부트 Swagger!"
+title:  "Spring Boot - Swagger!"
 
 read_time: false
 share: false

@@ -1,5 +1,5 @@
 ---
-title:  "Spring Boot - 스프링 부트 MTQQ, AMQP!"
+title:  "Spring Boot - MTQQ, AMQP!"
 
 read_time: false
 share: false

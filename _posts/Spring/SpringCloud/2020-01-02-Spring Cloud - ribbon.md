@@ -1,5 +1,5 @@
 ---
-title:  "spring cloud - ribbon!"
+title:  "Spring Cloud - ribbon!"
 
 read_time: false
 share: false

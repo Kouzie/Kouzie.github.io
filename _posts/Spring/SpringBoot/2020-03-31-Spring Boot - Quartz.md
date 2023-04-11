@@ -1,5 +1,5 @@
 ---
-title:  "Spring Boot - 스프링 부트 Quartz!"
+title:  "Spring Boot - Quartz!"
 
 read_time: false
 share: false

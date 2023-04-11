@@ -1,5 +1,5 @@
 ---
-title:  "Spring Boot - 스프링 부트 Security!"
+title:  "Spring Boot - Security!"
 
 read_time: false
 share: false

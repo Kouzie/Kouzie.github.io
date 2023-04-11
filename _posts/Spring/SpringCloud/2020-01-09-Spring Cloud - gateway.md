@@ -1,5 +1,5 @@
 ---
-title:  "spring cloud - gateway!"
+title:  "Spring Cloud - gateway!"
 
 read_time: false
 share: false

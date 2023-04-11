@@ -1,5 +1,5 @@
 ---
-title:  "spring cloud - hystrix!"
+title:  "Spring Cloud - hystrix!"
 
 read_time: false
 share: false

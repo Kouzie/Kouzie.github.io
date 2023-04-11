@@ -1,5 +1,5 @@
 ---
-title:  "Spring Boot - 스프링 부트 Admin!"
+title:  "Spring Boot - Admin!"
 
 read_time: false
 share: false

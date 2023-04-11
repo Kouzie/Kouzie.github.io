@@ -1,5 +1,5 @@
 ---
-title:  "Spring Boot - 스프링 부트 직렬화!"
+title:  "Spring Boot - 직렬화!"
 
 read_time: false
 share: false

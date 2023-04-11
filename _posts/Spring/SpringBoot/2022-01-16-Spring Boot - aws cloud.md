@@ -1,5 +1,5 @@
 ---
-title:  "Spring Boot - 스프링 부트 aws cloud!"
+title:  "Spring Boot - aws cloud!"
 
 read_time: false
 share: false

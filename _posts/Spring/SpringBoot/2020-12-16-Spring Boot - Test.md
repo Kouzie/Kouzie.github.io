@@ -1,5 +1,5 @@
 ---
-title:  "Spring Boot - 스프링 부트 RestDoc!"
+title:  "Spring Boot - RestDoc!"
 
 read_time: false
 share: false

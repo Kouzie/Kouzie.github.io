@@ -1,5 +1,5 @@
 ---
-title:  "Spring Boot - 스프링 부트 Redis!"
+title:  "Spring Boot - Redis!"
 
 read_time: false
 share: false

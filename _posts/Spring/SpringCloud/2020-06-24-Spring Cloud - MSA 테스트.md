@@ -1,5 +1,5 @@
 ---
-title:  "spring cloud - 마이크로서비스 테스트!"
+title:  "Spring Cloud - MSA 테스트!"
 
 read_time: false
 share: false
@@ -378,7 +378,7 @@ public class OrderComponentTest {
 
 `consumer` 에서 모든 등록과정이 이루어지기 때문에 세밀한 데이터 설정이 중요하다.  
 
-###  Pact broker 설치  
+### Pact broker 설치  
 
 아래 2개 `docker` 컨테이너 설치  
 

@@ -1,5 +1,5 @@
 ---
-title:  "spring cloud - 통합로깅!"
+title:  "Spring Cloud - 통합로깅!"
 
 read_time: false
 share: false

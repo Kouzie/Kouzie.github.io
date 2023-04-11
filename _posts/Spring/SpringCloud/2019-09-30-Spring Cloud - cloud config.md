@@ -1,5 +1,5 @@
 ---
-title:  "spring cloud - cloud config!"
+title:  "Spring Cloud - cloud config!"
 
 read_time: false
 share: false
@@ -200,6 +200,7 @@ spring.cloud.config.password=1234
 # git의 변경을 감지하는 메커니즘을 사용자 정의
 spring.cloud.config.server.monitor.github.enabled=true
 ```
+
 처음 서버 실행시 유레카 클라이언트로 등록하기 위한 제일 기본적인 설정 작성후  
 
 유레카 클라이언트를 실행하면 다음과 같이 서버에서 `cloud-config` 서비스를 찾아 등록했다는 메세지가 출력된다.  
