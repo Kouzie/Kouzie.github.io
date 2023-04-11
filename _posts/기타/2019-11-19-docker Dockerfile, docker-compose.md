@@ -21,6 +21,7 @@ categories:
 **이미지 레이어**를 사용해 효과적으로 이미지를 생성할 수있도록 스크립트를 제공하는데 `Dockerfile`이다.  
 
 다음과 같이 `Dockerfile`을 작성  
+
 ```
 FROM nginx:latest
 COPY index.html /usr/share/nginx/html/index.html

@@ -26,8 +26,8 @@ categories:
 
 ## 설치  
 
-> https://grafana.com/oss/loki/
-> https://grafana.com/docs/loki/latest/clients/promtail/
+> <https://grafana.com/oss/loki/>  
+> <https://grafana.com/docs/loki/latest/clients/promtail/>  
 
 설치파일보단 `docker` 와 컴포즈를 사용해 설정하는것이 간편하다.  
 
