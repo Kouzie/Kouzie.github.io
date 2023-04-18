@@ -15,15 +15,18 @@ categories:
 
 `java9` 에 추가된 `java.util.concurrent.Flow` 패키지를 사용해 리액티브 프로그래밍이 가능하다.  
 
-> https://grokonez.com/java/java-9-flow-api-reactive-streams 그림으로 설명이 잘되어있음.
+> <https://grokonez.com/java/java-9-flow-api-reactive-streams>  
+> 그림으로 설명이 잘되어있음.
+> ![image16](/assets/java/reactive-java/image16.png)  
 
-`CompletableFuture` 를 사용해 특정 연산일 끝났음을 알리고(발행) 이후에 동작할 연산을 미리 정의(구독) 하는 모델은 간단하지만  
+
+`CompletableFuture` 를 사용해 연산이 끝났음을 알리고(발행) 이후에 동작할 연산을 미리 정의(구독) 하는 모델은 간단하지만  
 
 어플리케이션이 커질수록 자바의 객체지향을 사용한 옵저버 패턴으로 변경해야 쉬운 유지보수가 가능하다.  
 
 또한 `RxJava, Akka, Reactor` 등의 프레임워크, 라이브러리들이 `java9 Flow` 패키지를 기반으로 사용해 리액티브 프로그래밍을 위한 라이브러리를 업데이트 진행중이다.  
 
-`Publisher`, `Subscriber`, `Subscription`, `Processor` 인터페이스 들이 각 프레임워크, 라이브러리에 화려하게 구현되어 있으며 일반 개발자들도 위 인터페이스 규칙만 지키면 연동 가능한 코드 작성익 가능하다.  
+`Publisher`, `Subscriber`, `Subscription`, `Processor` 인터페이스 들이 각 프레임워크, 라이브러리에 화려하게 구현되어 있으며 일반 개발자들도 위 인터페이스 규칙만 지키면 연동 가능한 코드 작성이 가능하다.  
 
 ![image17](/assets/java/reactive-java/image17.png)  
 
@@ -66,7 +69,9 @@ public static interface Processor<T,R> extends Subscriber<T>, Publisher<R> {
 ## 역압력   
 
 발행자가 구독자에게 데이터를 밀어넣는(`onNext`) 것을 압력이라 한다.  
-압력이 무한히 많아지면 시스템에 부담이 가도록 요청했을 때만 압력이 쏟아지도록 하는 것, 압력을 `pull` 하는 것을 역압력이라 한다.  
+
+압력이 많아지면 시스템에 부담이 가기에  
+요청했을 때만 압력이 쏟아지도록 하는 것, 압력을 `pull` 하는 것을 역압력이라 한다.  
 
 `Subscription`(신청자) 인터페이스의 `request` 메서드를 사용해 역압력 구현이 가능하다.  
 

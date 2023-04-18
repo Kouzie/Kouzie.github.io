@@ -22,9 +22,9 @@ categories:
 
 그래서 문자열이 계속 변할 가능성이 있다면 `StringBuilder`, `StringBuffer` 를 사용해야 한다.  
 
-`StringBuilder`	- 동기화 처리가 되어있지 않아 스레드에 안전하지 않음   
+`StringBuilder`    - 동기화 처리가 되어있지 않아 스레드에 안전하지 않음   
 
-`StringBuffer`	- 동기화 처리가 되어있어 스레드에 안전함   
+`StringBuffer`    - 동기화 처리가 되어있어 스레드에 안전함   
 
 버퍼를 사용해 버퍼크기까지 끝까지 채우지 않는 이상 문자열을 늘려도 버리지는 않는 녀석 정도로 알아놓자.  
 
@@ -46,12 +46,12 @@ categories:
 
 ```java
 String msg = "hello world~";
-char [] msgs = new char[msg.length()];	
+char [] msgs = new char[msg.length()];    
 
 for (int i = 0; i < msg.length() ; i++) {
-	char one =  msg.charAt(i);
-	System.out.println(one );
-	msgs[i] = one;
+    char one =  msg.charAt(i);
+    System.out.println(one );
+    msgs[i] = one;
 }
 ```
 `char`배열 `msgs`로 문자열 `msg`를 변환하는 과정이다.  
@@ -78,7 +78,7 @@ String regex = ",";
 String[] names =name.split(regex);
 Arrays.sort(names);
 for (String str : strings) {
-	System.out.print(str + ",");
+    System.out.print(str + ",");
 }
 ```
 출력
@@ -99,8 +99,8 @@ String name = "소지섭,이동석,김동현,차인표,장동건,강동원";
 StringTokenizer st = new StringTokenizer(name, ",");
 while(st.hasMoreTokens())
 {
-	String token = st.nextToken();
-	System.out.print(token);
+    String token = st.nextToken();
+    System.out.print(token);
 }
 ```
 출력
@@ -119,7 +119,7 @@ while(st.hasMoreTokens())
 `join`메서드 원형
 ```java
 public static String join(CharSequence delimiter,
-	CharSequence... elements)
+    CharSequence... elements)
 ```
 
 `join`보면 구분자와 문자열배열을 주면 되는데 매개변수로 위에서 말했던 `CharSequence`를 사용중이다.  
@@ -143,7 +143,7 @@ System.out.println( String.join("][", datas) );
 String[] names = {"홍길동", "홍길동", "홍길동", "홍길동", "홍길동"};
 StringJoiner sj = new StringJoiner("/", "[", "]");
 for (String str : names) {
-	sj.add(str);
+    sj.add(str);
 }
 System.out.println(sj);
 ```
@@ -354,11 +354,11 @@ String msg = "";
 System.out.println(msg.length());
 if(msg.isEmpty())
 {
-	System.out.println("공백입니다.");
+    System.out.println("공백입니다.");
 }
 if(Objects.isNull(msg))
 {
-	System.out.println("NULL 입니다.");
+    System.out.println("NULL 입니다.");
 } 
 ```
 
@@ -409,6 +409,75 @@ String copyFileName = String.format("%s - 복사본(%d)%s", name, idx++, ext);
 System.out.println(copyFileName);
 ```
 
+### String format
+
+`java.util`패키지의 `Class Formatter`클래스의 `string`관련 내용에서 관련 내용을 찾을 수 있다.  
+
+```
+%[argument_index$][flags][width][.precision]conversion
+```  
+
+`[ ]`는 다 생략 가능한것들 생략하고 나면 `%conversion` 하나 남는다  
+`%s`, `%d`와 같은 형식을 `conversion`라 볼수 있다.   
+
+`[width]` 옵션을 사용해보자  
+
+```java
+int age=20;
+System.out.println("[width]도 붙여보자");
+System.out.printf("[%10s], [%10d]\n",name, age);
+//생략하지 말고 써보자 [width]속성에 10 적용
+```
+
+결과값  
+
+```
+[width]도 붙여보자
+[       홀길동], [        20]
+```
+
+`[flag]`옵션을 사용해 보자 
+
+```java
+System.out.println("[flags]도 붙여보자");
+System.out.printf("[%10s], [%#10o]\n",name, age); //10칸 띄고 8진수로 age표시
+System.out.printf("[%10s], [%(10d], [%(10d]\n",name, 1234, -1234); 
+//음수의 경우 ()안에 표시
+
+System.out.printf("[%10s], [%,10d]\n",name, 123123123); 
+//3자리 마다 ,표시 (통화 표기시 유용)
+
+System.out.printf("[%10s], [%010d]\n",name, age); //width만큼 0표시
+```
+
+결과값  
+```
+[flags]도 붙여보자
+[       홀길동], [       024]
+[       홀길동], [      1234], [    (1234)]
+[       홀길동], [123,123,123]
+[       홀길동], [0000000020]
+```
+
+
+
+`[argument_index$]`옵션을 사용해 보자  
+```java
+System.out.println("[argument_index$]도 붙여보자");
+System.out.printf("[%1$10s], [%2$#10o], [%2$#10o]\n",name, age);
+//2$가 두번째 인자인 age를 가리킨다.
+```
+
+결과값  
+```
+[argument_index$]도 붙여보자
+[       홀길동], [       024], [       024]
+```
+String format 문서를 잘 찾아보면 따로 문자열을 변환하지 않아도  
+사용자가 원하는대로 화면에 문자를 변경해서 출력할 수 있다.  
+
+> https://micropai.tistory.com/48 좋은 설명...
+
 -------------------------------------------------------------------------------------
 
 ### StringBuilder
@@ -417,7 +486,7 @@ System.out.println(copyFileName);
 
 * `StringBuffer`는 동기화처리 되있음   
 * `StringBuilder`는 동기화처리 안되있음   
-		
+        
 `String`은 불변클래스라 데이터를 변경하려면 새로 생성하고 재참조해야 하지만 `StringBuilder`와 `StringBuffer`는 데이터를 변경할 수 있다.  
 (`Builder`와 `Buffer`는 **별도의 메모리 공간을 `list`처럼 할당해놓고** 거기서 데이터를 변경한다)  
 
@@ -583,11 +652,11 @@ Long rapperLong = l;
 ```java
 public static void disp(Object o)
 {
-	System.out.println(o);
+    System.out.println(o);
 }
 
 public static void main(String[] args){
-	disp(100);
+    disp(100);
 }
 ```
 출력값
@@ -619,7 +688,7 @@ System.out.println(i);
 ```
 `"100"`이 10진수 `100`이 아니라 가 아니라 2진수 `100(2)`으로 인식한다.
 
-	
+    
 `radix`에 다른 값을 넣어 여러 진법을 출력해보자!
 ```java
 System.out.println(Integer.parseInt("110", 2));

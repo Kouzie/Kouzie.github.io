@@ -134,6 +134,7 @@ services:
 > 주의사항: 만약 허가되지 않은 인증서(사내 서버 등)의 경우 `jenkins`에서 인증서 확인을 무시하도록 설정해야 한다.  
 > `JENKINS_HOME` 환경변수 위치에 `.gitconfig` 파일을 생성   
 > 젠킨스 환경변수 값은 우측과 같다.  `JENKINS_HOME=/var/jenkins_home`  
+> 
 ```
 vi /var/jenkins_home/.gitconfig
 
