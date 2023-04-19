@@ -1,5 +1,5 @@
 ---
-title:  "Java - JDBC 2일차!"
+title:  "Java - JDBC statement!"
 
 read_time: false
 share: false
