@@ -32,13 +32,13 @@ categories:
 
 우리가 `XML`, `JSON`역시 일정한 구조를 가지고 전송해야 하듯이 `protobuf` 역시 이런 구조(문법)을 알고 데이터 구조 정의서를 작성해야 한다.  
 
-사용할 언어별로 `protobuf` 정의서를 `protoc` 로 컴파일 하면 사용 가능한 데이터 클래스(코드)가 생성된다.  
+`protobuf` 정의서를 `protoc` 로 컴파일 하면 언어별로 사용 가능한 데이터 클래스(코드)가 생성가능하다.  
 
 컴파일 과정을 거치면 `grpc`가 제공하는 라이브러리로 전송할 수 있도록 **코드를 생성**해준다.  
 
 `protoc` 의 소스와 실행파일은 아래 링크에서 다운가능하다.  
 
-> <https://github.com/protocolbuffers/protobuf/releases>
+> <https://github.com/protocolbuffers/protobuf/releases>  
 > 맥의 경우 `protoc-3.10.0-osx-x86_64.zip`를 설치하면 되겠다. (2019.10.16)  
 
 `.proto` 확장자를 파일을 생성하고 `protobuf` 문법에 맞는 데이터 구조를 정의.  
