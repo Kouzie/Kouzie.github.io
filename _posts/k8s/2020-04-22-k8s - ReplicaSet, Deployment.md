@@ -397,43 +397,21 @@ spec:
 
 ```
 kubectl apply -f Deployment/rollout-depoyment.yaml
+
 deployment.apps/rollout-deployment created
 service/rollout created
-
-kubectl get pod
-NAME                                 READY   STATUS    RESTARTS   AGE
-rollout-deployment-d8bf6cb58-2p5wz   1/1     Running   0          48s
-rollout-deployment-d8bf6cb58-56mrf   1/1     Running   0          48s
-rollout-deployment-d8bf6cb58-bscp8   1/1     Running   0          48s
 ```
-
-<!-- 
-`minikube` 의 경우 `service`의 외부노출 IP를 사용 불가능 함으로 `kubectl get services` 명령을 사용해도 `<pending>` 으로밖에 나오지 않는다.  
-
-아래 `minikube service` 명령을 사용해 해당 서비스를 노출시킨다.  
-
-```
-minikube service rollout
-🏃  Starting tunnel for service rollout.
-|-----------|---------|-------------|------------------------|
-| NAMESPACE |  NAME   | TARGET PORT |          URL           |
-|-----------|---------|-------------|------------------------|
-| default   | rollout |             | http://127.0.0.1:51768 |
-|-----------|---------|-------------|------------------------|
-🎉  Opening service default/rollout in default browser...
-❗  Because you are using docker driver on Mac, the terminal needs to be open to run it.
-```
-
--->
 
 현재 사용중인 이미지 `photo-view:v1.0` 를 `photo-view:v2.0` 으로 수정 후 다시 적용(`Roll out`)
 
 ```
 kubectl apply -f Deployment/rollout-depoyment.yaml
+
 deployment.apps/rollout-deployment configured
 service/rollout unchanged
 
 kubectl describe deploy rollout-deployment
+
 Name:                   rollout-deployment
 Namespace:              default
 ...
@@ -556,7 +534,7 @@ green-deployment-5466fc4568-mvs2w    1/1     Running       0          15s
 green-deployment-5466fc4568-t8hp2    1/1     Running       0          15s
 ```
 
-그리고 이 `Deployment` 의 `ReplicaSet` 의 `Pod` 에 접근하는 서비스를 작성하고 실행한다.  
+그리고 이 `Deployment` 에 접근하는 서비스를 작성하고 실행한다.  
 
 ```yaml
 apiVersion: v1
@@ -580,3 +558,133 @@ service/webserver created
 ```
 
 이제 `service.yml` 매니페스트 파일만 수정해서 두 버전의 디플로이먼트에 접근할 수 있도록 설정하면 된다.  
+
+## 오토스케일링
+
+순간적으로 많은양의 요청이 들어올 경우 시스템 처리능력을 높이는 방법  
+시스템 처리능력을 높이는 방법은 2가지가 있다.  
+
+- **스케일 아웃(수평 스케일)**: 시스템 구성 서버 대수를 늘림으로 처리능력 향상, 로드밸런서를 추가해야 하며 시스템의 가용성이 높아진다.  
+- **스케일 업(수직 스케일)**: 서버의 리소스(CPU, Memory) 를 증가 시켜 처리능령 향상시킨다.  
+
+처리량의 증가정도에 따라 파드를 스케일할지 노드를 스케일할지 결정한다.  
+
+가장 쉽게 스케일 아웃하는 방법은 `kubectl scale` 명령으로 수동으로 진행하는 것이다.  
+
+```yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-replicaset
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: photo-view
+  template:
+    metadata:
+      labels:
+        app: photo-view
+    spec:
+      containers:
+      - image: nginx
+        name: photoview-container
+```
+
+`nginx` 파드를 3개 생성하고 `kubectl scale` 명령으로 `replicas` 개수를 8개 까지 스케일 아웃
+
+```
+kubectl apply -f HPA/pod-scale.yaml
+replicaset.apps/nginx-replicaset created
+
+kubectl scale --replicas=8 rs/nginx-replicaset
+replicaset.apps/nginx-replicaset scaled
+
+kubectl get pod
+NAME                     READY   STATUS    RESTARTS   AGE
+nginx-replicaset-4bv5g   1/1     Running   0          19s
+nginx-replicaset-4cjjq   1/1     Running   0          19s
+nginx-replicaset-5z9qk   1/1     Running   0          19s
+nginx-replicaset-bt98h   1/1     Running   0          19s
+nginx-replicaset-c5fkk   1/1     Running   0          2m29s
+nginx-replicaset-hnv8w   1/1     Running   0          2m29s
+nginx-replicaset-nxtcn   1/1     Running   0          19s
+nginx-replicaset-zbsd6   1/1     Running   0          2m29s
+```
+
+### HPA(Horizontal Pod Autoscaler)
+
+`HPA(Horizontal Pod Autoscaler)` 를 사용하면 CPU 사용률에 따라 사용해 자동으로 스케일 아웃 가능하다.  
+
+k8s 의 마스터 컴포넌트인 컨트롤러 매니저가 주기적으로 파드들의 CPU 를 감시하며 HPA 설정대로 스케일 아웃한다.  
+
+스케일 아웃 조건은 아래와 같다.  
+
+```
+목표 파드 개수 = (현재 파드의 CPU 사용률을 모두 더한 값 / 목표 CPU 사용률) 올림값
+```
+
+> 목표 CPU 사용률이 60 이고 파드 2개 CPU 사용률이 각각 50, 80 일 때  
+> 위 수식값은 130/60=2.17, 올림하면 3 이다.  
+> 목표 파드개수는 3개가 된다.  
+
+```yaml
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: kubernetes-simple-app-hpa
+  namespace: default
+spec:
+  minReplicas: 1 # 최소 설정개수
+  maxReplicas: 10 # 최대 설정개수
+  scaleTargetRef: # 오토스케일링 대상
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    name: kubernetes-simple-app
+  targetCPUUtilizationPercentage: 30 # CPU 사용률
+```
+
+> `Deployment`, `Relication Controller`, `StatefuleSet` 등의 리소스에서 오토스케일링 가능  
+
+`kubectl autoscale` 명령으로도 설정 가능하다.  
+
+```
+kubectl autoscale \
+ deployment kubernetes-simple-app \
+ --cpu-percent=30 \
+ --min=1 --max=10
+```
+
+`autoscaling/v2` 부턴 `metrics` 설정을 통해 CPU 외에 다른 메트릭 데이터를 통해 오토스케일링 가능하다.  
+
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: kubernetes-simple-app-hpa
+  namespace: default
+spec:
+  minReplicas: 1 # 최소 설정개수
+  maxReplicas: 10 # 최대 설정개수
+  scaleTargetRef: # 오토스케일링 대상
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    name: kubernetes-simple-app
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageUtilization: 30  # CPU 가 30% 되도록 조정
+```
+
+한번 스케일 아웃 HPA 가 발동하면 다음번 HPA 는 3분뒤에 다시 발동가능하다.  
+(줄어드는건 5분)
+
+아래 k8s 컨트롤 매니저 설정파일에서 조절 가능하다.  
+
+```
+/etc/kubernetes/manifests/kube-controller-manager.yaml
+
+--horizontal-pod-autoscaler-upscale-delay=3m0s
+--horizontal-pod-autoscaler-downscale-delay=5m0s
+```

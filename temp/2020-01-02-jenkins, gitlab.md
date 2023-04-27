@@ -1,5 +1,5 @@
 ---
-title:  "CI/CD jenkins, gitlab!"
+title:  "CI/CD jenkins!"
 
 read_time: false
 share: false

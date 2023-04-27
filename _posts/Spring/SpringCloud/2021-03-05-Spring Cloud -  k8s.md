@@ -300,8 +300,8 @@ subprojects {
 `docker registry` 에 업로드는 하지 않을것임으로 `jibDockerBuild` 사용  
 
 ```
-gradle :api:greeting:jib
-gradle :api:calculating:jib
+gradle :api:greeting:jibDockerBuild
+gradle :api:calculating:jibDockerBuild
 ```
 
 힘들게 docker build 명령어를 사용할 필요가 없으며  
