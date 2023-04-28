@@ -1,5 +1,5 @@
 ---
-title:  "Spring Cloud - cloud config!"
+title:  "Spring Cloud - eureka, cloud config!"
 
 read_time: false
 share: false
@@ -11,6 +11,286 @@ toc_sticky: true
 categories:
   - spring-cloud
 ---
+
+## Spring Cloud  
+
+바야흐로 클라우드 시대, 서버는 실제 서버 컴퓨터에서 돌아가지않고  
+아마존과 같은 호스팅 업체가 관리하는 클라우드 서버에서 실행된다.  
+
+이에 맞춰 클라우드 환경에 어울리는 서버환경을 구축하기 위해 `Spring Cloud` 라이브러리가 추가되었다.  
+
+아래와 같은 클라우드 환경에서 효과적으로 사용할 수 있는 라이브러리가 있으며  
+
+**MODULE**|**VERSION**|
+-----|-----
+`Spring Cloud Task`|`2.1.2.RELEASE`
+`Spring Cloud Config`|`2.1.3.RELEASE`
+`Spring Cloud Sleuth`|`2.1.2.RELEASE`
+`Spring Cloud Commons`|`2.1.2.RELEASE`
+`Spring Cloud Openfeign`|`2.1.2.RELEASE`
+`Spring Cloud Kubernetes`|`1.0.2.RELEASE`
+`Spring Cloud Aws`|`2.1.2.RELEASE`
+`Spring Cloud Vault`|`2.1.2.RELEASE`
+`Spring Cloud Function`|`2.0.2.RELEASE`
+`Spring Cloud Bus`|`2.1.2.RELEASE`
+`Spring Cloud Build`|`2.1.6.RELEASE`
+`Spring Cloud Zookeeper`|`2.1.2.RELEASE`
+`Spring Cloud Gcp`|`1.1.2.RELEASE`
+`Spring Cloud Contract`|`2.1.2.RELEASE`
+`Spring Cloud Consul`|`2.1.2.RELEASE`
+`Spring Cloud Security`|`2.1.3.RELEASE`
+`Spring Cloud Gateway`|`2.1.2.RELEASE`
+`Spring Cloud Cloudfoundry`|`2.1.2.RELEASE`
+`Spring Cloud Netflix`|`2.1.2.RELEASE`
+`Spring Cloud Stream`|`Fishtown.SR3`
+
+`Spring Cloud` 안에는 여러가지 프로젝트가 존재하며 서로 의존관계가 형성되는 경우가 많다.  
+하지만 버전은 각기 다르고 이를 외우고 다닐수 없으니 통합으로 사용하는 버전이 있는데 **릴리즈 트레인**이다.  
+
+영국의 지하철 명을 버전명으로 사용하며 스프링 부트 버전에 맞는 릴리즈 트레인 명을 찾아 `Spring Cloud`를 사용하면 된다.  
+
+`Release Train`|`Boot Version`
+-----|-----
+`Hoxton`| `2.2.x`
+`Greenwich`| `2.1.x`
+`Finchley`| `2.0.x`
+`Edgware`| `1.5.x`
+`Dalston`| `1.5.x`
+
+`Release Train` 에 맞춰 자동으로 스프링 클라우드 관련 `dependency` 버전이 설정된다.  
+
+현재 `Spring Boot`버전은 `2.2.6.RELEASE`을 사용하고 있으며 `Spring Cloud`버전은 `Hoxton.SR4`을 사용중이다.  
+
+
+## eureka
+
+> https://github.com/Kouzie/sample-spring-cloud
+> https://coe.gitbook.io/guide/service-discovery/eureka
+
+서버IP는 유동적으로 변경되고 서버 관리자는 이에 대한 조치를 일일이 하기 힘듬으로  
+동적으로 이동하는 서버(`eureka client`)를 관리하는 서버(`eureka server`)를 구성하여 조치한다.  
+
+`eureka client` 사이에서 중간다리 역할을 하는것이 `eureka server`  
+`eureka client` 관리뿐 아니라 로드 밸런싱이나 장애 복구 기능에도 영향을 끼친다.  
+
+![eureka_discovery](/assets/2019/springcloud_eureka1.png)  
+
+**Eureka Server**  
+`eureka client`들을 관리(등록, 제어, 삭제, 제공) 하는 서버  
+
+**Service Registry**  
+`eureka client` 가 자기 자신의 정보를 `eureka server` 에 등록하는 행동  
+
+**Service Discovery**  
+등록된 `eureka client` 서비스 들을 `Eureka Server` 에서 발견하는 과정  
+
+**Eureka Service**  
+`eureka server` 에 등록된 `eureka client` 들의 모음  
+서비스 단위로 구분짖기에 동시에 같은 서비스를 지원하는 여러개의 `eureka client` 가 동작할 수 있다. 
+
+**Eureka Instance**  
+`eureka server` 에 등록되어 목록에서 조회 가능한 `eureka service`를 의미  
+
+`Netflix`에서 `Eureka`를 어떻게 사용하고 있는지에대한 그림  
+
+![eureka_tbd](/assets/2019/springcloud_eureka2.png)  
+
+`Eureka Server` 에 `eureka client` 에 `Service Registry` 하고 `Service Discovery` 를 통해 `eureka client` 들끼리 서로 통신할 수 있는 환경이 구축되었다.  
+
+### eureka 서버 설정  
+
+![eureka_registry](/assets/2019/eureka_registry.png)
+
+`eureka client` 들이 `eureka server` 에 `service register` 할 수 있도록  
+`eureka server` 서버를 먼저 생성  
+
+* `Spring Boot Tool`  
+* `Spring Web`  
+* `Eureka Server`  
+
+위 3개의 `dependency`를 `IntelliJ` 프로젝트 생성시 포함,  
+아래와 같은 `pom.xml`이 생성된다.  
+
+```xml
+...
+...
+<properties>
+    <java.version>1.8</java.version>
+    <spring-cloud.version>Greenwich.SR3</spring-cloud.version>
+</properties>
+
+<dependencies>
+    ...
+    ...
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+    </dependency>
+</dependencies>
+
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-dependencies</artifactId>
+            <version>${spring-cloud.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+```
+
+`application.properties`는 아래와 같이 설정  
+
+`spring-cloud-starter-netflix-eureka-server` `dependency`에 `server`기능 뿐 아니라 `client`의 기능도 의존설정되어 있는데 클라이언트의 `discovery`기능을 제거한다.  
+
+서버 자신이 다른서버에 `discovery` 되지 않도록 아래 `proeprties` 설정
+
+```conf
+server.port=${PORT:8761}
+# 유레카 서버에 본인 서비스를 등록할 건지 여부
+eureka.client.register-with-eureka=true
+# 유레카 서버로부터 서비스 목록을 로컬 캐시에 저장할 건지 여부, 둘 다 기본값 true라서 지정하지 않아도 상관 없다.
+eureka.client.fetchRegistry=true
+```
+
+마지막으로 `main`클래스 위에 `@EnableEurekaServer` 어노테이션을 지정하고 실행하면 유레카 서버의 역할을 수행한다.  
+
+```java
+@SpringBootApplication
+@EnableEurekaServer
+public class EurekaserverApplication {
+    public static void main(String[] args) {...}
+}
+```
+
+
+### eureka 클라이언트 설정
+
+서비스를 유레카 서버에 등록하는 유레카 클라이언트 생성과정을 알아보자.  
+프로젝트 생성시 `IntelliJ`에서 다음 `dependency`추가,  
+
+* `Spring Boot Tool`  
+* `Spring Web`  
+* `Eureka Discovery Client`  
+
+
+```xml
+...
+...
+<properties>
+    <java.version>1.8</java.version>
+    <spring-cloud.version>Greenwich.SR3</spring-cloud.version>
+</properties>
+<dependencies>
+    ...
+    ...
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+    </dependency>
+</dependencies>
+```
+
+`spring-cloud-starter-netflix-eureka-client` `dependency` 가 추가된다.  
+
+```conf
+server.port=${PORT:8081}
+spring.application.name=demo_eureka_client
+eureka.client.service-url.defaultZone=${EUREKA_URL:http://localhost:8761/eureka/}
+```
+
+유레카 클라이언트가 서비스를 등록할 서버 주소를 지정하기 위해  `eureka.client.service-url.defaultZone` 속성을 사용  
+
+```java
+@SpringBootApplication
+@EnableDiscoveryClient
+public class EurekaclientApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(EurekaclientApplication.class, args);
+    }
+}
+```
+
+`main` 클래스 위에 `@EnableDiscoveryClient` 어노테이션을 설정하면 완료.  
+
+> `@EnableDiscoveryClient`, `@EnableEurekaClient` 차이점  
+> 서비스 디스커버리 라이브러리는 유레카 외에도 주키퍼, 컨설 등이 존재하며 `@EnableDiscoveryClient` 어노테이션은 모든 라이브러리를 지원하며 `@EnableEurekaClient` 는 유레카 라이브러리만을 지원한다.  
+
+`pom.xml`이 있는 위치에서 `mvn package`로 서버 실행가능한 `jar`파일을 생성하고  
+2개의 터미널을 열어 각기 다른 포트로 서버를 실행하자.  
+
+```
+$ java -jar -DPORT=8081 target/eurekaclient-0.0.1-SNAPSHOT.jar
+$ java -jar -DPORT=8082 target/eurekaclient-0.0.1-SNAPSHOT.jar
+```
+
+![eureka_registry2](/assets/2019/eureka_registry2.png)  
+
+`http://localhost:8761/`로 접속하면 다음과 같이 2개의 서비스가 등록되어 실행중임을 알 수 있다.  
+
+### Eureka 클라이언트 종료  
+
+유레카 클라이언트를 안전하게 종료하기 위해 `actuator`의 `shutdown` API를 사용한다.  
+중단된 이벤트를 다른 유레카 클라이언트가 가로채거나 이벤트르 다시 서버로 보내기 위해 안전한 종료가 필요하다.  
+
+`pom.xml`에 다음 의존성 추가  
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+```
+
+그리고 `actuator` 관련 속성을 `application.properties`에 등록한다.  
+
+```conf
+management.endpoint.shutdown.enabled=true
+# 보안 해제
+management.endpoint.shutdown.sensitive=false
+management.endpoints.web.exposure.include=*
+```
+
+
+> 출처: https://www.baeldung.com/spring-boot-shutdown  
+
+![eureka_shutdown](/assets/2019/eureka_shutdown.png)  
+
+IntelliJ를 통해 생성된 Mapping 정보를 보면 `/actuator/shutdown` API가 `POST`방식으로 생성된 것을 알 수 있다.  
+
+그이외에도 여러 기능이 추가됨...   
+
+`REST Client`와 같은 툴을 사용해 위 API를 호출하면 다음 메세지를 반환하고 서버가 종료된다.  
+
+```json
+{"message": "Shutting down, bye..."}
+```  
+
+위와 같은 안전한 방식이 아닌 장애나 네트워크 상황으로 인해 서버가 강제 종료될 경우 이미 종료된 서비스가 서버에 계속 남아있는 상황이 발생할 수 있다.  
+
+이는 유레카 서버가 특이한 메커니즘으로 클라이언트를 유지하기 때문, 일시적 네트워크 장애로 인한 서비스 해제를 막기위해 보호모드를 동작하는데  
+이 보호모드 동작시간이 60초가 default 값이다. (속성설정으로 변경 가능)  
+
+해당 시간안에 갱신 요청이 일정 횟수 이상 들어오지 않아야 서비스를 해제한다.  
+다음 설정으로 해제 가능하다.  
+
+`eureka.server.enable-self-preservation=false`  
+
+하트비트가 들어오지 않으면 바로 서비스를 제거한다.  
+물론 좋지않은 설정이며 시간값을 설정후 `shutdown` 으로 종료해 클라이언트가 유레카 서버에서 서비스를 제거할 수 있도록 하는것이 안정적이다.  
+
+이는 변경이 불가능하며 `server.servlet.context-path`를 통해 `context`값 변경으로 약같 변경 흉내는 가능하다.  
+
 
 ## 클라우드 환경설정   
 
