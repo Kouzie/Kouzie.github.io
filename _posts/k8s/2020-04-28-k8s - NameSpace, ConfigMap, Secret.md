@@ -13,7 +13,7 @@ categories:
 
 ---
 
-# 네임스페이스
+## 네임스페이스
 
 k8s 리소스로 네임스페이스는 하나의 클러스터를 여러개의 논리적 단위로 나눠 사용하기 윈한 기능으로 클러스터 하나를 여러 팀이 함께 공유할 수 있음.  
 
@@ -104,14 +104,14 @@ $ kubectl delete -f Namespace/namespace.yaml
 namespace "trade-system" deleted
 ```
 
-# ConfigMap
+## ConfigMap
 
 **애플리케이션 설정정보 관리를 위한 쿠버네티스 리소스** 로 `Key-Value` 형식의 파일형태의 데이터.  
 주로 외부 API 키값, 환경변수 등을 별도로 관리하기 위한 리소스이다.  
 
 공통 설정정보로 사용하기위해 볼륨 마운트를 통해 각 컨테이너에서 사용될 수 있다.  
 
-## ConfigMap 생성방법
+### ConfigMap 생성방법
 
 아래 2가지 방법을 주로 사용해 컨피그맵을 생성한다.  
 
@@ -182,15 +182,14 @@ text.size = 10
 Events:  <none>
 ```
 
-`file name`을 키값으로 `file content`가 `value` 로 들어갔다.   
+`file name`을 키값으로 `file content`가 `value` 로 들어갔다.  
 
-## ConfigMap 전달  
+### ConfigMap 전달  
 
 파드에게 `ConfigMap` 의 데이터를 전달하는 방법은 여러가지다.  
 
 1. `spec.containers.[].env[]` 속성으로 전달  
 2. `spec.volumes` 으로 전달  
-
 
 ```yaml
 apiVersion: apps/v1
@@ -232,9 +231,7 @@ spec:
 
 `spec.volumes` 속성을 보면 경우 위에서 만든 `app-config` 모든 정보를 `config-volume` 볼륨에 마운트한다.  
 
-
-# Secret
-
+## Secret
 
 **컨피그 맵과 같이 구성정보를 어플리케이션에 전달하기 위한 데이터**  
 `DB password`, `OAuth` 토큰과 같은 비밀 정보를 주로 관리한다.  
@@ -270,7 +267,7 @@ data:
   key: YUJjRDEyMw== # aBcD123
 ```
 
-## Secret Type
+### Secret Type
 
 |**설정**|**설명**|
 |---|---|
@@ -279,11 +276,10 @@ data:
 `kubernetes.io/dockerconfigjson` | `Docker Registry` 정보
 `kubernetes.io/service-account-token` | `Service Account` 정보
 
-
 > `TLS`: 전송 계층 보안(Transport Layer Security)  
 `TLS`는 가장 최신 기술로 더 강력한 버전의 SSL입니다. 그러나 SSL이 더 일반적으로 사용되는 용어이기에, 여전히 보안 인증서는 SSL이라 불립니다.
 
-## Secret 생성, 마운트
+### Secret 생성, 마운트
 
 컨피그맵과 마찬가지로 `Secret` 도 매니페스트 파일을 작성하거나, 이미 존재하는 파일을 마운트 가능하다.  
 
@@ -297,9 +293,7 @@ $ kubectl create secret generic apl-auth --from-file=Secrets/key/
 secret/apl-auth created
 ```
 
-
 생성한 시크릿은 컨피그맵과 마찬가지로 `spec.containers.[].env[]`, `spec.volumes` 속성으로 마운트 가능하다.  
-
 
 ```yaml
 apiVersion: apps/v1
@@ -369,4 +363,3 @@ tmpfs /etc/secrets tmpfs ro,relatime 0 0
 ```
 
 > `tmpfs`: 메모리 기반 파일 시스템
-
