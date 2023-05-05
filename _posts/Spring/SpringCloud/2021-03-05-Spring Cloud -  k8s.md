@@ -14,10 +14,14 @@ categories:
 
 ## 개요  
 
-스프링 클라우드 내부의 여러 서드파티(유레카, 스프링 클라우드 게이트웨이, 히스트릭스 등)를 사용하는 것 도 좋지만  
-시간이 지남에 따라 쿠버네티스에서 제공하는 각종 컴포넌트들을 사용하는 것이 더 효율적이다.  
+스프링 클라우드 내부의 여러 라이브러리를 사용해 아래 기능들을 지원하였는데  
 
-`discovery client`, `load balancing`, `configmap` 과 같은 굵직한 기능을 모두 쿠버네티스에서 제공하는 컴포넌트를 사용해 처리할 수 있다.  
+- Service Discovery
+- Config Map
+- Rverse Proxy(Gateway)
+- Client side Loadbalancer
+
+시간이 지남에 따라 쿠버네티스에서 제공하는 각종 컴포넌트들을 사용하는 것이 더 효율적이다.  
 
 > <https://spring.io/projects/spring-cloud-kubernetes#overview>  
 > <https://www.youtube.com/watch?v=f4yOpHfVFw8&t=1404s>  

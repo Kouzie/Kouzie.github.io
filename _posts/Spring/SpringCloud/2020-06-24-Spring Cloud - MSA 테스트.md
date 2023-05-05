@@ -12,6 +12,193 @@ categories:
   - spring-cloud
 ---
 
+
+
+## hoverfly
+
+`ribbon`은 `default` 부하분산 룰로 `RoundrobinRule`을 사용한다.(각 서비스마다 한번씩)
+
+해당 부하분산 룰을 `WeightedResponseTimeRule`로 변경해보자(평균 응답시간에 따라 호출비율 결정)  
+
+
+테스트할 클라우드 서비스의 테스트를 위해 `hoverfly`를 사용한다.   
+
+여러 방법으로 `REST Api`를 테스트 하기위한 오픈소스 프로젝트, `proxy`객체를 통해 `request`, `response` 과정을 둘러싸 원하는 테스트를 진행할 수 있다. (응답시간 변경 등)  
+
+> https://docs.hoverfly.io/projects/hoverfly-java/en/latest/index.html
+
+먼저 `pom.xml`에 해당 `dependency`를 추가  
+
+```xml
+<dependency>
+    <groupId>io.specto</groupId>
+    <artifactId>hoverfly-java</artifactId>
+    <version>0.13.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+`HoverflyRule.inCaptureMode`를 통해 먼저 `proxy`가 캡처한 `request`, `response` 형식을 확인하자.  
+
+아래와 같이 test 용 `application.properties` 파일을 만들고 테스트 클레스에 지정.  
+
+```properties
+#Disable discovery
+spring.cloud.discovery.enabled=false
+#Disable cloud config and config discovery
+spring.cloud.config.discovery.enabled=false
+spring.cloud.config.enabled=false
+# test 에서 사용할 수 있도록 미리 리본 클라이언트 등록
+account-service.ribbon.listOfServers=account-service:8091, account-service:9091
+```
+
+리본 클라이언트는 기본적으로 라운드 로빈 형식으로 요청을 진행하지만 아래와 같은 설정으로 서비스 요청방식을 변경가능하다.  
+
+```java
+@Configuration
+public class RibbonConfiguration {
+	@Bean
+	public IRule ribbonRule() {
+		//return new WeightedResponseTimeRule(); // response 시간에 따라 요청
+		//return new BestAvailableRule(); // 
+		return new AvailabilityFilteringRule();
+	}
+}
+```
+
+`Spring Boot 2.0`, `TestRestTemplate` 객체 사용을 위해 `webEnvironmnet` 속성과 `@RunWith` 어노테이션을 추가지정해야한다.  
+
+```java
+@Slf4j
+@TestPropertySource(locations = "classpath:application-test.properties")
+@AutoConfigureMockMvc
+@RunWith(SpringRunner.class) // junut5 에서 TestRestTemplate 빈 객체 생성을 위한 설정.
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class CustomerControllerTest {
+
+    @Autowired
+    private TestRestTemplate template;
+
+    @ClassRule
+    public static HoverflyRule hoverflyRule = HoverflyRule
+        .inSimulationMode(dsl(
+            service("account-service:8091")
+                .andDelay(200, TimeUnit.MILLISECONDS).forAll() // 0.2 초 딜레이 설정
+                .get(startsWith("/customer/"))
+                .willReturn(success("[{\"id\":\"1\",\"number\":\"1234567890\",\"balance\":5000}]", "application/json")),
+            service("account-service:10091")
+                .andDelay(10000, TimeUnit.MILLISECONDS).forAll() // 10 초 딜레이 설정
+                .get(startsWith("/customer/"))
+                .willReturn(success("[{\"id\":\"3\",\"number\":\"1234567892\",\"balance\":10000}]", "application/json")),
+            service("account-service:9091")
+                .andDelay(50, TimeUnit.MILLISECONDS).forAll() 
+                .get(startsWith("/customer/"))
+                .willReturn(success("[{\"id\":\"2\",\"number\":\"1234567891\",\"balance\":8000}]", "application/json"))))
+        .printSimulationData();
+
+    @Test
+    public void testCustomerWithAccounts() {
+        int a = 0, b = 0, d = 0;
+        for (int i = 0; i < 1000; i++) {
+            try {
+                Customer c = template.getForObject("/withAccounts/{id}", Customer.class, 1);
+                log.info("Customer: {}", c);
+                if (c != null) {
+                    if (c.getAccounts().get(0).getId().equals(1L)) a++;
+                    else b++;
+                }
+            } catch (Exception e) {
+                log.error("Error connecting with service", e);
+                d++;
+            }
+        }
+        log.info("TEST RESULT: 8091={}, 9091={}, 10091={}", a, b, d);
+        // TEST RESULT: 8091=252, 9091=748, 10091=0
+    }
+}
+```
+예상대로 호출 delay가 짧은 `8091` 포트의 서비스가 훨씬 많은 빈도수를 차지한다.  
+
+`printSimulationData()` 메서드에 의해 `HoverflyRule` 객체 생성시에 아래와 같은 json 데이터가 출력된다.  
+
+```json
+{
+  "data" : {
+    "pairs" : [ {
+      "request" : {
+        "path" : [ {
+          "matcher" : "regex",
+          "value" : "^/customer/.*"
+        } ],
+        "method" : [ {
+          "matcher" : "exact",
+          "value" : "GET"
+        } ],
+    ...
+    ...
+}
+```
+
+해당 데이터를 `capture.json`에 작성해 그대로 실행 가능하다. 
+
+```java
+@ClassRule
+public static HoverflyRule hoverflyRule = HoverflyRule
+    .inSimulationMode(classpath("capture.json"))
+    .printSimulationData();
+```
+
+> 캐시데이터를 출력하는 것이 거슬리다면 `dsl()`메서드 2번째 변수로 `localConfigs().addCommands("--disable-cache")`를 설정  
+```java
+@ClassRule
+public static HoverflyRule hoverflyRule = HoverflyRule
+    .inSimulationMode(classpath("simulate.json") ,localConfigs().addCommands("--disable-cache"))
+    .printSimulationData();
+```
+
+`restTemplate` 과 `@LoadBalancing` 을 사용하지 않고  
+`@FiegnClient` 어노테이션으로 클라이언트 로드밸런싱을 진행 해도 똑같은 설정으로 사용하면 된다.  
+(fiegn 역시 내부적으론 ribbon 라이브러리를 사용하기 때문에) 
+
+### junit 5 + hoverfly 
+
+> https://docs.hoverfly.io/projects/hoverfly-java/en/latest/pages/junit5/quickstart.html
+
+```java
+@Slf4j
+@ExtendWith(HoverflyExtension.class)
+@TestPropertySource(locations = "classpath:application-test.properties")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class CustomerControllerTest {
+
+    @Autowired
+    private TestRestTemplate template;
+
+    @BeforeEach
+    public void init(Hoverfly hoverfly) {
+        hoverfly.simulate(dsl(
+            service("account-service:8080")
+                .andDelay(200, TimeUnit.MILLISECONDS).forAll()
+                .get("/customer/1")
+                .willReturn(success("[{\"id\":\"1\",\"number\":\"1234567890\",\"balance\":6000}]", "application/json")),
+            service("account-service:9080")
+                .andDelay(50, TimeUnit.MILLISECONDS).forAll()
+                .get("/customer/1")
+                .willReturn(success("[{\"id\":\"2\",\"number\":\"1234567891\",\"balance\":8000}]", "application/json")),
+            service("account-service:10080")
+                .andDelay(10000, TimeUnit.MILLISECONDS).forAll()
+                .get("/customer/1")
+                .willReturn(success("[{\"id\":\"3\",\"number\":\"1234567890\",\"balance\":5000}]", "application/json"))
+        ));
+        log.info("hover:" + hoverfly.getSimulation().toString());
+    }
+    ...
+}
+
+
+```
+
+
 # 테스트 전략  
 
 마이크로 서비스에서의 테스트 자동화는 모놀리식보다 더욱 중요하다.  
