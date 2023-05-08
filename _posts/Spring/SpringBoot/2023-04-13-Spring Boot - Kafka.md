@@ -554,6 +554,8 @@ private void init() {
 
 `consumer`, `producer` 연결이 생기는 순간 `partition` 0개 `consumer group` 이 자동으로 생성된다.  
 
+자동 생성말고 직접 지정해서 사용하고 싶다면 `kakfa admin` 를 사용해야 한다.  
+
 다음과 같이 `AdminClient` 객체 생성  
 
 ```java
