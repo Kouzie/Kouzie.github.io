@@ -21,6 +21,7 @@ categories:
 
 유명한 Mapper 라이브러리로 `ModelMapper`와 `MapStruct` 가 있으며  
 한국과 일본을 제외하곤 전 세계적으로 `MapStruct` 의 사용량이 많다.  
+
 > 출처: https://yonguri.tistory.com/125  
 
 ![springboot_mapstruct1](/assets/springboot/springboot_mapstruct1.png){: .shadow}  

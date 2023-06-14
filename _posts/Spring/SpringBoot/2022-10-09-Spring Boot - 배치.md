@@ -28,7 +28,7 @@ categories:
 
 ![springboot_batch1](/assets/springboot/springboot_batch1.png)  
 
-`Step` 은 `ItemReader`, `ItemProcessor`, `ItemWriter` 로 구성되고  
+`Step` 은 `ItemReader`, `ItemProcessor`, `ItemWriter` 로 구성되고,  
 `Job` 은 여러개의 `Step` 으로 구성된다.  
 
 그리고 `Job` 의 실행시 사용한 파라미터, 실행결과 등의 메타데이터는 `JobRepository` 에 저장된다.  
@@ -37,12 +37,14 @@ categories:
 
 ![springboot_batch1](/assets/springboot/springboot_batch2.png)  
 
-`Job` 클래스는 **배치작업을 캡슐화**한 엔티티로 전반적인 작업구성이 정의된다.  
+**Job**  
+**배치작업을 캡슐화**한 엔티티로 전반적인 작업구성이 정의된다.  
 
-`JobInstance` 는 `Job` 엔티티를 기반으로 실행시킨 **Job의 실행단위**  
-**시작시간**과 `JobParameters` 를 기반으로 생성된다.  
+**JobInstance**  
+`Job` 엔티티를 기반으로 실행시킨 **Job의 실행단위**. 시작시간과 `JobParameters` 를 기반으로 생성된다.  
 
-`JobExecution` 은 실행된 **`JobInstance` 인스턴스의 실행단위**  
+**JobExecution**  
+실행된 **`JobInstance` 인스턴스의 실행단위**  
 단번에 배치작업이 성공하면 `JobInstance` 와 `JobExecution` 는 1:1 매칭되겠지만  
 만약 배치작업이 실패한다면 다시 `JobInstance` 에 대한 새로운 `JobExecution` 을 생성해야 한다.  
 
@@ -50,12 +52,12 @@ categories:
 
 ![springboot_batch1](/assets/springboot/springboot_batch3.png)  
 
-`Step` 클래스는 `Job` 의 **배치작업의 여러 단계를 캡슐화**하는 엔티티
-`Job` 이 매우 간단해서 하나의 과정만 있다면 하나의 `Step` 으로 정의할 수 있지만  
-복잡하다면 여러개의 `Step` 으로 나누어 처리해야 한다.  
+**Step**  
+`Job` 의 **배치작업의 여러 단계를 캡슐화**하는 엔티티.  
+`Job` 이 매우 간단해서 하나의 과정만 있다면 하나의 `Step` 으로 정의할 수 있지만 복잡하다면 여러개의 `Step` 으로 나누어 처리해야 한다.  
 
-`StepExecution` 은 **Step 의 실행단위**
-`Job` 하나당 N개의 `Step` 이 정의된다면 `JobExecution * N` 개 만큼 인스턴스가 생성될 수 있다.  
+**StepExecution**  
+`Step` 의 **실행단위**, `Job` 하나당 N개의 `Step` 이 정의된다면 `JobExecution * N` 개 만큼 인스턴스가 생성될 수 있다.  
 
 ### ExcutionContext
 
@@ -69,16 +71,14 @@ ExecutionContext ecJob = jobExecution.getExecutionContext();
 //ecStep does not equal ecJob
 ```
 
-위 코드처럼 `JobExecution`, `StepExecution` 마다 `ExcutionContext`  존재하며  
-모두 여러개의 인스턴스가 생성될 수 있는 클래스인 만큼  
-`ExcutionContext` 도 여러개의 인스턴스가 생성될 수 있다.  
+위 코드처럼 `JobExecution`, `StepExecution` 마다 `ExcutionContext` 존재하며  
+모두 여러개의 인스턴스가 생성될 수 있는 클래스인 만큼 `ExcutionContext` 도 여러개의 인스턴스가 생성될 수 있다.  
 
 ### JobLauncher
 
 ```java
 public interface JobLauncher {
-
-public JobExecution run(Job job, JobParameters jobParameters);
+    public JobExecution run(Job job, JobParameters jobParameters);
 }
 ```
 
@@ -121,14 +121,14 @@ public Job footballJob() {
 }
 ```
 
-**preventRestart**
+**preventRestart**  
 작업 중지 혹은 실패시 다시시작 가능 여부, `restartable(default true)` 이기에 `preventRestart` 사용하여 false 로 변경 가능, `JobRestartException` 이 `throw` 된다.  
 
-**listenter**
+**listenter**  
 `JobExecutionListener` 인터페이스의 구현체, 혹은 `@BeforeJob`, `@AfterJob` 어노테이션이 메서드를 통해 Job 의 필터역활을 수행가능  
 
-**validator**
-`JobParametersValidator` 인터페이스의 구현체, `JobParameters` 의 유효성 체크, `JobParametersInvalidException` 이 throw 된다.
+**validator**  
+`JobParametersValidator` 인터페이스의 구현체, `JobParameters` 의 유효성 체크, `JobParametersInvalidException` 이 throw 된다.  
 
 ### 자바 구성  
 
@@ -137,7 +137,7 @@ public Job footballJob() {
 
 > `JobRepository`, `JobLauncher`, `JobRegistry`, `PlatformTransactionManager`, `JobBuilderFactory`, `StepBuilderFactory` 클래스가 `@EnableBatchProcessing` 어노테이션으로 인해 자동 생성된다.  
 
-Job 과 Step 을 생성하는 코드는 대략적으로 아래와 같다.  
+`Job` 과 `Step` 을 생성하는 코드는 대략적으로 아래와 같다.  
 
 ```java
 @Configuration
@@ -229,8 +229,9 @@ public class DefaultBatchConfigurer implements BatchConfigurer {
 }
 ```
 
-실제 Bean 으로 등록하는 `Config` 클래스는 `ModularBatchConfiguration`
-아래와 같이 `get...` 을 통해 `BatchConfigurer` 로부터  `JobRepository`, `JobLauncher`, `PlatformTransactionManager` 등의 클래스를 가져와 Bean 으로 등록한다.  
+실제 Bean 으로 등록하는 `Config` 클래스는 `ModularBatchConfiguration`  
+
+아래와 같이 `get...` 을 통해 `BatchConfigurer` 로부터 `JobRepository`, `JobLauncher`, `PlatformTransactionManager` 등의 클래스를 가져와 Bean 으로 등록한다.  
 
 ```java
 @Configuration(proxyBeanMethods = false)
@@ -271,10 +272,9 @@ public class ModularBatchConfiguration extends AbstractBatchConfiguration {
 }
 ```
 
-
 #### JobRepository
 
-`BatchConfigurer` 의 구현체가 생성하는 클래스 인터페이스
+`BatchConfigurer` 의 구현체가 생성하는 클래스 인터페이스  
 
 구현체는 `SimpleJobRepository` 하나밖에 없다.  
 
@@ -293,7 +293,7 @@ public SimpleJobRepository(JobInstanceDao jobInstanceDao,
 
 `JobInstance` `JobExecution`, `StepExecution` 등의 데이터를 가지고 있다.  
 
-> 각 `Dao` 클레스에 실제 데이터를 가져오기 위한 `SQL` 문
+> 각 `Dao` 클레스에 실제 데이터를 가져오기 위한 `SQL` 문  
 > 만약 DB를 사용하지 않는다면 `Map` 클래스를 조작하는 코드가 작성되어있다  
 
 스프링 배치는 데이터 지속성을 중요시하는 프레임워크이다 보니 `BatchConfigurer` 에 `DataSource` 를 지정하고 `JDBC` 기반의 `JobRepository` 를 많이 사용한다.  
@@ -313,7 +313,6 @@ protected JobRepository createJobRepository() throws Exception {
 
 > DataSource 가 없을경우 `MapJobRepositoryFactoryBean` 을 사용
 > `Deprecated` 예정, 인메모리 DB 를 사용하도록 권장하여 `JobRepositoryFactoryBean` 단독사용으로 변경될 예정이다.
-
 
 #### JobLauncher
 

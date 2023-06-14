@@ -374,7 +374,7 @@ PUT movie_search_mapping/_mapping/_doc
 
 #### properties
 
-오브젝트( Object ) 타입이나 중첩( Nested ) 타입의 스키마를 정의할 때 사용
+오브젝트(Object) 타입이나 중첩(Nested) 타입의 스키마를 정의할 때 사용
 properties 의 형제레밸의 필드가 있으면 안된다.  
 
 ```json

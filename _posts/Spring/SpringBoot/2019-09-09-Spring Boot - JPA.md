@@ -48,7 +48,7 @@ Spring 사용시 단순 `Hibernate`를 사용해 개발할 일이 거의 없다.
 
 ### 엔티티 매니저
 
-엔티티 매니저란 `Hibernate`에서 여러 엔티티를 관리하는 객체  
+`Hibernate`에서 여러 엔티티를 관리하는 객체  
 
 `Spring Data JPA` 를 사용하면 엔티티 매니저를 직접적으로 사용할 일은 없지만  
 `Spring Data JPA` 내부적으로 `Hibernate` 규약과 엔티티 매니저를 통해 데이터를 관리하기에 알아두어야함  
@@ -166,7 +166,7 @@ count..by..
 
 ### 페이징 처리, 정렬 처리 - Pageable, Sort
 
-페이징 처리시 위의 CrudRepository 와 쿼리메서드에 `org.springframework.data.domain.Pageable` 클래스를 사용 가능하다.  
+페이징 처리시 위의 `CrudRepository` 와 쿼리메서드에 `org.springframework.data.domain.Pageable` 클래스를 사용 가능하다.  
 위의 쿼리메서드 마지막필드에 `Pageable` 객체를 추가한다.  
 
 ```java
@@ -925,9 +925,11 @@ public void insertReply() {
 ### orphanRemoval
 
 `CascadeType.REMOVE`와 같은 거의 같은 기능  
-차이점은 자식엔티티를 `null`로 설정하고 저장했을 때 `orphanRemoval`는 삭제하고 `CascadeType.REMOVE`는 삭제하지 않는다.  
 
-다음과 같이 하나는 `REMOVE`, 하나는 `orphanRemoval` 를 설정해서 테스트
+차이점은 자식엔티티를 `null`로 설정하고 저장했을 때 `orphanRemoval`는 삭제하고  
+`CascadeType.REMOVE`는 삭제하지 않는다.  
+
+다음과 같이 하나는 `REMOVE`, 하나는 `orphanRemoval` 를 설정해서 테스트  
 
 ```java
 public class Board {
@@ -962,7 +964,7 @@ delete from tbl_replies where rno=?
 delete from tbl_boards where bno=?
 ```
 
-아래와 같이 List clear 후 저장진행시 `replies` 는 `update` 만, `attachments` 는 `update & delete` 쿼리가 진행된다.  
+아래와 같이 `List clear` 후 저장진행시 `replies` 는 `update` 만, `attachments` 는 `update & delete` 쿼리가 진행된다.  
 
 ```java
 @PatchMapping("/test/orphan/{id}")
@@ -983,7 +985,7 @@ delete from attachment where ano=?
 
 `replies` 도 `update` 로 인해 `board` 와 연결이 끊겼기 때문에 더이상 조인쿼리를 통해 검색되지 않는다.  
 
-> `clear()` 함수로 같은 참조에 데이터가 지워져야 정상동작함을 주의
+`clear()` 함수로 **같은 참조에 데이터가 지워져야** 정상동작함을 주의
 
 ### 주의사항
 
@@ -1576,7 +1578,7 @@ public YourEntity findEntityById(Long id) {
 }
 
 @Lock(LockModeType.PESSIMISTIC_WRITE)
-@Query(“select m from Member m where m.id = :id”) 
+@Query("select m from Member m where m.id = :id") 
 Optional<Member> findByIdForUpdate(@Param(“id”) MemberId memberId);
 ```
 

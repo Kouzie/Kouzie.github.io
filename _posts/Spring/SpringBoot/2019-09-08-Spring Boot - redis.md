@@ -20,61 +20,72 @@ categories:
 
 redis 설치는 brew 등의 명령으로 간단히 설치 가능하고 docker를 사용해도 된다.  
 
-서버 시작/종료 명령어 (mac)  
-> redis-server  
-> redis-cli shutdown  
-
-### 스프링에서 redis사용하기 
-
-`application.properties` 에 아래와 같이 설정 
-
-```conf
-spring.redis.host=localhost
-spring.redis.port=6379
-spring.redis.timeout=0
+```
+docker run -d --name demo-redis \
+-p 6379:6379 \
+redis:7.0.10-alpine3.17 
 ```
 
-설정한 데이터대로 스프링 빈 객체 생성이 필요하다.  
+### redis data type
+
+`redis` 에는 여러가지 data type 이 존재하는데, 주로 사용하는 것은 아래 6종류.  
+
+- `string`  
+- `hash`  
+- `lists`  
+- `sets`  
+- `hashes`  
+- `sorted sets`  
+
+데이터 타입에 따라 `redis-cli` 로 데이터를 조회하는 명령어가 달라진다.  
+
+- type `string` → `GET <key>`  
+- type `hash` → `HGETALL <key>`  
+- type `lists` → `LRANGE <key> <start> <end>`  
+- type `sets` → `SMEMBERS <key>`  
+- type `sorted sets` → `ZRANGEBYSCORE <key> <min> <max>`  
+
+> 추가하는 명령어로 다르기 때문에 더 알아볼 예정이라면 아래 사이트 참고  
+> <https://redis.io/docs/data-types/>
+
+### Spring Data redis
+
+```groovy
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+}
+```
+
+`application.properties` 에 아래와 같이 설정 한 후 Bean 객체 생성이 필요하다.  
+
+```conf
+redis.host=localhost
+redis.port=6379
+redis.timeout=0
+```
 
 ```java
+@Slf4j
 @Configuration
-@Log
-public class RedisRepoConfig extends CachingConfigurerSupport {
-    @Value("${spring.redis.host}")
+public class RedisConfig extends CachingConfigurerSupport {
+    @Value("${redis.host}")
     private String host;
-    @Value("${spring.redis.port}")
+    @Value("${redis.port}")
     private int port;
-    @Value("${spring.redis.timeout}")
-    private int timeout;
-
-    private RedisServer redisServer;
-    private static final Logger logger = LoggerFactory.getLogger(RedisRepoConfig.class);
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        log.info("RedisConnectionFactory create");
         return new LettuceConnectionFactory(host, port);
-    }
-    @Bean
-    public RedisTemplate<?, ?> redisTemplate() {
-        RedisTemplate<?, ?> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory());
-        return redisTemplate;
     }
 }
 ```
 
-`redis`서버와 연결을 위한 객체를 생성하는 `...Factory`, 연결된 객체를 통해 `redis`에 명령을 전달하는 `RedisTemplate`  
+`redis` 서버와 연결을 위한 객체를 생성하는 `RedisConnectionFactory`,  
 
-`redis`와 연결을 휘한 객체로 `Jedis`, `Lettuce` 2가지가 있다.  
+`Spring Data Redis` 프로젝트를 사용해서 `CrudRepository` 구현체를 통해  
+`redis` 에 저장할 도메인 객체를 정의할 수 있다.  
 
-`Lettuce`를 사용하는게 성능상 좋다고 한다.  
-> https://jojoldu.tistory.com/418  
-
-`redis`를 위한 스프링 설정이 끝났고 어떤 데이터를 어떤 테이블에 저장할지 domain객체를 생성
-
-
-`CrudRepository` 구현체도 사용 가능하다.  
+아래와 같이 `@RedisHash` 어노테이션을 사용한다.  
 
 ```java
 @AllArgsConstructor
@@ -98,82 +109,151 @@ public interface PointRedisRepository extends CrudRepository<Point, String> {
 }
 ```
 
-
-> `@RedisHash`가 JPA `@Entity`에 해당하는 어노테이션이다.  
-
 ```java
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@Log
-public class RedisTest1 {
-    @Autowired
-    private PointRedisRepository repo;
+@Slf4j
+@RestController
+@RequestMapping("/repository")
+@RequiredArgsConstructor
+public class RedisRepositoryController {
 
-    @After
-    public void tearDown() throws Exception {
-        repo.deleteAll();
+    private final PointRedisRepository repository;
+
+    @GetMapping("/{id}")
+    public Point getPointById(@PathVariable String id) {
+        return repository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("invalid id:" + id));
     }
 
-    @Test
-    public void defaultInput() {
-        String id = "kouzie";
-        LocalDateTime refreshTime = LocalDateTime.now();
-        Point point = new Point(id, 1000L, refreshTime);
-        log.info("before Point : " + point);
-        repo.save(point);
+    @PostMapping
+    public Point addPoint(@RequestBody Point point) {
+        return repository.save(point);
+    }
 
-        Point savedPoint = repo.findById(id).get();
-        log.info("after Point : " + savedPoint);
+    @DeleteMapping("/{id}")
+    public void removePoint(@PathVariable String id) {
+        repository.deleteById(id);
+    }
+
+    @PatchMapping("/{id}")
+    public Point updatePoint(@PathVariable String id, @RequestBody Point point) {
+        Point entity = repository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("invalid id:" + id));
+        entity.update(point);
+        entity= repository.save(entity);
+        return entity;
     }
 }
 ```
 
-## StringRedisTemplate
+`CrudRepository` 통해 객체타입의 데이터를 `redis` 에 저장하면 `hash`와 `set` 데이터구조로 관리한다.  
+
+아래와 같이 curl 로 2개의 point 를 저장하고 `redis-cli` 로 내부값을 살펴보면  
+2개의 hash 타입 데이터, 1개의 set 타입 데이터가 저장된 것을 확인할 수 있다.  
+
+```
+curl --location 'http://127.0.0.1:8080/repository' \
+--header 'Content-Type: application/json' \
+--data '{
+    "id": "1",
+    "amount": "1000",
+    "refreshTime": "2023-03-22T11:11:11.000"
+}'
+
+curl --location 'http://127.0.0.1:8080/repository' \
+--header 'Content-Type: application/json' \
+--data '{
+    "id": "2",
+    "amount": "2000",
+    "refreshTime": "2023-03-22T22:22:22.000"
+}'
+```
+
+```
+$ redis-cli
+
+127.0.0.1:6379> keys *
+1) "point:1"
+2) "point"
+3) "point:2"
+
+127.0.0.1:6379> smembers point
+1) "1"
+2) "2"
+
+127.0.0.1:6379> HGETALL point:1
+1) "_class"
+2) "com.example.redis.model.Point"
+3) "amount"
+4) "1000"
+5) "id"
+6) "1"
+7) "refreshTime"
+8) "2023-03-22T11:11:11"
+
+127.0.0.1:6379> HGETALL point:2
+1) "_class"
+2) "com.example.redis.model.Point"
+3) "amount"
+4) "2000"
+5) "id"
+6) "2"
+7) "refreshTime"
+8) "2023-03-22T22:22:22"
+```
+
+### RedisTemplate
+
+위에서 생성했던 `RedisConnectionFactory` 빈 객체를 주입해서 `RedisTemplate` 구성할 수 있다.  
 
 ```java
-@Configuration
-@Log
-public class RedisRepoConfig extends CachingConfigurerSupport {
-    ...
-    ...
-    @Bean
-    public StringRedisTemplate stringRedisTemplate() {
-        StringRedisTemplate stringRedisTemplate = new StringRedisTemplate();
-        stringRedisTemplate.setConnectionFactory(redisConnectionFactory());
-        return stringRedisTemplate;
-    }
+@Bean
+public RedisTemplate<?, ?> redisTemplate(@Autowired RedisConnectionFactory redisConnectionFactory) {
+    RedisTemplate<?, ?> redisTemplate = new RedisTemplate<>();
+    redisTemplate.setConnectionFactory(redisConnectionFactory);
+    return redisTemplate;
+}
+
+
+@Bean
+public StringRedisTemplate stringRedisTemplate(@Autowired RedisConnectionFactory redisConnectionFactory) {
+    StringRedisTemplate stringRedisTemplate = new StringRedisTemplate();
+    stringRedisTemplate.setConnectionFactory(redisConnectionFactory);
+    return stringRedisTemplate;
 }
 ```
+
 키와함께 value값으로 `json`과 같은 긴 문자열 데이터를 같이 저장하는 경우가 많은데  
 이 때 `StringRedisTemplate` 을 사용하면 좋다.  
 
-먼저 컨트롤러 하나 생성,
+테스트를 위한 컨트롤러를 생성
 
 ```java
+@Slf4j
 @Controller
-@Log
-@RequestMapping("/redis")
-public class RedisController {
+@RequestMapping("/template")
+public class RedisTemplateController {
     @Autowired
     StringRedisTemplate stringRedisTemplate;
 
     @GetMapping("/sample")
-    public void sample(Model model) {
-        log.info("sample called()....");
-        Set<String> keys = stringRedisTemplate.keys("*");
-
+    public void sample(@RequestParam(required = false) String key, Model model) {
+        log.info("sample invoked");
+        Set<String> keys;
+        if (StringUtils.hasText(key)){
+            keys = stringRedisTemplate.keys(key);
+        }
+        else {
+            keys= stringRedisTemplate.keys("*");
+        }
         model.addAttribute("keys", new ArrayList<>(keys));
     }
 
     @GetMapping("/insert")
-    public String insert(
-            @Param("key") String key,
-            @Param("value") String value
-    ) {
-        log.info("insert called()....");
-        log.info(key + ":" + value);
+    public String insert(@RequestParam String key, @RequestParam String value) {
+        log.info("insert invoked, {}:{}", key, value);
         stringRedisTemplate.opsForValue().set(key, value);
-        return "redirect:/redis/sample";
+        stringRedisTemplate.opsForValue().get(key);
+        return "redirect:/template/sample";
     }
 
 
@@ -181,7 +261,7 @@ public class RedisController {
     public String deleteAll(Model model) {
         log.info("deleteAll called()....");
         stringRedisTemplate.delete(stringRedisTemplate.keys("*"));
-        return "redirect:/redis/sample";
+        return "redirect:/template/sample";
     }
 }
 ```
@@ -213,69 +293,219 @@ public class RedisController {
 
 지금까지 저장된 키 목록이 출력된다.  
 
-## redis data type
+## Spring Cache
 
-redis에는 여러타입의 데이터를 보관할 수 있다.  
+`redis` 를 `cache manager` 로 사용하는 방법을 알아본다.  
 
-`string, hash, lists, sets, hashes, sorted sets`  총 6종류의 데이터 타입이 존재.  
+`@EnableCaching` 과 함께 `CacheManager` 의 구현체를 빈으로 등록한다.  
 
-> https://kimpaper.github.io/2016/07/27/redis-datatype/   
-
-위에서 `repo.save` 를 통해 객체를 redis에 저장했는데 어떤식으로 저장되는지 살펴보자.  
+> `CacheManager` 구현체는 `RedisCacheManager` 외에 `EhCacheManager` 도 유명하다.  
 
 ```java
-@Data
-@RedisHash("mid")
-public class Member {
-    @Id
-    private String mid;
-    private String mpw;
-    private String mname;
-}
-
-
-@PostMapping("/join")
-public String joinPOST(Member member, RedirectAttributes rttr) {
-    log.info("joinPOST() called...");
-    memberRepo.save(member);
-    return "redirect:/jwt/main";
+@Slf4j
+@Configuration
+@EnableCaching
+public class RedisConfig extends CachingConfigurerSupport {
+    @Bean
+    public CacheManager userCacheManager(@Autowired RedisConnectionFactory connectionFactory) {
+        RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
+            .serializeKeysWith(RedisSerializationContext.SerializationPair
+                .fromSerializer(new StringRedisSerializer()))
+            .serializeValuesWith(RedisSerializationContext.SerializationPair
+                .fromSerializer(RedisSerializer.json()))
+            .entryTtl(Duration.ofMinutes(3L));
+        return RedisCacheManager.RedisCacheManagerBuilder
+            .fromConnectionFactory(connectionFactory)
+            .cacheDefaults(redisCacheConfiguration)
+            .build();
+    }
 }
 ```
 
-위와 똑같이 클라이언트로부터 `member`의 데이터를 입력받아 `redis`에 `save`한다.  
+캐시값 제어는 아래 어노테이션을 통해 수행할 수 있다.  
 
-![redis1](/assets/2019/redis1.png)
+- `@Cacheable`  
+- `@CacheEvict`  
+- `@CachePut`  
 
-redis-cli를 통해 안의 데이터를 출력해보면 사진과 같이 출력된다.  
+### @Cacheable
 
-한번더 다른 데이터로 `member`를 `save`하면 아래 사진형식으로 저장된다.  
+`cache` 에 값이 있다면 `cache` 에서 값을 조회해서 반환하고  
+값이 없다면 메서드 내부코드를 실행한다.  
 
-![redis2](/assets/2019/redis2.png)
+`redis` 의 `key` 값은 매개변수를 통해 생성된다.  
 
-`CrudRepository` 통해 객체를 저장하면 `hash`와 `set`데이터구조로 유지하는 것을 알아두자.  
+아래와 같이 `List<Customer>` 를 반환하는, 매개변수가 다른 메서드 2개를 정의.  
+`{cacheNames}:{param eky}` 형태로 `key`, Java 클래스 표현식으로 출력된 문자열이 `value` 로 저장된 것을 확인할 수 있다.  
 
-데이터 타입에 따라 redis-cli로 데이터를 조회하는 명령어가 달라진다.  
+```java
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class CustomerService {
 
-* if value is of type `string` -> `GET <key>`  
-* if value is of type `hash` -> `HGETALL <key>`  
-* if value is of type `lists` -> `lrange <key> <start> <end>`  
-* if value is of type `sets` -> `smembers <key>`  
-* if value is of type `sorted sets` -> `ZRANGEBYSCORE <key> <min> <max>`  
+    // key 이름: customerCache::SimpleKey []
+    @Cacheable(cacheNames = "customerCache", cacheManager = "userCacheManager")
+    public List<Customer> findAll() throws InterruptedException {
+        Thread.sleep(5000);
+        List<Customer> result = new ArrayList<>();
+        for (int i = 0; i < random.nextInt(10); i++) {
+            result.add(CustomerGenerator.random());
+        }
+        return result;
+    }
 
+    // key 이름: customerCache::1,2,3,4,5
+    @Cacheable(cacheNames = "customerCache", cacheManager = "userCacheManager")
+    public List<Customer> findAll(List<String> ids) throws InterruptedException {
+        Thread.sleep(5000);
+        List<Customer> result = new ArrayList<>();
+        for (String id : ids) {
+            result.add(CustomerGenerator.random(id));
+        }
+        return result;
+    }
+}
+```
+
+```
+127.0.0.1:6379> keys *
+1) "customerCache::SimpleKey []"
+2) "customerCache::1,2,3,4,5"
+
+127.0.0.1:6379> type "customerCache::SimpleKey []"
+string
+
+127.0.0.1:6379> get "customerCache::SimpleKey []"
+"[\"java.util.ArrayList\",[{\"@class\":\"com.example.redis.model.Customer\",\"id\":\"a0a96847-5042-499a-aabf-787d35242fa1\",\"nickName\":\"npssdlhfrm\",\"customerType\":\"BRONZE\",\"createTime\":[\"java.util.Date\",1686642104620]},{\"@class\":\"com.example.redis.model.Customer\",\"id\":\"e9e102f0-9ab7-402c-9d7f-e9933137cd93\",\"nickName\":\"blcovuitlm\",\"customerType\":\"GOLD\",\"createTime\":[\"java.util.Date\",1686642104620]},{\"@class\":\"com.example.redis.model.Customer\",\"id\":\"aa42d2e7-7628-452b-b1b4-7410d767446d\",\"nickName\":\"zpvctjvkoa\",\"customerType\":\"SILVER\",\"createTime\":[\"java.util.Date\",1686642104620]},{\"@class\":\"com.example.redis.model.Customer\",\"id\":\"83d52f67-002b-43da-9cc2-abf7c9715405\",\"nickName\":\"lwffwuygud\",\"customerType\":\"GOLD\",\"createTime\":[\"java.util.Date\",1686642104620]},{\"@class\":\"com.example.redis.model.Customer\",\"id\":\"160f50df-e2a1-455e-a1a7-291de969aada\",\"nickName\":\"mrtybmfxnc\",\"customerType\":\"DIAMOND\",\"createTime\":[\"java.util.Date\",1686642104620]},{\"@class\":\"com.example.redis.model.Customer\",\"id\":\"77c3d17a-c731-424c-b2c6-397d8b2ac0d3\",\"nickName\":\"dtpankciwp\",\"customerType\":\"SILVER\",\"createTime\":[\"java.util.Date\",1686642104620]}]]"
+```
+
+`redis key` 값을 커스텀하게 지정해야 한다면 `key` 속성을 사용하면 된다.  
+
+```java
+// key 이름: customerCache::customer-1
+@Cacheable(cacheNames = "customerCache", key = "'customer-' + #id")
+public Customer findById(String id) throws InterruptedException {
+    Thread.sleep(5000);
+    return CustomerGenerator.random(id);
+}
+```
+
+- **cacheNames**: key prefix, `value` 와 alias 처리되어 있음  
+- **key**: key name, SpEL 로 지정  
+- **cacheManager**: `CacheManager` 빈 이름  
+- **condition**: 요청 파라미터에 의한 캐시 저장 조건, SpEL 로 지정  
+- **unless**: 반환값에 의한 캐시 저장 조건, SpEL 로 지정  
+- **keyGenerator**  
+  `KeyGenerator` 인터페이스 구현체, 커스텀하게 key 를 생성하고 싶다면 재정의해서 지정  
+- **cacheResolver**  
+  `CacheResolver` 인터페이스 구현체, 커스텀하게 value 를 생성하고 싶다면 재정의해서 지정  
+
+만약 cacheNames 를 배열로 지정할 경우 두개의 `<key, value>` 가  `redis` 에 저장된다.  
+
+```java
+@Cacheable(cacheNames = {"customerCache", "test"}, key = "'customer-' + #id", cacheManager = "userCacheManager")
+public Customer findById(String id) throws InterruptedException {
+    Thread.sleep(5000);
+    return CustomerGenerator.random(id);
+}
+```
+
+```
+127.0.0.1:6379> keys *
+1) "test::customer-1"
+2) "customerCache::customer-1"
+```
+
+condition, unless 속성은 아래와 같이 지정 가능  
+
+```java
+@Cacheable(value="posts", condition="#postId>10")
+public Post findById(Integer postId) { ... }
+
+@Cacheable(value="posts", condition="#title.length > 20")
+public Post findByTitle(String title) { ... }
+
+@Cacheable(value="titles", unless="#result.length() < 50")
+public String getTitle(Post post) { ... }
+```
+
+### @CacheEvict
+
+메서드가 호출완료 된 후 `@CacheEvict` 에 적용되는 캐시를 삭제한다.  
+
+```java
+//캐시 삭제
+@CacheEvict(value = "customerCache")
+public void refresh() {
+    log.info("cache clear");
+}
+
+//캐시 삭제 - 키값 사용
+@CacheEvict(value = "customerCache", key = "#id")
+public void refresh(String id) {
+    log.info("cache clear");
+}
+```
+
+아래와 같은 속성이 있으며 대부분 속성은 `@Cacheable` 과 동일하고  
+`beforeInvocation` 속성이 추가되었다.  
+
+- **cacheNames**  
+- **key**  
+- **cacheManager**  
+- **condition**  
+- **keyGenerator**  
+- **cacheResolver**  
+- **beforeInvocation**  
+  메서드가 호출되기 전에 제거가 발생해야 하는지 여부, `default false`  
+  `true` 지정시 메서드 도중 예외가 발생한다 해도 이미 삭제가 되어있다.  
+
+### @CachePut
+
+`@CachePut` 은 캐시 업데이트를 위한 어노테이션으로  
+메서드가 반드시 호출되고, 반환값을 캐시에 저장한다.  
+
+```java
+// 캐시 업데이트
+@CachePut(value = "customerCache", key = "#id", cacheManager = "userCacheManager")
+public Customer update(String id) throws InterruptedException {
+    Thread.sleep(5000);
+    Customer customer = CustomerGenerator.random(id);
+    return customer;
+}
+```
+
+사용 속성은 아래와 같다.  
+
+- **cacheNames**  
+- **key**  
+- **cacheManager**  
+- **condition**  
+- **unless**  
+- **keyGenerator**  
+- **cacheResolver**  
+
+## 데모코드
+
+> <https://github.com/Kouzie/spring-boot-demo/tree/main/redis-demo>
+
+<!-- 
 ## redis 이중화  
 
-본격적으로 `redis`설정파일인 `redis.conf`를 수정해야 하는데 http://redisgate.kr/redis/configuration/redis_conf_list.php 사이트를 참고바람.  
+본격적으로 `redis`설정파일인 `redis.conf`를 수정해야 하는데 <http://redisgate.kr/redis/configuration/redis_conf_list.php> 사이트를 참고바람.  
 
 ### redis replication
 
 기본 `redis.conf` (ver 5.0)
 
-http://download.redis.io/redis-stable/redis.conf  
+> <http://download.redis.io/redis-stable/redis.conf>  
+
 위 사이트에서 기본 설정파일 `redis.conf`를 다운받고 `master`, `slave` 가 사용할 각 설정파일을 생성  
 
 아래 설정만 일부 변경해 사용하자.  
 
-```
+```conf
 # redis-master.conf
 bind 0.0.0.0
 
@@ -326,13 +556,14 @@ docker run -v /Users/gojiyong/myredis/conf:/usr/local/etc/redis -v /Users/gojiyo
 
 ### redis sentinel
 
-**sentinel**의 사전적 의미는 **감시병**이다.  
+`sentinel` 의 사전적 의미는 **감시병**.  
 
-`master`가 어떤 이유로 종료되면 복제하던 `slave`가 자동으로 `master`로 설정되도록 구성.  
+`master`가 어떤 이유로 종료되면  
+복제하던 `slave`가 자동으로 `master`로 설정되도록 구성.  
 
-http://download.redis.io/redis-stable/sentinel.conf  
-위 사이트에서 sentinel을 위한 기본 설정파일을 다운(redis ver 5.0기준)  
+> <http://download.redis.io/redis-stable/sentinel.conf>
 
+위 사이트에서 `sentinel` 을 위한 기본 설정파일을 다운(`redis ver 5.0`기준)  
 그리고 아래와 같이 일부 수정한다.  
 
 ```conf
@@ -367,6 +598,7 @@ docker run --name sentinel3 -p 26377:26379 -d redis-sentinel:5.0.7
 ```
 
 `sentinel.conf` 파일 아래처럼 설정  
+
 ```conf
 sentinel leader-epoch mymaster 0
 sentinel known-replica mymaster 172.17.0.4 6379
@@ -375,3 +607,4 @@ sentinel myid 2a8e7dda23abc19e8b980a37c19bb2f740c7c8d2
 sentinel known-sentinel mymaster 172.17.0.6 26379 cae7400b5743fb6a86617b1b2dec7f397d7af38d
 sentinel known-sentinel mymaster 172.17.0.7 26379 b088269700863c4293f8d31c85103ff33190154a
 ```
+ -->

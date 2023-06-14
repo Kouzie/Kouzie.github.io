@@ -14,7 +14,7 @@ categories:
 
 ## 스프링 부트 테스트
 
-> https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-testing
+> <https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-testing>
 
 > spring boot 2.4.1, junit5 기준 설정  
 
@@ -74,11 +74,11 @@ class FmsApplicationTests {
 
 ### Mockito
 
-# Test with Spring Security
+## Test with Spring Security
 
 
 
-# Rest doc
+## Rest doc
 
 스프링 부트 테스트를 통해 만들어진 API를 테스트 하고 문서화 가능
 
@@ -213,7 +213,7 @@ include::{snippets}/product-controller-test/get-product/response-body.adoc[]
 아래처럼 출력되는지 확인  
 ![restdoc2](/assets/2020/restdoc2.png){: .shadow}  
 
-## 진행하면서 난감했던 상황들  
+### 진행하면서 난감했던 상황들  
 
 **각종 파라미터 정의하기**  
 사용할때 마다 헷갈리는 request 요청 필드 정의하기  

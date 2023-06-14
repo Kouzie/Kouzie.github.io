@@ -212,7 +212,6 @@ POST nori_analyzer/_analyze
 }
 ```
 
-
 ### nori_part_of_speech 토큰 필터
 
 한글 불용어(stoptags)를 제거하는 토큰 필터  

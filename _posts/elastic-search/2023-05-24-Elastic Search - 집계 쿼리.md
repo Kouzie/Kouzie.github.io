@@ -307,7 +307,6 @@ GET /apache-web-log/_search?size=0
 }
 ```
 
-
 ### percentiles, percentile_ranks
 
 백분위 수 집계가 가능하다.  
@@ -722,7 +721,6 @@ GET /apache-web-log/_search?size=0
 
 - 부모(Parent)  
 - 형제(Sibling)  
-
 
 ### 형제집계
 

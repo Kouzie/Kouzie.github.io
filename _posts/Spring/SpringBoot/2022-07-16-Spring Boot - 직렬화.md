@@ -19,17 +19,20 @@ categories:
 `Jackson` 라이브러리가 기본으로 `Spring boot starter web` 에 포함되어 있기 때문.  
 해당 라이브러리에선 `ObjectMapper` Bean 뿐 아니라 각종 Json 관련 어노테이션 등도 제공한다.  
 
-스프링부트에서 `ObjectMapper` 의 커스텀을 properties 설정을 제공한다.  
-`spring.jackson.###` 
+스프링부트에서 `ObjectMapper` 의 커스텀 properties 설정을 제공한다.  
 
-예를들어 json 네이밍 전략을 SNAKE 나 CAMEL 로 변경하고 싶다면 아래와같이 설정 가능  
+```
+spring.jackson.###
+```
+
+예를들어 json 네이밍 전략을 `SNAKE` 나 `CAMEL` 로 변경하고 싶다면 아래와같이 설정 가능  
 
 ```conf
 spring.jackson.property-naming-strategy=SNAKE_CASE
 spring.jackson.property-naming-strategy=CAMEL_CASE
 ```
 
-아예 Java 코도를 사용해 별도로 `ObjectMapper` 를 `@Bean` 어노테이션으로 등록하면  
+`java config` 를 사용해 별도로 `ObjectMapper` 빈으로 등록하면  
 기존 생성되는 `ObjectMapper` 를 대체할 수 도 있다.  
 
 ```java
@@ -55,11 +58,9 @@ public ObjectMapper objectMapper() {
     objectMapper.setDateFormat(dateFormat);
     // WRITE_DATES_AS_TIMESTAMPS JSON에서 날짜를 문자열로 표시
     objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    objectMapper.setVisibility(objectMapper
-                .setSerializationInclusion(JsonInclude.Include.NON_NULL) // null 필드는 변환 X
-                .setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE) // 네이밍 전략
-                .getVisibilityChecker()
-    );
+    objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE); // 네이밍 전략
+    objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL); // null 필드는 변환 X
+
     // UnrecognizedPropertyException 처리, 알수없는 필드 처리 X
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     // InvalidDefinitionException, Object 클래스는 빈 객체로 변환(필드가 없는 객체도 변환하도록)
@@ -68,6 +69,47 @@ public ObjectMapper objectMapper() {
 }
 ```
 
+### Visibility
+
+`[getter, setter, is-getter, creator, field]` 에 대해 json 구성에서 `visibility` 여부를 결정할 수 있는데 기본설정은 아래와 같다.  
+
+```java
+protected final static Std DEFAULT = new Std(
+    Visibility.PUBLIC_ONLY, // getter
+    Visibility.PUBLIC_ONLY, // is-getter
+    Visibility.ANY, // setter
+    Visibility.ANY, // creator -- legacy, to support single-arg ctors
+    Visibility.PUBLIC_ONLY // field
+);
+```
+
+`[setter, creator]` 는 접근제어자가 `public` 이 아니어도 상관없지만  
+`[getter, is-getter, field]` 는 `public` 이 아닐경우 보이지 않는다는 설정이기에 json 이 별도처리하지 않는다  
+
+최근에는 setter 와 같은 메서드를 별도정의하지 않기 때문에 field 값만 가지고 json 역질렬화를 수행하기 위해 아래와 같은 설정을 하기도 한다.  
+
+```java
+objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+```
+
+### Coercion
+
+가끔 List, Object 형식의 데이터를 역직렬화 해야 하는데 `""` empty string 으로 올 경우 아래와 같은 에러가 출력될 떄가 있다.  
+
+```
+Cannot coerce empty String ("") to element of `java.util.ArrayList<java.lang.String>`
+```
+
+```java
+mapper.coercionConfigFor(MyPojo.class) // MyPojo 에 대해서 적용
+  .setCoercion(CoercionInputShape.EmptyString, CoercionAction.AsEmpty);
+
+mapper.coercionConfigDefaults() // 기본 설정으로 적용
+  .setCoercion(CoercionInputShape.EmptyString, CoercionAction.AsEmpty);
+```
+
+> `CoercionAction.AsEmpty` 는 `{}`  
+> `CoercionAction.AsNull` 는 `null`  
 
 ### Json Annotation
 
@@ -103,7 +145,7 @@ public enum SearchType {
 }
 ```
 
-`enum` 클래스의 경우 변환할때 `enum` 인스턴스가 가지고있는 name 을 value 로 사용하게 되는데
+`enum` 클래스의 경우 변환할때 `enum` 인스턴스가 가지고있는 `name` 을 `value` 로 사용하게 되는데
 `key` 값을 가지고 `enum` 인스턴스를 `serialize`, `deserialize` 하고 싶다면 위와같이 사용  
 
 `ObjectMapper` 의 `writeValueAsString` 를 호출하게 되면 `@JsonValue` 에 설정된 문자열이 반환된다.  
@@ -127,7 +169,7 @@ public class Board {
 
 위와같이 `@JsonProperty` 어노테이션을 사용하면 좋다.  
 
-기본 `value` 필드 외에도 `index` 를 지정하거나 `access` 를 통해 접근제한, `required` 옵션을 통해 `validation` 구성도 가능하니 상세 구현페이지 참고 
+기본 `value` 필드 외에도 `index` 를 지정하거나 `access` 를 통해 접근제한, `required` 옵션을 통해 `validation` 구성도 가능하니 상세 구현페이지 참고  
 
 #### @JsonNaming
 
@@ -145,7 +187,7 @@ public static class WeatherData {
 ```
 
 Jackson 에서 제공하는 `ObjectMapper` 의 기본 네이밍 전략은 `lower camel case` 이다.  
-만약 특정 클래스의 네이밍 전략만 `snake case` 로 변경하고 싶다면 `@JsonNaming` 어노테이션 사용하면 된다.    
+만약 특정 클래스의 네이밍 전략만 `snake case` 로 변경하고 싶다면 `@JsonNaming` 어노테이션 사용하면 된다.  
 
 ## Date Time String
 
@@ -207,14 +249,13 @@ ObjectMapper objectMapper = new ObjectMapper();
 
 ### Time Format String  
 
-
 `DateTimeFormatter.ISO_DATE_TIME` 와 같이 미리 제공된 Formatter 말고  
 직접 **타임포멧문자열** 을 사용해서 `Formatter` 를 생성하고 싶다면 날짜를 표현하는 여러가지 문자 및 기호를 알아야 한다.  
 
 > 아래 url 참고  
 <https://pro.arcgis.com/en/pro-app/2.8/help/mapping/time/convert-string-or-numeric-time-values-into-data-format.htm>
 
-format 을 Optional 하게 설정하고 싶다면 `[`, `]` 특수문자를 사용,   
+format 을 Optional 하게 설정하고 싶다면 `[`, `]` 특수문자를 사용,  
 
 `yyyy-MM-dd'T'HH:mm:ss[.SSS]` - 나노초가 있을수도 없을수도 있다
 
@@ -294,7 +335,7 @@ Zulu time 이라고도 하는데 군에서 UTC 를 뜻하는 단어이다.
 
 타임존 을 표기하기 위해서 타임포멧문자열에 `Zone` 을 표기할 수 있는 문자열을 추가해야 한다.  
 
-`2011-08-12T20:17:46.384Z` - 뒤에 Z(Zulu Time) 특수문자가 붙어서 표준시를 뜻함. 
+`2011-08-12T20:17:46.384Z` - 뒤에 Z(Zulu Time) 특수문자가 붙어서 표준시를 뜻함.  
 
 `UTC` 를 위한 `Formatter` 는 아래 참고  
 
@@ -307,10 +348,8 @@ DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX").
 
 `'Z'` 는 일반 문자열, 그리고 TimeZone 을 UTC 로 설정해서 Formatter 를 구현하면 된다.  
 
-
 `2020-09-10T10:58:19+09:00` - UTC+9 를 뜻하며 서울이나 도쿄 등의 도시에서 사용한다.  
 `yyyy-MM-dd'T'HH:mm:ssXXX` 를 Formatter 의 format 문자열로 정의하면 된다.  
-
 
 ### ZoneDateTime  
 

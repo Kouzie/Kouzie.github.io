@@ -17,7 +17,7 @@ categories:
 
 웹 소켓이 생기기전 서버는 클라이언트에게 어떠한 정보를 알리기 위해 무식한 방법인 `Polling`, `Long Polling` 양방향 통신 기법을 사용하였다.  
 
-`http` 프로토콜로는 절대로 서버가 클라이언트에게 요청할 순 없다.   
+`http` 프로토콜로는 절대로 서버가 클라이언트에게 요청할 순 없다.  
 
 이를 해결하기 위해 클라이언트가 서버에게 **n초 주기**로 계속 자신에게 필요한 정보가 있는지 물어보는 요청을 날린다.(`Polling`방식)  
 
@@ -26,11 +26,11 @@ categories:
 
 > https://kamang-it.tistory.com/entry/Webhttp통신을-이용한-양방향-통신기법-long-polling
 
-`HTML5`등장과 함께 `Websocket`이 등장하였고 위와같은 불편한 `Polling, Long Polling` 통신기법을 사용하지 않게되었다.  
+`HTML5`, `HTTP 1.1` 등장과 함께 `Websocket`이 등장하였고 위와같은 불편한 `Polling, Long Polling` 통신기법을 사용하지 않게되었다.  
+
+`HTTP 1.1` 에선 `TCP Connection` 은 필요하다면 `close` 없이 연장될 수 있기에 웹소켓 구현이 가능해졌다.  
 
 웹소켓을 사용하려면 별도의 HTTP 웹소켓 헨드쉐이크 과정을 거쳐야 한다.  
-
-![springboot_websocket3](/assets/springboot/springboot_websocket3.png)
 
 ```
 GET ws://localhost:8080/ws HTTP/1.1
@@ -39,6 +39,8 @@ Connection: Upgrade
 Host: localhost
 Upgrade: websocket
 ```
+
+![springboot_websocket3](/assets/springboot/springboot_websocket3.png)
 
 위 과정을 거쳐 커넥션이 생성되면 자유롭게 서버에서 클라이언트에게 데이터를 전달할 수 있게되었다.  
 
