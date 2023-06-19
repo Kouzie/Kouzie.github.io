@@ -1,5 +1,5 @@
 ---
-title:  "Spring Boot - RSocket!"
+title:  "Spring React - RSocket!"
 
 read_time: false
 share: false
@@ -12,30 +12,33 @@ categories:
   - spring-reative
 ---
 
-# 개요  
+## 개요  
 
-> https://www.youtube.com/watch?v=ipVfRdl5SP0&t=592s
+> <https://rsocket.io/>  
+> <https://www.youtube.com/watch?v=ipVfRdl5SP0&t=592s>
 
+`RSocket` 은 **네트워크 프로토콜** 로서 `OSI Layer 5/6` 또는 `TCP/IP Application Layer` 프로토콜이다.  
+리액티브 애플리케이션 간 통신을 위해 디자인 되었다.  
 
-# gRPC vs RSocket
+`Back-Pressure` 같은 `Reactive Stream` 개념을 넣은 리액티브 프로토콜이라 할 수 있다.  
 
-gRPC는 구글에서 개발한 HTTP/2 기반의 **RPC 프레임워크** 이다.
-폴리글랏 RPC의 문제를 해결하기 위한 목적으로 디자인 되었으며, protobuf IDL과 HTTP/2 프로토콜로 구성되어 있다. 구글에서 마이크로서비스 간 통신을 위해 사용되고 검증되었으며, 2015년 오픈소스로 공개되었다.
+> 흐름제어에 대해 자세히 알고 싶다면 아래 url 참고  
+> <https://rsocket.io/about/protocol>
 
-RSocket은 역압(Back-Pressure)과 Reactive Stream 개념을 end-to-end에 적용하는 **네트워크 프로토콜** 이다. 애플리케이션 간 통신을 위해 디자인 되었다.
+고전적인 `request-response(1:1)` 구조의 HTTP 방식은 최신 리액티브 프로그래밍에 맞지 않다.  
+그래서 HTTP 프로토콜 위에서 동작하는 gRPC(HTTP/1.1 & 2), Websocket 방식이 나왔지만  
+HTTP 프로토콜 위에서 동작하다 보니 리액티브 프로그래밍에 적용하기 과한 HTTP 규약들을 지켜야 하는 상황이다.  
 
-# 통신 모델
+이를 해결하기 위해 각종 언어별로 동작하는 폴리글랏 RPC 프로토콜인 `RSocket` 이 개발됐다 할 수 있다.  
 
-1. fire and forget 0:1 (no response)
-2. request response 1:1 (single value in out)
-3. request stream 1:N(single value in and multi out)
-4. channel N:N (multi value in out)
+통신 모델로는 아래 4가지 종류가 있다.  
 
-gRPC 와 비슷한 구조를 갖는다.  
-안타깝게도 위 형식의 메서드 외에는 정의가 불가능하니 형식을 맞춰 RSocket 메서드를 작성해야한다.  
+1. **fire and forget** 0:1 (no response)
+2. **request response** 1:1 (single value in out)
+3. **request stream** 1:N(single value in and multi out)
+4. **channel** N:N (multi value in out)
 
-
-## 샘플코드  
+### 샘플코드  
 
 일반적인 `request stream` 모델을 사용한 샘플코드 작성  
 
@@ -43,14 +46,9 @@ gRPC 와 비슷한 구조를 갖는다.
 implementation 'org.springframework.boot:spring-boot-starter-rsocket'
 ```
 
-```java
-@SpringBootApplication
-public class ServiceApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(ServiceApplication.class, args);
-    }
-}
+`RSocket` 에서 주고받을 클래스정의
 
+```java
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -65,7 +63,7 @@ public class GreetingResponse {
 }
 ```
 
-기본적으로 사용할 총 3개의 클래스 정의  
+`@MessageMapping("greetings")` 어노테이션으로 엔드포인트 위치를 지정한다.  
 
 ```java
 @Controller
@@ -84,13 +82,10 @@ public class GreetingController {
 }
 ```
 
-총 4개의 클래스 정의  
-`@MessageMapping("greetings")` 어노테이션으로 엔드포인트 위치를 지정한다.  
+## RSocket Client  
 
-# RSocket Client  
-
-> https://github.com/making/rsc  
-using Rsocket connection cli tool test my RSocket Server  
+> <https://github.com/making/rsc>  
+> using Rsocket connection cli tool test my RSocket Server  
 
 `rsc` 툴을 사용하면 간단하게 `RSocket Server`를 테스트 할 수 있다.  
 
@@ -101,7 +96,7 @@ $ rsc tcp://localhost:8888 --stream --route greetings --log --debug -d "{\"messa
 
 ![springboot_rsocket2](/assets/springboot/spring-react/springboot-rsocket1.png)  
 
-## RSocket Client In Spring  
+### RSocket Client In Spring  
 
 `Spring` 에서 `RSocket Client`를 사용하기 위해서 어떤 설정  
 
@@ -141,7 +136,7 @@ public class ClientConfig {
 }
 ```
 
-# 양방향 통신 (Bi Direction)
+## 양방향 통신 (Bi Direction)
 
 웹소켓 처럼 `Server` 와 `Client` 간 양방향 통신이 가능하다.  
 
@@ -220,7 +215,7 @@ Flux<GreetingResponse> greet(RSocketRequester client, GreetingRequest request) {
 `false` 데이터를 발행할 때 까지 `GreetingResponse` 를 발행한다.  
 
 
-# Security
+## Security
 
 `Spring security` 에서 제공하는 `UserDetails` 와 `PasswordEncoder`, 
 
@@ -236,7 +231,7 @@ dependencies {
 }
 ```
 
-## RSocket Server Security Settings
+### RSocket Server Security Settings
 
 ```java
 @Configuration
@@ -291,7 +286,7 @@ Flux<GreetingResponse> greet(RSocketRequester client, @AuthenticationPrincipal U
 }
 ```
 
-## RSocket Client Security Settings
+### RSocket Client Security Settings
 
 클라이언트에선 서버가 원하는 인증정보를 RSocket 데이터안에 설정해서 보내야한다.  
 
@@ -325,6 +320,6 @@ public class ClientConfig {
 `RSocketRequester` 를 사용할 때 `metadata` 메서드를 통해  
 `MimeType` 과 인증정보인 `UsernamePasswordMetadata` 가 삽입되어 전송되도록 설정
 
-# sample code 
+## 데모코드  
 
-> https://github.com/Kouzie/spring-reactive
+> <https://github.com/Kouzie/spring-reactive-demo>

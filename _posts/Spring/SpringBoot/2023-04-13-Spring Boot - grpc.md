@@ -24,7 +24,7 @@ categories:
 
 `JSON` 과 같은 구조화된 데이터이지만 데이터 압출, 직렬화를 통해 보다 작고 빠르게 전송이 가능하다.  
 
-사용하려면 protobuf 특유의 문법을 알아야 한다.  
+사용하려면 `protobuf` 특유의 문법을 알아야 한다.  
 
 > <https://protobuf.dev/programming-guides/proto3/>
 

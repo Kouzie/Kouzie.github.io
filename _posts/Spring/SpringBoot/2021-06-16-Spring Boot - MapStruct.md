@@ -14,20 +14,21 @@ categories:
 
 ## MapStruct
 
-> https://mapstruct.org/
-
+> <https://mapstruct.org/>
 
 최근 jhipster 를 사용하면서 자동으로 생성되는 스프링 부트의 구조 + 처음보는 라이브러리들을 학습중이다.  
 
 유명한 Mapper 라이브러리로 `ModelMapper`와 `MapStruct` 가 있으며  
 한국과 일본을 제외하곤 전 세계적으로 `MapStruct` 의 사용량이 많다.  
 
-> 출처: https://yonguri.tistory.com/125  
 
-![springboot_mapstruct1](/assets/springboot/springboot_mapstruct1.png){: .shadow}  
+![springboot_mapstruct1](/assets/springboot/springboot_mapstruct1.png)  
 
 성능 또한 `MapStruct` 가 더 우세하다고 한다.  
-> 출처: https://better-dev.netlify.app/java/2020/10/26/compare_objectmapper/
+
+> 출처  
+> <https://yonguri.tistory.com/125>  
+> <https://better-dev.netlify.app/java/2020/10/26/compare_objectmapper/>
 
 ### Usage
 
@@ -286,6 +287,16 @@ public class CarController {
 }
 ```
 
+### Mapstruct With Setter  
+
+`DDD` 개발 구조에선 `Entity` 클래스에 `Setter` 함수 정의를 피한다.  
+하지만 `MapStruct` 의 `partialUpdate` 메서드는 `Entity` 에 `Setter` 메서드가 정의되어 있어야 한다.  
+
+결론은 `Setter` 메서드없이 `partialUpdate` 하는 방법은 없다.  
+만약 `DDD` 구조에서 `MapStruct` 를 사용하고 싶다면 `partialUpdate` 메서드는 정의하지 말아야 한다.  
+
+> 어차피 `DDD` 특성상 `update` 함수를 애그리거트 클래스에서 정의함으로 큰 부담을 아닐것이다.  
+
 ## @Valid - 칼럼에 대한 각종 제약조건 설정  
 
 `@Column`어노테이션 만으로 제약조건 지정이 부족하다면 아래 어노테이션들을 사용한다.  
@@ -306,7 +317,7 @@ public class CarController {
 `@Pattern` | 정규식을 만족해야함 | @Pattern(regexp="(d{3})d{3}-d{4}")<br>String phoneNumber;
 `@Size` | 최소크기, 최대크기를 지정 | @Size(min=2, max=240)<br>String briefMessage;
 
-> http://www.thejavageek.com/2014/05/24/jpa-constraints/
+> <http://www.thejavageek.com/2014/05/24/jpa-constraints/>
 
 
 ## 샘플 프로젝트  

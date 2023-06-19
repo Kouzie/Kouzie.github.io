@@ -73,7 +73,7 @@ public class MemberRole {
 
 ### WebSecurityConfigurerAdapter
 
-`Spring Security` 사용을 알리는 자바 컨피그객체  
+`Spring Security` 사용을 알리는 java config 객체  
 
 ```java
 @EnableWebSecurity
