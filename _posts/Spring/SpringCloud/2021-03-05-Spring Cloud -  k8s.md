@@ -21,7 +21,7 @@ categories:
 - Rverse Proxy(Gateway)
 - Client side Loadbalancer
 
-시간이 지남에 따라 쿠버네티스에서 제공하는 각종 컴포넌트들을 사용하는 것이 더 효율적이다.  
+k8s 에서 제공하는 각종 컴포넌트들을 사용하는 것이 더 효율적이다.  
 
 > <https://spring.io/projects/spring-cloud-kubernetes#overview>  
 > <https://www.youtube.com/watch?v=f4yOpHfVFw8&t=1404s>  
@@ -37,9 +37,9 @@ k8s 구성을 위한 간단한 프로젝트를 구성예정
 
 ### Service Account
 
-`Spring Cloud Kubernetes` 에서 실행 중인 포드의 주소 목록, `ConfigMap` 을 검색할 수 있으려면 `Kubernetes API`에 대한 액세스가 필요하다.  
+`Spring Cloud Kubernetes` 에서 실행 중인 `Pod` 주소 목록, `ConfigMap` 을 검색할 수 있으려면 `k8s API`에 대한 액세스가 필요하다.  
 
-`default` 계정이 각종 `Kubernetes API` 를 사용할 수 있도록 권한을 부여해야 한다.  
+`default` 계정이 각종 `k8s API` 를 사용할 수 있도록 권한을 부여해야 한다.  
 
 > <https://cloud.spring.io/spring-cloud-kubernetes/reference/html/#service-account>
 
@@ -91,7 +91,17 @@ rolebinding.rbac.authorization.k8s.io/namespace-reader-binding created
 
 ### ConfigMap
 
-서비스들이 사용할 `configMap` 리소스 정의
+문서에선 기본적으로 `spring.application.name` 과 동일한 `configMap` 을 찾아 `Spring Config` 로 등록한다고 설명한다.  
+
+`Spring Application` 과 `cloudMap` 의 `namespace` 도 물론 동일해야 한다.  
+
+그 외에도 profile 에 따라 자동으로 가져오는 설정들이 있음으로 아래 url 참고
+
+> <https://docs.spring.io/spring-cloud-kubernetes/docs/current/reference/html/#kubernetes-propertysource-implementations>
+
+
+하지만 커스텀한 `namespace`, `configMap` 이름을 지정해서 Spring Config 로 등록해야 할 경우 `bootstrap.properties` 를 사용하면 된다.  
+
 
 ```yaml
 # config map
