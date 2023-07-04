@@ -391,3 +391,13 @@ skaffold dev
 ```
 
 `jib` 명령으로 이미지를 만들고 `manifests` 에 저장된 `k8s` 리소스를 올린다.  
+
+아래와 같은 에러문구가 뜬다면  
+
+> <https://github.com/GoogleContainerTools/skaffold/issues/7985>
+
+```shell
+Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+
+sudo ln -s "$HOME/.docker/run/docker.sock" /var/run/docker.sock
+```
