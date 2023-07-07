@@ -331,6 +331,12 @@ public interface PDSBoardRepository extends CrudRepository<PDSBoard, Long> {
 
 `@Query`는 기본적으로 `SELECT`구문만을 지원하지만 `@Modifying` 어노테이션으로 `UPDATE, DELETE`구현이 가능하다.  
 
+`@Modifying` 으로 변경된 값은 자동으로 영속성에 업데이트 된 정보가 들어가지 않는다.  
+아래 옵션으로 쿼리 실행후 영속성을 비우거나 쿼리 실행전 flush 작업을 진행할 수 있다.  
+
+- `flushAutomatically` : 쿼리 실행 전 쓰기 지연 저장소의 쿼리를 flush 하는 옵션
+- `clearAutomatically` : 쿼리 실행 후 영속성 컨텍스트를 비우는 옵션
+
 ### JPA Custom DTO
 
 > <https://stackoverflow.com/questions/36328063/how-to-return-a-custom-object-from-a-spring-data-jpa-group-by-query>
@@ -809,11 +815,22 @@ public class Reply {
 private List<Reply> replies;
 ```
 
+#### 주의사항
+
+양방향 매핑 관계에선 `@ToString`, `json` 변환같이 `serialize` 코드에서 무한루프가 발생할 수 있다.  
+
+`@JoinColumn` 으로 `부모 -> 자식` 관계만을 사용하는것을 권장하며  
+반드시 양방향 연관관계로 엔티티를 구성해야할 경우 아래와 같이 `serialize` 제외설정 필수  
+
+- `@ToString(exclude = "board")`  
+- `@JsonIgnore private Board board;`  
+
 ### @OneToOne 관계매핑
 
 > `@OneToOne` 사용 자체를 권장하지 않는다.  
 
-`@OneToOne` 의 경우 아무런 설정을 하지 않을경우 두 엔티티에 서로 FK 가 생성된다.  
+`@OneToOne` 은 관계 특성상 양방향 매핑일 수 밖에 없다, 부모객체와 자식객체에 모두 `@OneToOne` 필드를 정의해야 한다.  
+이떄 아무런 설정을 하지 않을경우 두 엔티티에 서로 FK 가 생성된다.  
 
 `mappedBy` 속성을 사용하면 양방향 매핑,
 `@JoinColumn` 을 사용하면 단방향 매핑이 가능하다.  
@@ -823,7 +840,11 @@ public class Board {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long bno;
-    // 별도 어노테이션 필요없음
+
+    ...
+
+    @OneToOne(mappedBy = "board", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    private Thumbnail thumbnail;
 }
 
 public class Thumbnail {
@@ -839,26 +860,19 @@ public class Thumbnail {
 }
 ```
 
-`@JoinColumn` 을 사용하는 엔티티가 자식엔티티가 되며  
+`@JoinColumn` 을 사용하는 엔티티가 자식엔티티가 된다.  
+
 `@OneToOne` 사용시 부모엔티티에서 단방향 매핑하는 방법은 없다.  
+**자신 엔티티에만 `[@JoinColumn, @OneToOne]` 어노테이션을 지정하면 단방향 매핑이 된다고 생각할 수 있지만 `@ManyToOne` 처럼 동작하기에 `@OneToOne` 이라 할 수 없다.**  
 
-`@OneToOne` 의 경우 `mappedBy` 를 사용하면 N+1 문제가 발생한다.  
+부모엔티티에서 조회할 경우 `N+1` 문제가 발생한다.  
+자동으로 조인쿼리가 발생할것 같지만 실제 `board` 테이블에 `thumbnail_id` 가 들어가있지 않기때문에 JPA 가 알아서 조인쿼리를 생성하진 않는다.  
 
-아래처럼 양방향 매핑을하면 자동으로 조인쿼리가 발생할것 같지만 실제 `board` 테이블에 `thumbnail_id` 가 들어가있지 않기때문에  
 `LAZY`, `EAGER` 상관없이 `thumbnail_id` 를 얻기위해 `board` 개수만큼 `thumbnail` 을 검색한다.  
+꼭 필요하다면 JPQL 쿼리를 통해 `[Board, Thumbnail]` 조인쿼리를 별도로 작성해야 한다.  
 
-```java
-public class Board {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long bno;
-    ...
-    @OneToOne(mappedBy = "board", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
-    private Thumbnail thumbnail;
-}
-```
-
-사용하지 않는걸 제일 권장하고 꼭 필요하다면 JPQL 쿼리를 별도로 작성해야 한다...
+반대로 자식엔티티에서 조회할 경우 `fetchType.LAZY` 로 설정할 경우 쿼리 호출이 한번만 일어난다.  
+`fetchType.EAGER` 로 설정하면 일반쿼리와 1개와 N개의 조인쿼리가 일어나서 더 이상한 `1+N` 문제가 발생한다.  
 
 ### FetchMode.LAZY, FetchMode.EAGER  
 
@@ -924,10 +938,12 @@ public void insertReply() {
 
 ### orphanRemoval
 
-`CascadeType.REMOVE`와 같은 거의 같은 기능  
+`CascadeType.REMOVE`와 같은 거의 같은 기능, 부모객체가 삭제되면 `orphanRemoval` 또한 같이 삭제된다.  
 
 차이점은 자식엔티티를 `null`로 설정하고 저장했을 때 `orphanRemoval`는 삭제하고  
 `CascadeType.REMOVE`는 삭제하지 않는다.  
+
+> 부모 엔티티에서 의도적으로 연결관계를 끊었을 때 고아 객체로 인식되어 `orphanRemoval` 된다.  
 
 다음과 같이 하나는 `REMOVE`, 하나는 `orphanRemoval` 를 설정해서 테스트  
 
@@ -964,7 +980,10 @@ delete from tbl_replies where rno=?
 delete from tbl_boards where bno=?
 ```
 
-아래와 같이 `List clear` 후 저장진행시 `replies` 는 `update` 만, `attachments` 는 `update & delete` 쿼리가 진행된다.  
+아래와 같이 `List clear` 후 저장진행시 `replies` 는 `update` 만,  
+`attachments` 는 `update & delete` 쿼리가 진행된다.  
+
+> `clear()` 함수로 **같은 참조에 데이터가 지워져야** 정상동작함을 주의
 
 ```java
 @PatchMapping("/test/orphan/{id}")
@@ -984,18 +1003,6 @@ delete from attachment where ano=?
 ```
 
 `replies` 도 `update` 로 인해 `board` 와 연결이 끊겼기 때문에 더이상 조인쿼리를 통해 검색되지 않는다.  
-
-`clear()` 함수로 **같은 참조에 데이터가 지워져야** 정상동작함을 주의
-
-### 주의사항
-
-양방향 매핑 관계에선 `@ToString`, `json` 변환같이 `serialize` 코드에서 무한루프가 발생할 수 있다.  
-
-`@JoinColumn` 으로 `부모 -> 자식` 관계만을 사용하는것을 권장하며  
-반드시 양방향 연관관계로 엔티티를 구성해야할 경우 아래와 같이 `serialize` 제외설정 필수  
-
-- `@ToString(exclude = "board")`  
-- `@JsonIgnore private Board board;`  
 
 ### @OrderColumn
 
@@ -1523,7 +1530,7 @@ try {
 
 이런 상황을 `Phantom Read` 라 한다.  
 
-모든 레코드에 `Shared Lock` 이 걸리기에 동싱성이 매우 떨어진다.  
+모든 레코드에 `Shared Lock` 이 걸리기에 동시성이 매우 떨어진다.  
 
 ### @Transactional
 
@@ -1583,7 +1590,7 @@ Optional<Member> findByIdForUpdate(@Param(“id”) MemberId memberId);
 ```
 
 비전섬 잠금에서 `@Version` 을 사용한다.  
-사용하는 `Entity` 에 필드를 추가한다.  
+사용하는 `Entity` 에 필드를 추가한다(`[Long, Int, Short, Timestamp]` 사용 가능).  
 
 ```java
 @Entity
@@ -1617,3 +1624,19 @@ WHERE bno=? AND version=?
 @Override
 Optional<Board> findById(Long id);
 ```
+
+`@Lock` 어노테이션에서 여러가지 `LockModeType` 을 제공한다.  
+낙관적 잠금은 `@Version` 어노테이션만 지정해도 자동 사용된다.  
+
+**낙관적 잠금 타입**
+
+`OPTIMISTIC`: 트랜잭션 커밋 시점에 버전정보를 체크하고 증가시킴, `[dirt read, non repeatable read]` 방지  
+`OPTIMISTIC_FORCE_INCREMENT`: 본인 테이블이 아닌 자식 엔티티의 변경(논리적 변경) 이 일어나도 버전정보를 체크하고 증가시킴, 본인 테이블까지 변경될 경우 최대 2개 버전 증가 가능  
+
+
+**비관적 잠금 타입**(데이터 베이스 락 사용)
+
+- `PESSIMISTIC_READ`: 업데이트, 삭제를 막는다.  
+- `PESSIMISTIC_WRITE`: 읽기, 업데이트 삭제를 막는다.  
+- `PESSIMISTIC_FORCE_INCREMENT`: 읽기, 업데이트 삭제를 막는다. 그리고 `@Version` 이 지정된 Entity 와 협력, 잠금 흭득시 버전 증가시킨다.  
+
