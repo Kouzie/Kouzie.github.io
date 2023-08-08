@@ -1458,80 +1458,6 @@ try {
 
 트랜잭션 전파방삭에 따라 A, B 의 `rollback` 결정이 달라진다.  
 
-### 트랜잭션 격리
-
-**트랜잭션 격리** 는 트랜잭션 처리 과정에서 두개 이상의 트랜젝션이 **동시에 같은 공유 자원 접근시(Race Condition)** 처리방안이다.  
-
-> 일반적으로 `DB Connection` 생성이후 DB 리소스에 접근과 동시해 격리방식에 따라 해당 리소스에 대해 `lock` 이 처리된다.  
-> `lock` 은 향후 `commit`, `rollback` 이후 풀리게 된다.  
-
-
-
-예로 아래와 같은 2가지 메서드가 있는데  
-
-1. `hitup()` - 조회수 1 증가 메서드  
-2. `gethit()` - 조회수를 읽어오는 함수  
-
-한 트랜잭션에서 `hitup()` 도중에 또 다른 트랜잭션이 `gethit()` 할 경우  
-트랜잭션 격리방식에 따라 결과가 달라진다.  
-
-### 격리레벨(isolation level)
-
-|**격리레벨**|**설명**|**Dirty Read**|**Nonrepeatable Read**|**Phantom Read**
-|---|---|:-----:|:-----:|:-----:
-`lv0 READ_UNCOMMITED` | 다른 트랜잭션에서 커밋하지 않은 데이터 read 가능. | 발생 | 발생 | 발생  
-`lv1 READ_COMMITTED` | 다른 트랜잭션에 의해 커밋된 데이터만 read 가능. | X | 발생 | 발생  
-`lv2 REPEATABLE_READ` | 처음에 읽어온 데이터와 두 번째 읽어온 데이터가 동일한 값을 갖는다. | X | X | 발생  
-`lv3 SERIALIZABLE` | 동일한 데이터에 대해서 동시에 두개 이상의 트랜잭션이 수행될 수 없다. | X | X | X  
-
-![springboot2_1](/assets/springboot/springboot_jpa_6.gif)  
-
-> MySQL InnoDB 의 경우 모든 수준의 격리레벨을 제공하고 기본 격리레벨은 `REPEATABLE READ` 을 제공한다.  
-
-높은 레벨일수록 고립도가 높아지며 성능이 떨어진다.  
-
-각 격리레벨에 따라 아래와 같은 이슈가 발생할 수 있다.  
-
-#### Dirty Read  
-
-`READ_UNCOMMITED` 가능할 경우 `commit` 되기전 정보를 `read` 할 수 있다.  
-이 과정에서 오류가 발생되어 읽어온 정보가 `rollback` 된다면  
-`read` 된 정보는 잘못된 정보가 되어버린다.  
-
-이렇게 잘못된 정보를 읽는 것 을 `Dirty read` 라 한다.  
-
-- `hitup()` 통해 조회수 증가 `10 -> 11`  
-- `gethit()` 에서 `11 read`  
-- `hitup()` 에서 `rollback` 발생 `11 -> 10`  
-- `gethit()` 에서 `11 read` 는 `Dirty Read` 가 되버림  
-
-`READ_COMMITTED` 으록 설정하면 `Dirty Read` 가 발생하지 않는다.  
-
-#### Nonrepeatable Read
-
-`A트랜잭션` 의 시작 끝에서 `gethit()` 2번 호출  
-그 사이에 `B트랜잭션` 에서 `hitup()` 을 통해 조회수를 증가  
-첫번째 `gethit()` 과 두번째 `gethit()` 결과가 다르다.  
-
-이렇게 처음 읽어드린 값과 후에 읽어드린 값이 다른 상황을 `Nonrepeatable Read` 이라한다.  
-
-`REPEATABLE_READ` 를 사용하면 트랜잭션의 DB 리소스 진입접에서 `Shared Lock` 이 걸려  
-해당 리소스에 다른 트랜잭션 접근을 정지시킨다.  
-
-> `MySQL` 이 기본적으로 `REPEATABLE_READ` 을 사용한다.  
-
-#### Phantom Read
-
-여러개의 레코드를 `read` 하는 경우에서 발생하는 이슈  
-
-`A트랜잭션` 의 시작 끝에서 게시글 `read` 하는 쿼리 2번 호출  
-그 사이에 `B트랜잭션` 에서 게시글 하나 `delete` 혹은 `insert`  
-두 `read` 쿼리의 결과값이 달라진다.  
-
-이런 상황을 `Phantom Read` 라 한다.  
-
-모든 레코드에 `Shared Lock` 이 걸리기에 동시성이 매우 떨어진다.  
-
 ### @Transactional
 
 `@Transactional` 어노테이션이 있으면 `Spring AOP` 가 알아서 `TransactionManager` 기반으로 `commit`, `rollback` 을 진행한다.  
@@ -1544,7 +1470,7 @@ try {
 위 전제조건을 토대로 상황에 맞게 `rollbackFor`, `noRollbackFor` 을 사용한다.  
 
 - `propagation`: 위 트랜잭션 전파 참고하여 설정, `Propagation.REQUIRED` 가 default  
-- `isolation`: 위 트랜잭션 격리 참고하여 설정, `Isolation.DEFAULT` 가 default  
+- `isolation`: 트랜잭션 격리레벨 설정, `Isolation.DEFAULT` 가 default  
 
 > `Isolation.DEFAULT` 는 DBMS 에 설정된 격리수준을 사용한다는 뜻  
 
