@@ -297,9 +297,14 @@ public class CarController {
 
 > 어차피 `DDD` 특성상 `update` 함수를 애그리거트 클래스에서 정의함으로 큰 부담을 아닐것이다.  
 
-## @Valid - 칼럼에 대한 각종 제약조건 설정  
+## String Validator  
 
-`@Column`어노테이션 만으로 제약조건 지정이 부족하다면 아래 어노테이션들을 사용한다.  
+> 참고  
+> <https://meetup.nhncloud.com/posts/223>  
+> <http://www.thejavageek.com/2014/05/24/jpa-constraints/>  
+> <https://beanvalidation.org/>
+
+`@Valid` - 칼럼에 대한 각종 제약조건 설정  
 
 어노테이션|설명|사용예
 |---|---|---|
@@ -317,8 +322,191 @@ public class CarController {
 `@Pattern` | 정규식을 만족해야함 | @Pattern(regexp="(d{3})d{3}-d{4}")<br>String phoneNumber;
 `@Size` | 최소크기, 최대크기를 지정 | @Size(min=2, max=240)<br>String briefMessage;
 
-> <http://www.thejavageek.com/2014/05/24/jpa-constraints/>
+어노테이션 내부 groups 필드를 사용하면 특정 조건에 맞춰서 검증을 진행시킬 수 있다.  
 
+```java
+public interface Ad {
+}
+
+public class Message {
+    // groups 가 javax.validation.groups.Default 로 지정되어 있을때만 검증 진행
+    @Length(max = 128)
+    @NotEmpty
+    private String title;
+    @Length(max = 1024)
+    @NotEmpty
+    private String body;
+    // groups 가 Ad 로 지정되어 있을때만 검증 진행
+    @Length(max = 32, groups = Ad.class)
+    @NotEmpty(groups = Ad.class)
+    private String contact;
+    // groups 가 Default, Ad 로 지정되어 있을때만 검증 진행
+    @Length(max = 64, groups = {Default.class, Ad.class})
+    @NotEmpty(groups = Ad.class)
+    private String removeGuide;
+}
+```
+
+```java
+@Validated(Ad.class) // 메서드 호출 시 Ad 그룹이 지정된 제약만 검사한다.
+public void sendAdMessage(@Valid Message message) {
+    // Do Something
+}
+
+// @Validated(javax.validation.groups.Default ) 가 정의되어있는것과 동일하다.  
+public void sendNormalMessage(@Valid Message message) {
+    // Do Something
+}
+```
+
+### Custom Validation
+
+검증할 조건을 커스텀하게 작성 가능하다.  
+입력값이 해당 CustomEnum 에 부합하는지를 검증하고 싶을때,  
+
+```java
+public enum CustomEnum {
+    INFO, WARN, ERROR, DEBUG;
+
+    @JsonValue
+    public String getValue() {
+        return this.name();
+    }
+
+    @JsonCreator
+    public static CustomEnum fromString(String value) {
+        for (CustomEnum customEnum : values()) {
+            if (customEnum.name().equals(value))
+                return customEnum;
+        }
+        return null;
+    }
+}
+```
+
+```java
+@Getter
+@Setter
+public class MyCustomValidDto {
+    @AssertFalse
+    private Boolean isFalse;
+
+    @NotBlank(message = "should be not null")
+    private String msg1;
+
+    @ValidCustomEnum // 검증할 문자열, enum 과 부합하는지
+    private String enumValue;
+}
+```
+
+아래와 같이 `Constraint` 를 적용한 어노테이션을 사용해서 검증조건을 커스텀하게 정의할 수 있다.  
+
+```java
+@Documented // java doc 에 포함
+@Constraint(validatedBy = CustomEnumValidator.class)
+@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ValidCustomEnum {
+    String message() default "is invalid enum type";
+
+    // 검증 그룹 지정
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
+}
+
+// String 입력값을 기준으로 enum 과 비교한다.  
+class CustomEnumValidator implements ConstraintValidator<ValidCustomEnum, String> {
+    private List<String> enumNames;
+
+    @Override
+    public void initialize(ValidCustomEnum constraintAnnotation) {
+        enumNames = Arrays.stream(CustomEnum.values())
+            .map(customEnum -> customEnum.name())
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean isValid(String value, ConstraintValidatorContext context) {
+        if (value == null) {
+            return false; // null 값은 에러
+        }
+        for (String enumName : enumNames) {
+            if (enumName.equals(value)) {
+                return true; // 입력된 값이 Enum에 존재하는 경우 유효
+            }
+        }
+        return false; // 입력된 값이 Enum에 존재하지 않는 경우 유효하지 않음
+    }
+}
+```
+
+### 클래스단위 Custom Validation  
+
+클래스의 특정필드가 특정값일 때만 검증하고 싶을때, 클래스 위에 Custom Validation 을 위한 어노테이션을 지정해서 설정할 수 있다.  
+
+아래와 같이 `groups` 로 검증조건을 지정하고, `isAd=true` 일 경우 검증하도록 설정할 수 있다.  
+
+```java
+@AdMessageConstraint // 클래스단위 커스텀 검증 어노테이션
+public class Message {
+    @Length(max = 128)
+    @NotEmpty
+    private String title;
+    @Length(max = 1024)
+    @NotEmpty
+    private String body;
+    @Length(max = 32, groups = Ad.class)
+    @NotEmpty(groups = Ad.class)
+    private String contact;
+    @Length(max = 64, groups = Ad.class)
+    @NotEmpty(groups = Ad.class)
+    private String removeGuide;
+    private boolean isAd; // 광고 여부를 설정할 수 있는 속성
+}
+```
+
+`validator.validate` 함수에서 `Ad.class` `groups` 조건을 추가해서 설정 가능하다.  
+
+```java
+@Target({TYPE})
+@Retention(RUNTIME)
+@Constraint(validatedBy = AdMessageConstraintValidator.class)
+@Documented
+public @interface AdMessageConstraint {
+    String message() default "invalid param in ad condition";
+    Class<?>[] groups() default {};
+    Class<? extends Payload>[] payload() default {};
+}
+
+class AdMessageConstraintValidator implements ConstraintValidator<AdMessageConstraint, Message> {
+    private Validator validator;
+
+    // 생성자 초기화 필수
+    public AdMessageConstraintValidator(Validator validator) {
+        this.validator = validator;
+    }
+
+    @Override
+    public boolean isValid(Message value, ConstraintValidatorContext context) {
+        if (value.isAd()) {
+            // 위반한 검증 목록
+            final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(value, Ad.class);
+            if (constraintViolations != null && constraintViolations.size() != 0) {
+                // 기본 메시지 제거하고 새로운 MethodArgumentNotValidException 에 message 에 정의된 문자열를 넣는 과정
+                context.disableDefaultConstraintViolation(); 
+                constraintViolations.stream()
+                        .forEach(constraintViolation -> context
+                                .buildConstraintViolationWithTemplate(constraintViolation.getMessageTemplate())
+                                .addPropertyNode(constraintViolation.getPropertyPath().toString())
+                                .addConstraintViolation());
+                return false;
+            }
+        }
+        return true;
+    }
+}
+```
 
 ## 샘플 프로젝트  
 
