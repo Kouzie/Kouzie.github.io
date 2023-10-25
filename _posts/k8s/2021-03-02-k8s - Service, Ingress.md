@@ -115,8 +115,9 @@ spec:
     nodePort: 30000 ## 노드외부 노출할 포트
 ```
 
-```
 ## 서비스 생성
+
+```
 $ kubectl apply -f nodeport.yaml
 
 $ kubectl get svc
@@ -226,77 +227,100 @@ NAME                                       READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/nginx-ingress-controller   1/1     1            1           2m38s
 
 NAME                    TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
-service/ingress-nginx   NodePort   10.100.191.108   <none>        80:31026/TCP,443:31976/TCP   2m38s
+service/ingress-nginx   NodePort   10.100.191.108   <none>        80:31026/
+TCP,443:31976/TCP   2m38s
 ```
 
 생성된 `Service`, `Deployment` 확인, `NodePort` `31026` 포트로 생성되었다.  
 
 ### Ingress 정의
 
-먼저 `Ingress` 를 통해 접근할 앱을 `Deployment` 로 정의  
-
-```yaml
-## deployment-nginx.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-deployment
-  labels:
-    app: nginx-deployment
-  ## annotations:
-    ## kubernetes.io/change-cause: version 1.10.1
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: nginx-deployment
-  template:
-    metadata:
-      labels:
-        app: nginx-deployment
-    spec:
-      containers:
-      - name: nginx-deployment
-        image: nginx
-        ports:
-        - containerPort: 80
-```
-
+먼저 `Ingress` 를 통해 접근할 앱을 `Pod` 정의  
 
 그리고 위에서 설정한 `ingress-nginx` 컨트롤러를 사용해 실제 요청을 분기해줄 `Ingress` 를 만든다.  
 
 ```yaml
-apiVersion: extensions/v1beta1
+# test-ingress.yaml
+kind: Pod
+apiVersion: v1
+metadata:
+  name: apple
+  labels:
+    app: apple
+spec:
+  containers:
+    - name: apple
+      image: hashicorp/http-echo
+      imagePullPolicy: IfNotPresent
+      args:
+        - "-text=apple"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: apple
+spec:
+  selector:
+    app: apple
+  ports:
+    - port: 5678 # Default port for image
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: banana
+  labels:
+    app: banana
+spec:
+  containers:
+    - name: banana
+      image: hashicorp/http-echo
+      imagePullPolicy: IfNotPresent
+      args:
+        - "-text=banana"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: banana
+spec:
+  selector:
+    app: banana
+  ports:
+    - port: 5678 # Default port for image
+---
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: test
+  name: http-echo
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: / ## 모든 request 를 / uri 로 변경
+    kubernetes.io/ingress.class: "nginx"
+    ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
-  - host: foo.bar.com ## host 명을 이용해 룰 설정
-    http:
+  - http:
       paths:
-      - path: /foos1 ## /foos1 의 요청은 s1 인도
-        backend:
-          serviceName: s1
-          servicePort: 80
-      - path: /bars2 ## /bars2 의 요청은 s2 인도
-        backend:
-          serviceName: s2
-          servicePort: 80
-  - host: bar.foo.com
-    http:
-      paths:
-      - backend:
-          serviceName: s2
-          servicePort: 80
+        - path: /apple
+          pathType: Prefix
+          backend:
+            service:
+              name: apple
+              port:
+                number: 5678
+        - path: /banana
+          pathType: Prefix
+          backend:
+            service:
+              name: banana
+              port:
+                number: 5678
 ```
 
 `host`, `path` 등을 사용해 요청을 분기시킬 수 있다.  
 
 ```
-$ kubectl apply -f deployment-nginx.yaml 
+$ kubectl apply -f test-ingress.yaml
 $ kubectl expose deploy nginx-deployment --name s1
 
 $ kubectl describe ingress test

@@ -15,6 +15,7 @@ categories:
 ## JPA(Java Persisitence API)  
 
 > 참고  
+> <https://docs.jboss.org/hibernate/orm/current/userguide/html_single/Hibernate_User_Guide.html>
 > <https://www.datanucleus.org/products/accessplatform/index.html>
 > <https://www.datanucleus.org/products/accessplatform/jpa/annotations.html>
 
@@ -574,6 +575,20 @@ deviceRestartLogRepository.refresh(deviceRestartLog);
 restartStatus = deviceRestartLog.getStatus();
 ...
 ```
+
+### 1차 캐시, 2차 캐시
+
+**1차 캐시(First Level Cache, L1 Cache)**  
+트랜잭션 단위에서 공유하는 캐시, 영속성 컨텍스트 내부에 존재하여 엔티티 매니저로 조회하는 모든 엔티티는 1차캐시에서 값을 확인하고 가져온다.  
+영속성 컨택스트는 JPA 를 사용한다면 자동으로 설정된다.  
+
+**2차 캐시(Second Level Cache, L2 Cache)**  
+어플리케이션 단위에서 공유하는 캐시, 애플리케이션을 종료할 때까지 유지된다.  
+대부분 API 단의 캐시(Redis, EhCache 등) 을 사용하고 hibernate 의 2차캐시는 사용하지 않는다.  
+
+아래 url 과 `@javax.persistence.Cacheable`, `@org.hibernate.annotations.Cache` 설정을 통해 각종 추가설정이 가능하다.  
+
+> <https://docs.jboss.org/hibernate/orm/6.2/userguide/html_single/Hibernate_User_Guide.html#caching>  
 
 ## 연관관계 어노테이션
 
@@ -1490,79 +1505,186 @@ JPA 에선 트랜잭션 내에서 `영속성 컨텍스트`를 유지시킨다.
 스레드가 애그리거트를 read, write 하는 동안  
 다른 스레드가 수정할 수 없도록 설정하기 위한 기능  
 
-> `Pessimistic Lock` 선점잠금, 비관적잠금  
-> `Optimistic Lock` 비선점잠금, 낙관적잠금  
+> `Pessimistic Lock` 비관적 락, 선점잠금  
+> `Optimistic Lock` 낙관적 락, 비선점잠금  
 
 ![jpa7](/assets/springboot/springboot_jpa_7.png)
 
+`DB row` 에 잠금을 걸어 트랜잭션을 `block` 시키는 **비관적 락** 방식이 있고  
+`version` 정보를 통해 `Lost Update` 를 제한시키는 **낙관적 락** 방식이 있다.  
 
-`DB row` 에 잠금을 걸어 스레드를 block 시키는 **선점 잠금** 방식이 있고  
-`version` 정보를 통해 이전 정보 업데이트를 제한시키는 **비선점 잠금** 방식이 있다.  
+#### 낙관적 락
 
-> 선점 잠금 방식의 경우 교착상태가 발생가능하니 타임아웃 설정을 권장한다.  
+`낙관적 락` 에선 `@Version` 을 사용한다. `@Version` 어노테이션만 지정해도 자동 사용된다.  
 
-선점 잠금에선 `@Lock` 을 사용한다.  
-쿼리위에 선점잠금을 명시  
-
-```java
-@Lock(LockModeType.PESSIMISTIC_WRITE)
-public YourEntity findEntityById(Long id) {
-    return entityManager.find(YourEntity.class, id);
-}
-
-@Lock(LockModeType.PESSIMISTIC_WRITE)
-@Query("select m from Member m where m.id = :id") 
-Optional<Member> findByIdForUpdate(@Param(“id”) MemberId memberId);
-```
-
-비전섬 잠금에서 `@Version` 을 사용한다.  
-사용하는 `Entity` 에 필드를 추가한다(`[Long, Int, Short, Timestamp]` 사용 가능).  
+> `[Long, Int, Short, Timestamp]` 사용 가능  
 
 ```java
+@Getter
+@Access(AccessType.FIELD)
 @Entity
-@Table(name = "tbl_boards")
-@EqualsAndHashCode(of = "bno")
-@ToString(exclude = {"replies", "thumbnail"})
-public class Board {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long bno;
+@Table(name = "purchase_order")
+public class Order {
 
+    @EmbeddedId
+    private OrderId orderId;
+    ...
+    ...
+    // 낙관적 락을 위한 필드
     @Version
-    private Long version;
+    private long version;
 }
 ```
 
-업데이트시 사용하는 `SQL` 은 아래와 같다.  
+`Entity` 에 `@Version` 만 지정하면 별도의 어노테이션을 사용하지 않아도 `version` 정보를 기반으로 `UPDATE` 하기 때문에 `Lost Update` 문제가 발생하지 않는다.  
 
 ```sql
-UPDATE tbl_boards SET {SOMETHING..., version = version + 1}
-WHERE bno=? AND version=?
+-- OrderService->patch start!
+select order0_.order_number as order_nu1_1_,
+       order0_.state        as state2_1_,
+       order0_.version      as version3_1_
+from purchase_order order0_
+where order0_.order_number = ?
+-- UPDATE 시 version 체크
+update purchase_order set state=?, version=? where order_number=? and version=?
+-- OrderService->patch end!
 ```
 
-비선점잠금은 필드를 하나 추가하는 대신 `Lock` 성능 관련해서 이점을 가져간다.  
+쿼리 메서드에 별도로 `@Lock` 어노테이션을 사용해 `낙관적 락`에 대한 추가설정을 할 수 있다.  
 
-또한 `@OneToMany` 와 같은 관계에서 자식엔티티를 수정하고 부모엔티티의 `version` 을 증가시키고 싶다면  
-`@Lock` 을 사용해 조회쿼리 호출시 강제로 `version` 을 증가시키면 된다.  
+- **OPTIMISTIC**  
+  트랜잭션 종료 시점에 한번 더 버전정보를 체크한다.  
+  만약 종료시점에서 검색된 version 이 다를경우 `OptimisticLockException` 을 발생시킨다.  
+  현재 스레드의 `Dirty Read, Lost Update` 상황을 방지한다.  
+- **OPTIMISTIC_FORCE_INCREMENT**  
+  단순 `SELECT` 요청도 `version` 을 증가시킨다. 변경까지 한다면 `version` 이 2 증가한다.  
+  타 스레드의 `Dirty Read, Lost Update` 상황을 방지한다.  
 
 ```java
+@Lock(LockModeType.OPTIMISTIC)
+@Query("SELECT o FROM Order o WHERE o.orderId = :orderId")
+Optional<Order> findByIdOptimistic(OrderId orderId);
+
 @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
-@Override
-Optional<Board> findById(Long id);
+@Query("SELECT o FROM Order o WHERE o.state = :state")
+List<Order> findAllByOrderStateOptimistic(OrderState state);
 ```
 
-`@Lock` 어노테이션에서 여러가지 `LockModeType` 을 제공한다.  
-낙관적 잠금은 `@Version` 어노테이션만 지정해도 자동 사용된다.  
+`LockModeType.OPTIMISTIC` 을 사용했다면 초기 `SELECT` 한 `Entity` `version` 과 트랜잭션 종료 직전 조회한 `version` 이 일치하지 않는다면 `OptimisticLockException` 가 발생한다.  
 
-**낙관적 잠금 타입**
+```sql
+-- OrderService->findByIdOptimistic start! 함수 트랜잭션 시작
+-- service function start!
+select order0_.order_number as order_nu1_1_,
+       order0_.state        as state2_1_,
+       order0_.version      as version3_1_
+from purchase_order order0_
+where order0_.order_number = ?
 
-`OPTIMISTIC`: 트랜잭션 커밋 시점에 버전정보를 체크하고 증가시킴, `[dirt read, non repeatable read]` 방지  
-`OPTIMISTIC_FORCE_INCREMENT`: 본인 테이블이 아닌 자식 엔티티의 변경(논리적 변경) 이 일어나도 버전정보를 체크하고 증가시킴, 본인 테이블까지 변경될 경우 최대 2개 버전 증가 가능  
+-- service function end!
+select version as version_ from purchase_order where order_number =?
+-- OrderService->findByIdOptimistic end! 함수 트랜잭션 종료 전 version 검사
+-- 일치하지 않으면 OptimisticLockException
+```
 
+`LockModeType.OPTIMISTIC_FORCE_INCREMENT` 을 사용했다면 `SELECT` 로 조회한 모든 `Entity` `version` 을 증가시킴.  
 
-**비관적 잠금 타입**(데이터 베이스 락 사용)
+```sql
+-- OrderService->findAllByOrderState start!
+select order0_.order_number as order_nu1_1_,
+       order0_.state        as state2_1_,
+       order0_.version      as version3_1_
+from purchase_order order0_
+where order0_.state = ?
 
-- `PESSIMISTIC_READ`: 업데이트, 삭제를 막는다.  
-- `PESSIMISTIC_WRITE`: 읽기, 업데이트 삭제를 막는다.  
-- `PESSIMISTIC_FORCE_INCREMENT`: 읽기, 업데이트 삭제를 막는다. 그리고 `@Version` 이 지정된 Entity 와 협력, 잠금 흭득시 버전 증가시킨다.  
+update purchase_order set version=? where order_number=? and version=?
+update purchase_order set version=? where order_number=? and version=?
+update purchase_order set version=? where order_number=? and version=?
+update purchase_order set version=? where order_number=? and version=?
+update purchase_order set version=? where order_number=? and version=?
+-- SELECT 로 조회된 purchase_order 개수만큼 수행
+-- OrderService->findAllByOrderState end!
+```
 
+`LockModeType.OPTIMISTIC_FORCE_INCREMENT` 는 부하를 유발시키는 설정이긴 하지만 `first-commiter win` 과 같은 형태로 운영할 수 있다.  
+
+#### 비관적 락
+
+`비관적 락`에선 `@Lock(LockModeType.PESSIMISTIC...)` 을 사용한다.  
+
+DBMS 마다 다르지만 MySQL 의 경우 `비관적 락` 을 설정하면 쿼리 마지막에 `FOR SHARE, FOR UPDATE` 키워드가 붙는다.  
+
+- **PESSIMISTIC_READ**  
+  `FOR SHARE` 키워드를 사용, `[UPDATE, DELETE]` 를 막는다.  
+- **PESSIMISTIC_WRITE**
+  `FOR UPDATE` 키워드를 사용, `[SELECT, UPDATE, DELETE]` 를 막는다.  
+  현재 스레드의 `Dirty Read, Lost Update` 를 막는다.  
+- **PESSIMISTIC_FORCE_INCREMENT**  
+  `PESSIMISTIC_WRITE` 와 동일한 기능에 더불어 잠금 흭득시 `@Version` 을 증가시킨다.  
+
+> `비관적 락` 방식의 경우 락에 의한 교착상태가 발생가능하니 타임아웃 설정을 권장한다.  
+
+```java
+public interface OrderRepository extends CrudRepository<Order, OrderId> {
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<Order> findById(OrderId orderId);
+
+    @Lock(LockModeType.PESSIMISTIC_FORCE_INCREMENT)
+    @Query("SELECT o FROM Order o WHERE o.state = :state")
+    List<Order> findAllByOrderState(OrderState state);
+}
+```
+
+```sql
+-- findAllByOrderState 실행
+-- 리스트 개수만큼 version update 가 추가실행된다.  
+select order0_.order_number as order_nu1_1_,
+       order0_.state        as state2_1_,
+       order0_.version      as version3_1_
+from purchase_order order0_
+where order0_.state = ?
+for update;
+
+update purchase_order set version=? where order_number = ? and version = ?;
+update purchase_order set version=? where order_number = ? and version = ?;
+...
+update purchase_order set version=? where order_number = ? and version = ?;
+```
+
+`비관적 락`을 사용하는 대부분 이유가 `Dirty Read` 이후 이어지는 `Lost Update` 를 막기 위함이기 때문에 `PESSIMISTIC_WRITE` 를 주로 사용한다.  
+
+### 분산락  
+
+분산락(Distributed lock) 은 DB 접근을 제한하기 보다, 서버 어플리케이션 특정 코드접근(임계영역)을 제한하기 위한 기법이다.  
+
+다수의 동일한 서버 어플리케이션이 동작하고 있을 때 특정 코드영역에 대해 동기화를 위해 접근을 제한시킬 때 분산락을 사용한다.  
+
+따라서 어플리케이션 중앙에서 Lock 을 관리해줄 별도의 서버가 필요한데, 주로 `[Redis, Mysql Lock]` 을 사용한다.  
+
+```java
+void doProcess() {
+    String lockKey = "lock";
+
+    try {
+        while (!tryLock(lockKey)) { // (2) 락 흭득 시도
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        
+        // (3) 비지니스 로직 실행
+    } finally {
+        unlock(lockKey); // (4) 락 반납
+    }
+}
+
+boolean tryLock(String key) {
+    return command.setnx(key, "1"); // (1)
+}
+
+void unlock(String key) {
+    command.del(key);
+}
+```

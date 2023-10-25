@@ -16,7 +16,7 @@ categories:
 ## 리플리카셋 (ReplicaSet)
 
 파드가 자동으로 상태검사, 정상화(재시작) 하며 상태를 복구하는 것이라면
-리플리카셋은 **파드의 수를 유지, 자동으로 새로운 파드를 시작**한다. 
+**리플리카셋은 파드의 수를 유지, 자동으로 새로운 파드를 시작**한다.  
 
 ### 매니페스트
 
@@ -112,7 +112,7 @@ nginx-replicaset-p2w5f   0/1     ContainerCreating   0          2s
 
 쿠버네티스에선 어플리케이션의 유연한 `CI/CD` 를 위해 `Deployment` 를 제공한다.  
 
-`Deployment`는 `ReplicaSet`의 상위개념이다.  
+`Deployment` 는 `ReplicaSet`의 상위개념이다.  
 똑같이 여러개의 파드를 생성하고 관리면서 **업데이트 관련 기능을 추가 제공한다**.  
 
 **Recreate**  

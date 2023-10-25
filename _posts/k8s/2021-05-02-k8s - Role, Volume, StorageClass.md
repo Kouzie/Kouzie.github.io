@@ -270,7 +270,7 @@ CURRENT   NAME                       CLUSTER       AUTHINFO                NAMES
 
 k8s 는 기본적으로 stateless 앱 컨테이너를 관리한다.  
 
-하지만 DB 혹은 Jenkins 와 같이 앱 특성에 따라 데이터를 보관해야 하는 경우가 있다.  
+하지만 DB , S3 와 같이 앱 특성에 따라 데이터를 보관해야 하는 경우가 있다.  
 k8s 에서도 앱 컨데이터 재시작시 데이터가 지워지지 않도록 `volume` 을 설정할 수 있다.  
 
 > 클라우드 서비스에서 `awsElasticBlockStore`, `azureDisk`, `gcePersistentDisk` 등 클라우드 자체 볼륨 서비스도 제공한다.  
@@ -336,9 +336,13 @@ spec:
 ### PersistentVolume, PersistentVolumeClaim
 
 위의 볼륨속성은 해당 k8s 서비스에 임의의 저장공간을 할당하지만  
-k8s 매니페스트 파일을 사용해 PersistentVolume 을 만들면 다른 서비스도 사용할 수 있는 저장공간을 만들 수 있다.  
+k8s 매니페스트 파일을 사용해 `PersistentVolume` 을 만들면 다른 서비스도 사용할 수 있는 저장공간을 만들 수 있다.  
 
 이때 사용하는 k8s 리소스 종류가 `PV(PersistentVolume)`와 `PVC(PersistentVolumeClaim)` 2가지 있다.  
+
+![1](/assets/k8s/k8s_volume2.png)  
+
+대부분 관리자가 `PV` 을 생성, 개발자가 `PVC` 를 생성하고 `Pod` 와 연결을 진행한다.  
 
 - **PV**  
   볼륨 자체를 뜻함  
@@ -351,7 +355,7 @@ PV 와 PVC 의 매핑은 1:1 관계이다.
 
 볼륨이 생성되고 삭제되는 과정은 아래 그림과 같다.  
 
-![kucbe8](/assets/k8s/k8s_volume1.png)  
+![1](/assets/k8s/k8s_volume1.png)  
 
 **Provisioning**  
 **프로비저닝은 PV 를 만드는 단계**로 아래 2가지 방법이 있다.  
@@ -394,10 +398,12 @@ spec:
   volumeMode: Filesystem # 볼륨을 파일 시스템 형식으로 설정
   accessModes: # 볼륨의 읽기/쓰기 옵션을 설정
   - ReadWriteOnce
-  storageClassName: test # StorageClass 설정
   persistentVolumeReclaimPolicy: Delete
   hostPath:
     path: /tmp/k8s-pv
+  clameRef:
+    name: pv-hostpath
+    namespace: default
 ```
 
 ```yaml
@@ -412,7 +418,6 @@ spec:
   resources:
     requests:
       storage: 1Gi
-  storageClassName: test # StorageClass 설정
 ```
 
 `accessModes` 종류는 아래 3개  
@@ -421,34 +426,34 @@ spec:
 - `ReadOnlyMany`: 여러 개 노드에서 읽기 전용으로 마운트할 수 있음
 - `ReadWriteMany`: 여러 개 노드에서 읽기/쓰기 가능하도록 마운트할 수 있음
 
-`storageClassName` 은 `PV`, `PVC` 를 매핑하기 위한 문자열값  
+`PV` 의 `clameRef` 를 통해 request 하는 `PVC` 를 제한할 수 있다.  
 
-> `.metadata.labels.location` 필드를 사용해 조건식으로 `PV`, `PVC` 를 매핑할 수 도 있으니 참고  
+> `.metadata.labels.location` 필드를 사용해 조건식으로 `PVC` 를 매핑할 수 도 있으니 참고  
+
+`PVC` 의 `resources` 속성을 보면 PV 의 용량보다 적어도 상관 없는 이유는 조건에 따라 용량이 조금 오바되어도 상관없는 정책이 있기 때문
 
 ```
 kubectl apply -f volume/pv-hostpath.yaml
 
 Kubectl get pv
 NAME          CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS   REASON   AGE
-pv-hostpath   2Gi        RWO            Delete           Available           manual                  120m
+pv-hostpath   2Gi        RWO            Delete           Available                                   120m
 
 kubectl apply -f volume/pvc-hostpath.yaml
 
-Kubectl get pvc
+kubectl get pvc
 NAME           STATUS   VOLUME        CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-pvc-hostpath   Bound    pv-hostpath   2Gi        RWO            manual         5s
+pvc-hostpath   Bound    pv-hostpath   2Gi        RWO                           5s
 
-Kubectl get pv
+kubectl get pv
 NAME          CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   REASON   AGE
-pv-hostpath   2Gi        RWO            Delete           Bound    default/pvc-hostpath   manual                  134m
+pv-hostpath   2Gi        RWO            Delete           Bound    default/pvc-hostpath                           134m
 ```
 
 `PV` 와 `PVC` 에 연결 전후 `STATUS` 변경사항 확인  
 `RECLAIM POLICY` 가 `Delete` 임으로 `PVC` 가 해제되면 `PV` 도 같이 삭제된다.  
 
-#### 파드에서 PVC 사용하기  
-
-`emptyDir`, `hostPath` 와 마찬가지로 `volumeMounts`, `volumes` 속성을 사용한다.  
+**파드에서 PVC 사용하기** 위해서 마찬가지로 `volumeMounts`, `volumes` 속성을 사용한다.  
 
 ```yaml
 apiVersion: apps/v1
@@ -480,4 +485,135 @@ spec:
       - name: myvolume
         persistentVolumeClaim: # PVC 설정
           claimName: pvc-hostpath
+```
+
+## StorageClass
+
+위에서 `PV` 는 k8s 관리자가 수동으로 생성한다 하였는데 이러한 과정이 번거로울 수 있다.  
+또한 개발자가 `Pod` 를 생성할 때 얼만큼의 용량을 설정해 `PVC` 를 만들지 모름으로 미리 `PV` 를 생성해 놓기도 애매하다.  
+
+`StorageClass` 는 관리자의 개입 없이 운영되도록 동적으로 `PV` 생성을 지원한다.  
+
+아래는 `AWS EBS` 를 통해 `StorageClass` 를 사용하는 예.  
+
+![1](/assets/k8s/k8s_volume3.png)  
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard
+provisioner: kubernetes.io/aws-ebs
+volumeBindingMode: Immediate
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+parameters:
+  type: gp2
+mountOptions:
+  - debug
+```
+
+**provisioner**  
+스토리지 제공자, `AWS EBS` 외에도 여러 Cloud 벤더 `provisioner` 를 지원함  
+
+**volumeBindingMode**  
+`Immediate`: PVC 생성시 바인딩  
+`WaitForFirstConsumer`: PVC 와 이를 사용하는 Pod 생성시 바인딩  
+
+**parameters**
+`provisioner` 종류별로 상이함  
+
+> 참고  
+> `k8s v1.23` 부터 `EBS, EFS` 로 `StorageClass` 를 생성하려면 별도의 `CSI 드라이버` 설치가 필요하다.  
+> <https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/ebs-csi.html>  
+> <https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/efs-csi.html>  
+
+### rancher
+
+기본적으로 kubeadm 으로 `로컬 클러스터`를 구성했다면 `로컬 스토리지` 를 사용하기 위한 `provisioner` 를 별도로 지정해줘야 한다.  
+
+`rancher` 를 많이 사용한다.  
+
+> <https://github.com/rancher/local-path-provisioner>  
+
+```sh
+curl https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.24/deploy/local-path-storage.yaml -o local-storage.yaml
+
+kubectl apply -f local-storage.yaml
+
+kubectl get sc     
+NAME         PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+local-path   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  24s
+```
+
+`local-path` 라는 이름으로 `StorageClass` 가 생성됨을 볼 수 있다.  
+
+데모로 아래 `PVC` 와 `Deployment` 를 생성  
+
+```yaml
+# test-rancher.yaml
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-hostpath
+spec:
+  accessModes:
+  - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubernetes-simple-app
+  labels:
+    app: kubernetes-simple-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubernetes-simple-app
+  template:
+    metadata:
+      labels:
+        app: kubernetes-simple-app
+    spec:
+      containers:
+      - name: kubernetes-simple-app
+        image: arisu1000/simple-container-app:latest
+        ports:
+        - containerPort: 8080
+        imagePullPolicy: Always
+        volumeMounts: # 볼륨 매핑
+        - mountPath: "/tmp"
+          name: myvolume
+      volumes: # 볼륨 설정
+      - name: myvolume
+        persistentVolumeClaim: # PVC 설정
+          claimName: pvc-hostpath
+```
+
+```sh
+kubectl apply -f test-rancher.yaml
+kubectl port-forward deployment/kubernetes-simple-app 8080:8080
+```
+
+`/opt/local-path-provisioner` 위치(혹은 개인설정한 위치)로 이동해 PV 가 생성되고 그 안에 로그파일이 있는지 확인.  
+
+기본적으로 설정되는 `/opt/local-path-provisioner` 경로를 변경하고 싶다면 `nodePathMap` 에 원하는 경로로 변경
+
+```yaml
+data:
+  config.json: |-
+    {
+      "nodePathMap":[
+        {
+          "node":"DEFAULT_PATH_FOR_NON_LISTED_NODES",
+          "paths":["/opt/local-path-provisioner"]
+        }
+      ]
+    }
 ```

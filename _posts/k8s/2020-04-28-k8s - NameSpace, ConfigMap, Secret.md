@@ -17,7 +17,10 @@ categories:
 
 k8s 리소스로 네임스페이스는 하나의 클러스터를 여러개의 논리적 단위로 나눠 사용하기 윈한 기능으로 클러스터 하나를 여러 팀이 함께 공유할 수 있음.  
 
+
 > <https://kubernetes.io/ko/docs/concepts/overview/working-with-objects/namespaces/>
+
+특정 네임스페이스의 있는 자원들은 다른 네임스페이스의 자원에 공유되기 힘듬으로 분리성이 강함.  
 
 `Pod` 를 포함한 각종 k8s 리소스를 그룹화, 다른 그룹끼리는 분리화 하는 기능을 지원한다.  
 
