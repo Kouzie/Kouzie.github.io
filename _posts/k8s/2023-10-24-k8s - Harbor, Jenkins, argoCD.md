@@ -24,8 +24,12 @@ categories:
 `로컬 PC` `hosts` 파일에 `노드 IP` 와 `ingress url` 을 매핑  
 
 ```
-192.168.10.228  core.harbor.domain jenkins.cluster.local argocd.example.com
+192.168.10.XXX  core.harbor.domain jenkins.cluster.local argocd.example.com
 ```
+
+### 데모코드  
+
+> <https://github.com/Kouzie/local-k8s>
 
 ## kubadm
 
@@ -34,7 +38,7 @@ categories:
 
 설치는 아래 URL 참고  
 
-> <https://tech.hostway.co.kr/2022/08/30/1374/>
+> <https://tech.hostway.co.kr/2022/08/30/1374/>  
 > `k8s v1.24` 이후부턴 `containerd` 등의 컨테이너 환경 사용을 권장한다.  
 
 
