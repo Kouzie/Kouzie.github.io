@@ -1,5 +1,5 @@
 ---
-title:  "Spring Boot - MapStruct!"
+title:  "Spring Boot - MapStruct, Validation!"
 
 read_time: false
 share: false
@@ -362,7 +362,7 @@ public void sendNormalMessage(@Valid Message message) {
 ### Custom Validation
 
 검증할 조건을 커스텀하게 작성 가능하다.  
-입력값이 해당 CustomEnum 에 부합하는지를 검증하고 싶을때,  
+입력값이 해당 `CustomEnum` 에 부합하는지를 검증하고 싶을때,  
 
 ```java
 public enum CustomEnum {
@@ -443,11 +443,17 @@ class CustomEnumValidator implements ConstraintValidator<ValidCustomEnum, String
 
 ### 클래스단위 Custom Validation  
 
-클래스의 특정필드가 특정값일 때만 검증하고 싶을때, 클래스 위에 Custom Validation 을 위한 어노테이션을 지정해서 설정할 수 있다.  
+> <https://meetup.nhncloud.com/posts/223>
+
+클래스의 특정필드가 특정값일 때만 검증하고 싶을때,  
+클래스 위에 Custom Validation 을 위한 어노테이션을 지정해서 설정할 수 있다.  
 
 아래와 같이 `groups` 로 검증조건을 지정하고, `isAd=true` 일 경우 검증하도록 설정할 수 있다.  
 
 ```java
+// 단순 마커용 인터페이스
+public interface Ad { }
+
 @AdMessageConstraint // 클래스단위 커스텀 검증 어노테이션
 public class Message {
     @Length(max = 128)
@@ -469,9 +475,9 @@ public class Message {
 `validator.validate` 함수에서 `Ad.class` `groups` 조건을 추가해서 설정 가능하다.  
 
 ```java
-@Target({TYPE})
-@Retention(RUNTIME)
-@Constraint(validatedBy = AdMessageConstraintValidator.class)
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = {AdMessageConstraintValidator.class})
 @Documented
 public @interface AdMessageConstraint {
     String message() default "invalid param in ad condition";
@@ -508,6 +514,60 @@ class AdMessageConstraintValidator implements ConstraintValidator<AdMessageConst
 }
 ```
 
+### Enum Validation
+
+특정 필드가 Enum 타입과 일치해야 하는 값을 가져야할 경우에도 동일하게 `ConstraintValidator` 를 사용할 수 있다.  
+
+```java
+public enum TestType {
+    HELLO,
+    WORLD,
+    FOO,
+    BAR
+}
+
+@Getter
+@Setter
+public class EnumRequestDto {
+    @ValidEnum(target = TestType.class)
+    private String type;
+}
+```
+
+```java
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = {EnumValidator.class})
+@Documented
+public @interface ValidEnum {
+    String message() default "invalid param for enum";
+
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
+
+    Class<? extends Enum> target();
+}
+
+
+class EnumValidator implements ConstraintValidator<ValidEnum, String> {
+    Enum[] enumValues;
+
+    @Override
+    public void initialize(ValidEnum constraintAnnotation) {
+        enumValues = constraintAnnotation.target().getEnumConstants();
+    }
+
+    @Override
+    public boolean isValid(String value, ConstraintValidatorContext context) {
+        if (value == null) return true;
+        return Arrays.stream(enumValues).filter(it ->
+                it.name().equals(value)
+        ).findAny().isPresent();
+    }
+}
+```
+
 ## 샘플 프로젝트  
 
-> <https://github.com/Kouzie/spring-boot-demo/tree/main/mapper-demo>
+> <https://github.com/Kouzie/spring-boot-demo/tree/main/mapper-demo>  
