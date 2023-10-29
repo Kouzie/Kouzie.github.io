@@ -1515,7 +1515,8 @@ JPA 에선 트랜잭션 내에서 `영속성 컨텍스트`를 유지시킨다.
 
 #### 낙관적 락
 
-`낙관적 락` 에선 `@Version` 을 사용한다. `@Version` 어노테이션만 지정해도 자동 사용된다.  
+`낙관적 락` 에선 DB에서 제공하는 락을 사용하지 않고 `@Version` 을 사용한다.  
+`@Version` 어노테이션만 지정해도 자동 사용된다.  
 
 > `[Long, Int, Short, Timestamp]` 사용 가능  
 
@@ -1607,6 +1608,9 @@ update purchase_order set version=? where order_number=? and version=?
 ```
 
 `LockModeType.OPTIMISTIC_FORCE_INCREMENT` 는 부하를 유발시키는 설정이긴 하지만 `first-commiter win` 과 같은 형태로 운영할 수 있다.  
+
+`낙관적 락`의 단점은 DB 락을 가져올수 있는지 즉시 체크하지 못하기 때문에 **데이터 일관성 체크를 커밋 시점에야 가능**하다는 것이다.  
+`낙관적 락` 과 연계된 쿼리가 있다면 별도의 처리를 해줘야할 수 도 있다.  
 
 #### 비관적 락
 
