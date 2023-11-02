@@ -343,6 +343,52 @@ docker tag hello:demo core.harbor.domain:30443/library/hello:demo
 docker push core.harbor.domain:30443/library/hello:demo
 ```
 
+### Docker Registry Login Secret 등록
+
+`private registry` 에서 이미지를 다운받을 때 항상 인증 시크릿 `kubernetes.io/dockerconfigjson` 을 지정해 줘야 이미지를 다운받을 수 있다.  
+
+```yaml
+# harbor-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: regcred
+  namespace: my-app-ns
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: $HARBOR_DOCKER_CONFIG_JSON
+```
+
+```sh
+HARBOR_DOCKER_AUTH=$(echo -n 'admin:Harbor12345' | base64) \
+HARBOR_DOCKER_CONFIG_JSON=$(echo -n '{"auths": {"core.harbor.domain:30443": {"auth": "'$HARBOR_DOCKER_AUTH'"}}}' | base64) \
+envsubst < harbor-secret.yaml | \
+kubectl apply -f -
+```
+
+```yaml
+...
+  # 파드 템플릿
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-app
+          image: core.harbor.domain:30443/library/my-app:latest # 컨테이너 이미지
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: my-app-secret
+          env:
+            - name: SERVICE_PROFILE
+              value: "dev"
+      imagePullSecrets:
+        - name: regcred
+```
+
 ## jenkins
 
 > <https://github.com/jenkinsci/helm-charts>
@@ -472,6 +518,92 @@ HARBOR_DOCKER_AUTH=$(echo -n 'admin:Harbor12345' | base64) \
 HARBOR_DOCKER_CONFIG_JSON=$(echo -n '{"auths": {"core.harbor.domain:30443": {"auth": "'$HARBOR_DOCKER_AUTH'"}}}' | base64) \
 envsubst < harber-jenkins-secret.yaml | \
 kubectl apply -f -
+```
+
+### Scripted Pipeline
+
+`Cloud Native Jenkins` 에서 `Script Pipeline` 을 사용해 간단한 gradle 프로젝트를 CI 하는 코드를 알아본다.  
+
+> <https://www.jenkins.io/doc/pipeline/steps/kubernetes/#podtemplate-define-a-podtemplate-to-use-in-the-kubernetes-plugin>
+
+`helm` 으로 설치한 `Jenkins` 에서 `kubernetes-plugin` 가 기본적으로 설치되어있다.  
+k8s 기반 CI 가 좋은점은 gradle 빌드나 컨테이너로 빌드시킬 때 이미 배포되어있는 이미지를 사용하면 되기에 
+추가적인 플러그인을 설치할 필요가 없다.  
+
+```groovy
+// CI 에 사용할 Pod 컨테이너
+podTemplate(
+    yaml: '''
+kind: Pod
+spec:
+  containers:
+  - name: gradle
+    image: gradle:7.6.1-jdk17
+    command: ['sleep']
+    args: ['99d']
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:v1.6.0-debug
+    command: ['sleep']
+    args: ['99d']
+    volumeMounts:
+      - name: registry-credentials
+        mountPath: /kaniko/.docker
+  volumes:
+    - name: registry-credentials
+      secret:
+        secretName: regcred
+        items:
+        - key: .dockerconfigjson
+          path: config.json
+''',
+    envVars: [envVar(key: 'GIT_SSL_NO_VERIFY', value: 'false')],
+) {
+    node(POD_LABEL) {
+        properties([
+            parameters([
+                // core.harbor.domain 은 k8s CoreDNS 에 이미 설정함
+                string(name: 'IMAGE_REGISTRY_ACCOUNT', defaultValue: 'core.harbor.domain:30443/library'),
+                string(name: 'IMAGE_NAME', defaultValue: 'hello')
+            ])
+        ])
+        // pipeline steps...
+        stage('Get a gradle project') {
+            container('gradle') {
+                stage('gradle build project') {
+                    def scmUrl = scm.getUserRemoteConfigs()[0].getUrl()
+                    echo scmUrl
+                    git branch: 'main',
+                        credentialsId: 'kouzie-git-username',
+                        url: scmUrl
+                    sh 'gradle build -x test'
+                }
+            }
+        }
+        stage('Kaniko build image') {
+            container('kaniko') {
+                // dockerfile 위치와 context 위치를 pwd 명령으로 지정
+                sh "executor -f `pwd`/Dockerfile -c `pwd` \
+                  --insecure --skip-tls-verify --cache=true --force \
+                  --destination=${params.IMAGE_REGISTRY_ACCOUNT}/${params.IMAGE_NAME}:${env.BUILD_NUMBER} \
+                  --destination=${params.IMAGE_REGISTRY_ACCOUNT}/${params.IMAGE_NAME}:latest"
+            }
+        }
+        stage('Deploy') {
+            withCredentials([gitUsernamePassword(credentialsId: 'kouzie-git-username', gitToolName: 'git-tool')]) {
+                sh ("""
+                    sed -i 's|core.harbor.domain:30443/library/hello:[0-9a-zA-Z]*|core.harbor.domain:30443/library/hello:${env.BUILD_NUMBER}|g' k8s/hello.yaml
+                    git config --global --add safe.directory `pwd`
+                    git config --global http.sslVerify false
+                    git config --global user.email jenkins@test.com
+                    git config --global user.name jenkins
+                    git add k8s/hello.yaml
+                    git commit -m "update the image tag"
+                    git push origin main
+                """)
+            }
+        }
+    }
+}
 ```
 
 ## argoCd

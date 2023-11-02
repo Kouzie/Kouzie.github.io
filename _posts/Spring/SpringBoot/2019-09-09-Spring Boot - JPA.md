@@ -67,6 +67,8 @@ Spring 에서 지원하는 기능으로 엔티티와 DB가 연동되어 데이�
 `Managed`(영속): 엔티티의 정보가 DB에 저장되어있고 메모리도 이와 **같은 상태로 존재하는 상태**(실제 데이터와 메모리상의 테이터가 일치), 이 공간은 영속 컨텍스트라 한다.
 
 `Detached`(준영속): 영속 컨텍스트에서 엔티티를 꺼내와 각종 CRUD를 사용하는 상태, 아직 DB와는 연동되지 않아 **같은상태로 존재하지 않는다.**  
+준영속 상태에 있는 객체들은 1차 캐시에서 검색되지도 않는다.  
+`merge` 메서드는 1차캐시 혹은 DB 에서 다시 엔티티를 검색 한 후 준영속 엔티티의 정보로 채워넣는 과정이다.  
 
 `Removed`: 더이상 사용하지 않아 삭제되고 영속 컨텍스트에서도 쫓겨난 상태  
 
@@ -796,7 +798,6 @@ public class Reply {
 public class Board {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Setter
     private Long bno;
     
     ...
@@ -880,20 +881,28 @@ public class Thumbnail {
 `@OneToOne` 사용시 부모엔티티에서 단방향 매핑하는 방법은 없다.  
 **자신 엔티티에만 `[@JoinColumn, @OneToOne]` 어노테이션을 지정하면 단방향 매핑이 된다고 생각할 수 있지만 `@ManyToOne` 처럼 동작하기에 `@OneToOne` 이라 할 수 없다.**  
 
-부모엔티티에서 조회할 경우 `N+1` 문제가 발생한다.  
-자동으로 조인쿼리가 발생할것 같지만 실제 `board` 테이블에 `thumbnail_id` 가 들어가있지 않기때문에 JPA 가 알아서 조인쿼리를 생성하진 않는다.  
+### FetchMod, N + 1 문제
 
-`LAZY`, `EAGER` 상관없이 `thumbnail_id` 를 얻기위해 `board` 개수만큼 `thumbnail` 을 검색한다.  
-꼭 필요하다면 JPQL 쿼리를 통해 `[Board, Thumbnail]` 조인쿼리를 별도로 작성해야 한다.  
-
-반대로 자식엔티티에서 조회할 경우 `fetchType.LAZY` 로 설정할 경우 쿼리 호출이 한번만 일어난다.  
-`fetchType.EAGER` 로 설정하면 일반쿼리와 1개와 N개의 조인쿼리가 일어나서 더 이상한 `1+N` 문제가 발생한다.  
-
-### FetchMode.LAZY, FetchMode.EAGER  
 
 ```java
-@OneToMany(mappedBy = "board", fetch = FetchType.EAGER)
-private List<Reply> replies;
+public class Board {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long bno;
+    ...
+    @OneToMany(mappedBy = "board", fetch = FetchType.EAGER)
+    private List<Reply> replies;
+}
+
+public class Reply {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long rno;
+    ...
+    @JsonIgnore
+    @ManyToOne
+    private Board board;
+}
 ```
 
 지연로딩, 즉시로딩을 지정할 수 있으며 default 설정은 아래와 같다.  
@@ -905,21 +914,69 @@ private List<Reply> replies;
 
 `...ToOne`, `...ToMany`, `EAGER`, `LAZY` 조합에 따라 `N+1` 이슈가 발생 가능하다.  
 
-`...ToOne`, `...ToMany` 관계없이 `LAZY` 로 설정될 경우 해당 필드를 참조하는 순간 자동으로 조회쿼리가 발생하여 `N+1` 문제가 발생할 수 있다.  
-
-[`...ToMany, EAGER`] 가 존재할 경우 LEFT OUTER JOIN 을 통해 N:1 관계 엔티티를 조회하기에 N개의 row 를 검색하는 쿼리를 수행한다.  
-심지어 [`...ToMany, EAGER`] 필드가 2개 이상일경우 `Cartesian Product` 이슈가 발생 가능하다.  
-
-`...ToOne` 관계에선 사용하지 않더라도 기본 `EAGER` 사용을 권장한다.  
-`...ToMany` 관계에선 사용하더라도 기본 `LAZY` 사용을 권장한다.  
-
 참조가 이루어지는 코드, `serialize` 만 조심하면 `LAZY` 로 설정하더라도 `N+1` 이슈가 발생하지 않음으로  
-상황에 따라서 `fetch` 를 커스텀하는 것을 권장한다.  
+
+#### Cartessian Product 이슈
+
+`...ToMany(fetch = FetchType.EAGER)` 을 사용할 때 `LEFT OUTER JOIN` 을 통해 `1:N` 관계 엔티티를 조회하기에 N개의 row 를 검색하는 쿼리를 수행한다.  
+
+`...ToMany(fetch = FetchType.EAGER)` 필드가 2개 이상일경우 `Cartesian Product` 이슈가 발생 가능하다.  
+
+#### N+1 이슈
+
+기본적으로 `...ToOne` 등을 가진 엔티티에서 **리스트 조회** 할 경우 `N+1` 문제가 발생한다.  
+자동으로 조인쿼리가 발생할것 같지만 JPA 가 알아서 조인쿼리를 생성하진 않는다.  
+
+아래와 같이 `JPQL` 과 `FETCH JOIN` 을 사용하는것을 권장한다.  
+
+```java
+@Query("SELECT b FROM Book b LEFT JOIN FETCH b.author")
+List<Book> findAllWithFetch();
+```
+
+`Book` 의 경우 `ManyToOne` 관계이기 때문에 Pageable 객체와 같이 동작시켜도 정상적으로 동작한다.  
+
+```java
+@Query("SELECT b FROM Book b LEFT JOIN FETCH b.author")
+List<Book> findAllWithPageable(Pageable pageable); // 이건 동작함
+// select book0_.bno       as bno1_5_0_,
+//        ...
+//        author1_.ano     as ano1_3_1_,
+//        ...
+// from tbl_book book0_
+//  left outer join tbl_author author1_ on book0_.author_id = author1_.ano
+// limit ? offset ?
+```
+
+하지만 Page 객체를 반환하는 JPQL 은 동작하지 않는다.  
+
+```java
+@Query("SELECT b FROM Book b LEFT JOIN FETCH b.author")
+Page<Book> findAllWithPageableResult(Pageable pageable); // 이건 컴파일에러
+```
+
+> 개인적인 생각으론 `...ToOne` 관계는 Page 화 해줘도 된다고 생각하지만 JPA 내부적으론 컴파일 에러를 발생시킨다.  
+> `Page` 객체가 필요하다면 페이징을 위한 `COUNT` 쿼리를 추가호출하거나 페이징 쿼리와 데이터 합성용 쿼리 2개를 나누어 호출하는 것을 권장.  
+
+#### 테이블 풀스캔 이슈
+
+이번엔 반대로 `OneToMany` 관계 주인인 `Author` 에서 `FETCH JOIN` 과 `pageable` 을 사용해보자.  
+
+```java
+@Query("SELECT a FROM Author a LEFT JOIN FETCH a.books")
+List<Author> findAllWithPageable(Pageable pageable);
+```
+
+동작하긴 하지만 마법같은 SQL 문이 발생하는 것이 아니라, **테이블 풀스캔** 쿼리 실행 후 List 에서 상위 size개수를 가져오는 방식으로 동작한다.  
 
 ### cascade(전이전략)
 
 > 참고: <https://www.baeldung.com/jpa-cascade-types>
 > `Oracle`, `Mysql` 등 DDL 에서 `on delete cascade` 편의기능과는 관련없다.  
+
+![springboot2_1](/assets/springboot/springboot_jpa_2.png)
+
+default cacade 는 빈 배열 형태이며  
 
 `CascadeType.PERSIST` -  부모를 영속화할 때 연관된 자식들도 함께 영속화 한다. 부모 객체 저장과 동시에 같이 설정된 자식객체도 저장.
 
@@ -929,7 +986,7 @@ private List<Reply> replies;
 
 `CascadeType.REFRESH` -  엔티티 매니저의 `refresh()`호출시 전이
 
-`CascadeType.DETACH` -  부모엔티티가 detach되면 자식도 detach
+`CascadeType.DETACH` -  부모엔티티가 detach(준영속)되면 자식도 detach
 
 `CascadeType.ALL` -  위의 모든 사항을 포함, 가장 일반적으로 사용됨.
 
