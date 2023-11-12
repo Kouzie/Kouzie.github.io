@@ -14,9 +14,23 @@ categories:
 
 ## Spring Security
 
-> Spring doc : <https://spring.io/projects/spring-security>
+> Spring doc : <https://spring.io/projects/spring-security>  
+> <https://spring.io/guides/topicals/spring-security-architecture/>
 
 ![security6](/assets/springboot/springboot_security6.png)
+
+- **AuthenticationFilter(인증 필터)**  
+  Spring Security 백본, 전반적인 HTTP 요청을 처리, 하위 Security 객체들과 협력하여 인증처리를 진행한다.  
+  아래 SecurityFilterChain 그림에서 Filter Chain 확인  
+- **AuthenticationManager(인증 매니저)**  
+  사용자 신원 확인하는 핵심 구성요소.  
+- **AuthenticationProvider(인증 제공자)**  
+  AuthenticationManager 의 요청을 수행하는 클래스들, `[DB, LDAP, JWT]` 등 여러 `AuthenticationProvider` 정의가 가능하다.  
+- **UserDetailsService**
+  인증자의 세부정보를 검색하는 인터페이스, AuthenticationProvider 와 협력하여 인증자의 세부정보 DB 등으로부터 가져옴.  
+- **UserDetails, User**
+  인증자의 신원객체
+
 
 ```xml
 <dependency>
@@ -90,7 +104,7 @@ public class SessionSecurityConfig extends WebSecurityConfigurerAdapter {
 
 ![security7](/assets/springboot/springboot_security7.png)
 
-아무것도 설정하지 않고 s`pring-boot-starter-security` 의존성만 넣었을 때 적용되는 `HttpSecurity` 의 설정은 아래와 같다.  
+아무것도 설정하지 않고 `spring-boot-starter-security` 의존성만 넣었을 때 적용되는 `HttpSecurity` 의 설정은 아래와 같다.  
 
 ```java
 protected void configure(HttpSecurity http) throws Exception {
@@ -119,13 +133,16 @@ public PasswordEncoder passwordEncoder () {
 `Spring Security` 의 필수 `Bean` 임으로 반드시 생성해야함  
 `BCryptPasswordEncoder` 가 가장 무난하게 사용 가능  
 
-### AuthenticationManagerBuilder
+### AuthenticationManager
 
 `AuthenticationManager` 는 사용자 인증을 담당하는 클래스로 `Spring Security Filter` 에서 반드시 거쳐야할 클래스  
 
 단순 테스트용도로 `inMemoryAuthentication` 으로 사용자를 정의해서 로그인시 사용할 수 있다.  
 
 간단히 DB 연동을 통해 로그인처리를 해야한다면 `jdbcAuthentication` 으로 사용자를 검색해서 사용할 수 있다.  
+
+
+아래는 `inMemoryAuthentication`, `jdbcAuthentication` 을 사용해 `AuthenticationManager` 를 생성하는 예
 
 ```java
 @EnableWebSecurity
@@ -185,14 +202,18 @@ public class SessionSecurityConfig extends WebSecurityConfigurerAdapter {
 
 > 검색된 쿼리 결과의 칼럼 순서, alias 명 모두 중요하니 주의
 
-`AuthenticationManagerBuilder` 를 직접 정의하는 방식을 제한정읜 환경(제공받은 메서드로만 구성해야함) 으로 인해 잘 사용하지 않는다.  
+### AuthenticationProvider, UserDetailsService
 
-`UserDetailsService` 서비스를 Bean 으로 등록하면 좀더 커스텀하게 로그인처리, 인증객체 생성처리가 가능하다.  
+`AuthenticationManagr` 를 직접 정의하는 방식을 제한적인 환경(제공받은 메서드로만 구성해야함)으로 인해 잘 사용하지 않는다.  
+위와 같이 테스트용도로 inMemory, jdbc SQL 를 직접 정의하여 사용할 때에나 사용한다.  
 
-### UserDetailsService
+대부분 `AuthenticationProvider` 만을 Bean 으로 등록하고 `AuthenticationManager` 에서 자동으로 사용되도록 한다.  
 
-커스텀 인증과정을 거치려면 `userDetailsService` 를 사용해야 한다.  
-`UserDetailsService`를 상속받는 서비스를 정의  
+사용자 테이블로 부터 커스텀하게 로그인처리를 구현하는 경우가 많아 `UserDetailService` 를 사용해서 `AuthenticationProvider` 를 구성한다.  
+
+![security7](/assets/springboot/springboot_security5.png)
+
+> `DaoAuthenticationProvider` 가 `UserDetailService` 를 기반으로 만들어진 객체임.   
 
 ```java
 @Service
@@ -247,7 +268,7 @@ public class CustomSecurityUser extends User {
 
 `UserDetailsService`, `User` 객체가 `Spring Security` 의 핵심 클래스  
 
-> `User` 클래스는 `UserDetails` 의 구현체이다.  
+> `User` 클래스는 `UserDetails` 의 구현체.
 
 `AuthenticationManager` 가 알아서 `Bean` 으로 등록된 `UserDetailService` 을 사용함으로 별다른 설정을 하지 않아도 된다.  
 
@@ -263,29 +284,69 @@ protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 }
 ```
 
-### Role & Authority
+### Authentication
+
+Spring Security 는 `[inMemory, jdbc, DAO, LDAP]` 등 다양한 인증서비스를 제공한다.  
+
+이에 맞는 `AuthenticationProvider` 를 정의해야 하며, 이러한 다양한 인증과정에서  `Authentication` 구현객체를 표준으로 사용한다.  
+
+![security7](/assets/springboot/springboot_security2.png)
+
+- **Credential**: 자격, 인증서  
+- **Pincipal**: 주체  
+- **Authorities**: Role & Authority, 권한
+
+```java
+public interface Authentication extends Principal, Serializable {
+    Collection<? extends GrantedAuthority> getAuthorities();
+    Object getCredentials();
+    Object getPrincipal();
+    ...
+}
+```
+
+`Credential, Pincipal` 모두 `Object` 이기 때문에 로직에 맞는 보안객체를 할당하면 된다.  
+
+위에서 사용한 `DaoAuthenticationProvider` 가 `Authentication` 을 구현한 `UsernamePasswordAuthenticationToken` 을 지원하기 때문에 해당 객체를 `Authentication` 객체로 자주 사용한다.  
+
+`Crendential` 에 `username`, `Principal` 에 `password` 를 자주 설정한다.  
+
+```java
+// 미인증 Authentication 객체
+UsernamePasswordAuthenticationToken authRequest = 
+    new UsernamePasswordAuthenticationToken(username, password);
+
+/* 
+public UsernamePasswordAuthenticationToken(Object principal, Object credentials) {
+    super(null);
+    this.principal = principal;
+    this.credentials = credentials;
+    setAuthenticated(false);
+}
+
+public UsernamePasswordAuthenticationToken(Object principal, Object credentials,
+        Collection<? extends GrantedAuthority> authorities) {
+    super(authorities);
+    this.principal = principal;
+    this.credentials = credentials;
+    super.setAuthenticated(true); // must use super, as we override
+}
+*/
+```
 
 `Spring Security` 내부 코드에서 `Role` 과 `Authority` 를 처리하는 방법은 동일하다.  
 
 둘다 권한을 뜻하는 개념이고 `SimpleGrantedAuthority` 클래스를 사용한다.  
 그리고 `AbstractAuthenticationToken` 객체에 권한(`Role`, `Authority`) 들이 들어간다.  
 
-> 위 그림에선 `AbstractAuthenticationToken` 의 구현체인 `UsernamePasswordAuthenticationToken` 을 사용
-
-```java
-public abstract class AbstractAuthenticationToken implements Authentication, CredentialsContainer {
-    private final Collection<GrantedAuthority> authorities;
-    public AbstractAuthenticationToken(Collection<? extends GrantedAuthority> authorities) {
-        ...
-        this.authorities = Collections.unmodifiableList(new ArrayList<>(authorities));
-    }
-}
-```
-
 `Spring Security` 설정에 따라 `authorities` 내부를 검사하는데  
 
 `hasAnyRole('ADMIN')` 과 같은 코드가 있다면 `ROLE_ADMIN` 과 같은 문자열이 있는지 탐색,  
 `hasAuthority('getBoard')` 과 같은 코드가 있다면 `getBoard` 문자열이 있는지 탐색한다.  
+
+실제 비밀번호를 가진 `UsernamePasswordAuthenticationToken` 객체의 인증은 `UsernamePasswordAuthenticationFilter` 가 `DaoAuthenticationProvider` 의 인증 메서드를 호출하면서 수행된다.  
+
+`DaoAuthenticationProvider` 는 `UserDetailService` 로부터 `UsernamePasswordAuthenticationToken` 의 `username` 을 사용해 사용자를 검색하고 `password` 를 비교해서 인증을 수행한다.  
 
 ### Spring Security configure
 
@@ -598,6 +659,8 @@ public class LoginCheckInterceptor extends HandlerInterceptorAdapter {
 
 > 참고: <https://www.javainuse.com/spring/boot-jwt>
 > java jwt library: <https://github.com/jwtk/jjwt#install-jdk-gradle>
+
+![springboot_security4](/assets/springboot/springboot_security3.png)
 
 스프링 시큐리티의 인증구조를 커스터마이징 해야 하기에 변경해야할 코드가 많다.  
 
