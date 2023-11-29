@@ -955,8 +955,13 @@ List<Book> findAllWithPageable(Pageable pageable); // 이건 동작함
 Page<Book> findAllWithPageableResult(Pageable pageable); // 이건 컴파일에러
 ```
 
-> 개인적인 생각으론 `...ToOne` 관계는 Page 화 해줘도 된다고 생각하지만 JPA 내부적으론 컴파일 에러를 발생시킨다.  
-> `Page` 객체가 필요하다면 페이징을 위한 `COUNT` 쿼리를 추가호출하거나 페이징 쿼리와 데이터 합성용 쿼리 2개를 나누어 호출하는 것을 권장.  
+`Fetch join + Paging` 에선 `CountQuery` 를 별도로 만들어 줘야한다.
+
+```java
+@Query(value = "SELECT b FROM Book b LEFT JOIN FETCH b.author",
+        countQuery = "SELECT COUNT(b.bno) FROM Book b")
+Page<Book> findAllWithPageableResult(Pageable pageable);
+```
 
 #### 테이블 풀스캔 이슈
 
