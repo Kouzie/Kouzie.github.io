@@ -662,7 +662,12 @@ public class LoginCheckInterceptor extends HandlerInterceptorAdapter {
 
 ![springboot_security4](/assets/springboot/springboot_security3.png)
 
-스프링 시큐리티의 인증구조를 커스터마이징 해야 하기에 변경해야할 코드가 많다.  
+Spring Security 에서 공식적으로 제공하는 JWT 관련 `AuthenticationProvider` 을 제공하지 않음으로 인증시에 생성해야할 클래스가 많다.  
+
+로그인은 직접 JWT 토큰을 발급하는 Rest API 를 작성해야 하고,  
+`session less` 함으로 매 요청마다 `filter` 를 통해 `Authentication` 객체를 `Security Context` 에 집어넣어줘야 한다.  
+
+해당 역할을 수행하는 filter 역시 직접 생성행야 한다.  
 
 `jwt` 토큰 생성을 위해 아래 `dependency` 포함
 

@@ -408,10 +408,9 @@ public class MyCustomValidDto {
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidCustomEnum {
     String message() default "is invalid enum type";
-
     // 검증 그룹 지정
     Class<?>[] groups() default {};
-
+    // 주로 Payload 를 구현하는 클래스를 정의해서 사용한다, 동적 처리를 위한 추가정보로 사용함
     Class<? extends Payload>[] payload() default {};
 }
 

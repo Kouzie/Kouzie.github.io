@@ -21,7 +21,7 @@ categories:
 - Rverse Proxy(Gateway)
 - Client side Loadbalancer
 
-k8s 에서 제공하는 각종 컴포넌트들을 사용하는 것이 더 효율적이다.  
+`spring-cloud-k8s` 라이브러리를 사용하면 k8s 와 연계해서 위와 같은 기능을 사용할 수 있다.  
 
 > <https://spring.io/projects/spring-cloud-kubernetes#overview>  
 > <https://www.youtube.com/watch?v=f4yOpHfVFw8&t=1404s>  
@@ -39,7 +39,7 @@ k8s 구성을 위한 간단한 프로젝트를 구성예정
 
 `Spring Cloud Kubernetes` 에서 실행 중인 `Pod` 주소 목록, `ConfigMap` 을 검색할 수 있으려면 `k8s API`에 대한 액세스가 필요하다.  
 
-`default` 계정이 각종 `k8s API` 를 사용할 수 있도록 권한을 부여해야 한다.  
+`default` 계정이 각종 `k8s API` 를 사용할 수 있도록 권한을 부여.  
 
 > <https://cloud.spring.io/spring-cloud-kubernetes/reference/html/#service-account>
 
@@ -53,7 +53,7 @@ metadata:
   name: spring
 
 ---
-
+# rbac.yaml
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -246,7 +246,7 @@ Hello Calc:Hello Demo
 `Spring Cloud` 플랫폼에선 `Eureka` 를 사용해 `Discovery Client` 가 이루어졌지만  
 `k8s` 에선 `Discovery Client` 를 할 필요가 없다.  
 
-`k8s DNS`, `k8s Networking` 시스템에 의해 서비스 로드벨런싱이 이루어진다.  
+`k8s CoreDNS`, `CNI` 에 의해 라우팅, 로드밸런싱이 이루어진다.  
 
 ```java
 @FeignClient(name = "calc-service") // service name
@@ -271,7 +271,7 @@ curl --location 'http://localhost:30081/greeting/1/2'
 
 `Discovery Client` 할 필요가 없고 내부에 `client server list` 또한 가지고 있을 필요가 없기에 서비스 입장에선 효율적이다.  
 
-## CD 툴  
+### jib
 
 기존에 java 프로그램을 쿠버네티스 환경에 배포하려면 아래 그림과 같은 과정을 거쳐야 한다.  
 
@@ -279,8 +279,6 @@ curl --location 'http://localhost:30081/greeting/1/2'
 
 자바 컨테이너에 대해 잘 알지 못한 자바개발자에겐 배포부터가 업무였지만
 `skaffold` 나 `jib` 같은 툴들이 만들어지면서 알아야할 지식이 대폭 감소하였다.  
-
-### jib
 
 > <https://github.com/GoogleContainerTools/jib>
 

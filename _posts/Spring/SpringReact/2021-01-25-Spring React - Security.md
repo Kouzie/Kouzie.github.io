@@ -14,13 +14,22 @@ categories:
 
 ## Spring Security with WebFlux
 
-서블릿 기반 스프링 부트는 하나의 스레드에 하나의 연결이 처리되어 `ThreadLocal` 에 `SecurityContext` 를 저장해 연결동안 보안처리를 진행했지만  
-리액티브는 하나의 연결에 여러개의 스레드가 꼬여있을 수 있어 **Reactor Context** 를 사용한다.  
-(하나의 연결에대해 하나의 스레드가 담당하여 처리한다는 보장이 없다)  
+> 그림 출처: Hands-On Spring Security 5 for Reactive Applications
+
+![1](/assets/springboot/spring-react/springreact_security1.png)  
+
+그림을 보면 `Spring Security` 개발진들이 기존 WebMVC 와 동일하게 환경을 구성하기 위해 노력한 과정을 볼 수 있다.  
+`Filter` 기반의 인증과정, `AuthenticationManager` 와 `UserDetailService` 를 사용한 인증과정이 기존 `WebMVC` 와 유사한것을 확인할 수 있다.  
 
 `spring-boot-starter-security` 모듈 역시  `WebFlux` 를 지원할 수 있도록 업데이트 되었다.  
 
 ### SecurityContext from Reactor Context
+
+`Webflux` 와 `WebMVC` 에서 `Spring Security` 의 가장 큰 차이점은 기존의 `SecurityContext` 의 개념이 사용되지 않는 것.  
+
+`WebMVC Spring Security` 는 `ThreadLocal` 에 `SecurityContext` 를 저장해 한번의 연결동안 `Authentication` 인증객체를 계속 유지했지만,  
+`Webflux` 에선 하나의 연결에 여러개의 `Thread` 꼬여있을 수 있어 **Reactor Context** 를 사용한다.  
+(하나의 연결에대해 하나의 스레드가 담당하여 처리한다는 보장이 없다)  
 
 `WebMVC` 에선 `SecurityContextHolder` 에서 `SecurityContext` 를 가져왔다면  
 `WebFlux` 에선 `ReactiveSecurityContextHolder` 에서 `SecurityContext` 를 가져온다.  
@@ -55,7 +64,7 @@ public static Mono<SecurityContext> getContext() {
 }
 ```
 
-사실 메소드의 인자로 추가하면 스프링 시큐리티가 **구독자 컨텍스트(subscriber context)**에서 `Authentication` 정보를 추출해서 인자로 주입해준다.
+사실 메소드의 인자로 추가하면 스프링 시큐리티가 **구독자 컨텍스트(subscriber context)** 에서 `Authentication` 정보를 추출해서 인자로 주입해준다.
 
 ```java
 @GetMapping("/profiles/auth")
@@ -64,9 +73,14 @@ public Mono<Member> getProfileAuth(Authentication auth) {
 }
 ```
 
+이런 코드가 작성 가능한 이유는 우리가 작성한 비즈니스 로직 전까지 `SecurityContext` 객체를 지속적으로 매개변수로 넘기기 때문.  
+
 ### SecurityWebFilterChain
 
-인증과정을 거친 `SecurityContext` 가 해당 `Reactor Context` 에 존재해야하고 `Authentication` 객체가 `SecurityContext` 안에 할당되어야 한다.  
+![2](/assets/springboot/spring-react/springreact_security2.png)  
+
+인증과정을 거친 `SecurityContext` 가 해당 `Reactor Context` 에 존재해야하고,  
+`Authentication` 객체가 `SecurityContext` 안에 할당되어야 한다.  
 
 `Spring MVC` 방식에서 `HttpSecurity` 를 설정해서 각종 보안설정을 했듯이  
 `Spring WebFlux` 방식에서 `SecurityWebFilterChain` 을 설정해서 보안설정이 이루어진다.  
@@ -74,55 +88,50 @@ public Mono<Member> getProfileAuth(Authentication auth) {
 아래 예는 `Member` 들을 사전에 입력해두고 `formLogin` 설정시 `ReactiveUserDetailsService` 를 통해 로그인 지원하는 설정이다.  
 
 ```java
-@Bean
-public CommandLineRunner demo(MemberRepo repository, PasswordEncoder encoder) {
-    return (args) -> {
-        log.info("save start!");
-        // save a few customers
-        repository.saveAll(Arrays.asList(
-            Member.builder().name("Kim").password(encoder.encode("Kim")).userName("Kim@test.com").role("ROLE_ADMIN").build(),
-            Member.builder().name("Chloe").password(encoder.encode("Chloe")).userName("Chloe@test.com").role("ROLE_MEMBER").build(),
-            Member.builder().name("David").password(encoder.encode("David")).userName("David@test.com").role("ROLE_MEMBER").build(),
-            Member.builder().name("Michelle").password(encoder.encode("Michelle")).userName("Michelle@test.com").role("ROLE_MEMBER").build()
-        )).blockLast(Duration.ofSeconds(10));
-    };
-}
-
-@Bean
-public ReactiveUserDetailsService userDetailsService(MemberRepo repository) {
-    return username -> repository.findByUserName(username)
-        .map(member -> User.builder()
-            .username(member.getUserName())
-            .password(member.getPassword())
-            .authorities(member.getRole())
-            .build());
-}
-
-@Bean
-public SecurityWebFilterChain securityFilterChainConfigurer(ServerHttpSecurity httpSecurity) {
-    return httpSecurity
-            .authorizeExchange().pathMatchers("/member/**").hasAuthority("ROLE_MEMBER")
-            .and()
-            .httpBasic().and()
-            .formLogin().and()
-            .csrf().disable()
-            .build();
-}
-```
-
-### @EnableReactiveMethodSecurity
-
-`Spring MVC` 에서 `@EnableGlobalMethodSecurity` 를 사용했듯이  
-`Spring WebFlux` 에서 `@EnableReactiveMethodSecurity` 를 사용해 Security 어노테이션들을 사용할 수 있다.  
-
-```java
-
 @Configuration
 @EnableReactiveMethodSecurity
 public class SecurityConfig {
+        
+    @Bean
+    public CommandLineRunner demo(MemberRepo repository, PasswordEncoder encoder) {
+        return (args) -> {
+            log.info("save start!");
+            // save a few customers
+            repository.saveAll(Arrays.asList(
+                Member.builder().name("Kim").password(encoder.encode("Kim")).userName("Kim@test.com").role("ROLE_ADMIN").build(),
+                Member.builder().name("Chloe").password(encoder.encode("Chloe")).userName("Chloe@test.com").role("ROLE_MEMBER").build(),
+                Member.builder().name("David").password(encoder.encode("David")).userName("David@test.com").role("ROLE_MEMBER").build(),
+                Member.builder().name("Michelle").password(encoder.encode("Michelle")).userName("Michelle@test.com").role("ROLE_MEMBER").build()
+            )).blockLast(Duration.ofSeconds(10));
+        };
+    }
+
+    @Bean
+    public ReactiveUserDetailsService userDetailsService(MemberRepo repository) {
+        return username -> repository.findByUserName(username)
+            .map(member -> User.builder()
+                .username(member.getUserName())
+                .password(member.getPassword())
+                .authorities(member.getRole())
+                .build());
+    }
+
+    @Bean
+    public SecurityWebFilterChain securityFilterChainConfigurer(ServerHttpSecurity httpSecurity) {
+        return httpSecurity
+                .authorizeExchange().pathMatchers("/member/**").hasAuthority("ROLE_MEMBER")
+                .and()
+                .httpBasic().and()
+                .formLogin().and()
+                .csrf().disable()
+                .build();
+    }
     ...
 }
 ```
+
+`Spring MVC` 에서 `@EnableGlobalMethodSecurity` 를 사용했듯이  
+`Spring WebFlux` 에서 `@EnableReactiveMethodSecurity` 를 사용해 Security 어노테이션들을 사용할 수 있다.  
 
 ```java
 @PreAuthorize("hasRole('MEMBER')")

@@ -286,6 +286,8 @@ class MemberComponent {
 
 #### WebFilter
 
+모든 엔드포인트에서 동작하는 필터 등록
+
 ```java
 @Component
 public class ExampleWebFilter implements WebFilter {
@@ -299,9 +301,9 @@ public class ExampleWebFilter implements WebFilter {
 }
 ```
 
-별도의 매핑 조건이 없기때문에 조건문 분기가 필요함  
-
 #### HandlerFilterFunction
+
+라우터 기반 구현에서만 동작하는 필터 등록
 
 ```java
 public class ExampleHandlerFilterFunction implements HandlerFilterFunction<ServerResponse, ServerResponse> {
@@ -701,7 +703,7 @@ public class ReactApplication {
 Webflux 에서 가장 조심해야 할 것은 스레드가 블록되는 코드를 피하는 것  
 하지만 코드를 작성하다보면 어쩔수 없이 블록킹 메서드를 사용해야 할 때 가 있다.  
 
-예를들어 `AmqpTemplate` 의 `convertAndSend` 메서드 같은것은 TCP 로 메세지를 전송하는 일종의 블록킹 API 이다.  
+예를들어 `AmqpTemplate` 의 `convertAndSend` 메서드 같은것은 TCP 로 메세지를 전송하는, 일종의 블록킹 API 이다.  
 물론 `AmqpTemplate` 의 블록킹 시간이 그리 길진 않겠지만 호출이 많아지면 블록킹 시간이 무시못할 수준으로 쌓일 수 있다.  
 
 그렇다고 해서 코드블럭 안에서 메세지를 보내야할 때 `AmqpTemplate` 를 사용하지 않을 순 없는데  

@@ -94,7 +94,7 @@ $ brew install making/tap/rsc
 $ rsc tcp://localhost:8888 --stream --route greetings --log --debug -d "{\"message\":\"kouzie\"}"
 ```
 
-![springboot_rsocket2](/assets/springboot/spring-react/springboot-rsocket1.png)  
+![springboot_rsocket2](/assets/springboot/spring-react/springreact_rsocket1.png)  
 
 ### RSocket Client In Spring  
 
