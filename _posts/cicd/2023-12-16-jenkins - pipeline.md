@@ -255,6 +255,7 @@ node {
 | JENKINS_URL  | jenkins URL                                |
 | BRANCH_NAME  | 브랜치명, multibranch 프로젝트인 경우 사용 |
 | WORKSPACE    | 브랜치명, multibranch 프로젝트인 경우 사용 |
+
 <!-- 
 |CHANGE_ID| PR number, multibranch 프로젝트인 경우 사용  
 |CHANGE_URL| multibranch 프로젝트의 change request에 대한 change URL을 나타낸다.  
