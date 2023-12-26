@@ -497,20 +497,27 @@ project(":boot:dashboard") {
  * */
 fun getAffectedServices(vararg input: String): Set<String> {
     val result = mutableSetOf<String>() // affected service list
-    val services = rootProject.allprojects.filter { it.path.startsWith(":boot:service:") }
+    val services: List<Project> = rootProject.allprojects.filter { it.path.startsWith(":boot:service:") }
     services.forEach { service ->
-        val implementationDependencies = service.configurations["implementation"].dependencies
-        val projectDependencies = implementationDependencies
-            .filterIsInstance<ProjectDependency>() // 직접 구현한 dependency 필터링
-            .map { it.dependencyProject }
-        // module path 에 현재 서비스도 추가
-        val modulePaths: List<String> = projectDependencies.map { it.path } + service.path
-        // input 과 겹치는 module path 가 있다면 의존성이 있다고 판단
-        if (input.intersect(modulePaths).isNotEmpty()) {
-            result.add(service.path)
+        // 만약 입력받은 모듈 path 에 service 이름이 있으면 바로 반환
+        val visitedPaths = HashSet<String>()
+        val q: LinkedList<Project> = LinkedList()
+        q.add(service)
+        while (!q.isEmpty()) {
+            val project = q.poll()
+            if (input.contains(project.path)) {
+                result.add(service.path)
+                return@forEach
+            }
+            visitedPaths.add(project.path)
+            project.configurations["implementation"].dependencies
+                .filterIsInstance<ProjectDependency>() // 직접 구현한 dependency 필터링
+                .map { it.dependencyProject }
+                .filter { !visitedPaths.contains(it) }
+                .forEach { q.add(it) }
         }
-    }
-    return result;
+    } // end forEach
+    return result
 }
 
 tasks.register("getAffectedServices") {
@@ -649,6 +656,9 @@ pipeline {
     }
 }
 ```
+
+아쉬운점은 directory 구조를 module path 로 변환하는 과정이 번거롭고 하드코딩이 일부 추가되어 있다는 점.  
+다른 gradle 어플리케이션에서도 동일한 pipeline 으로 처리하려면 gradle 함수 정의와 매핑 알고리즘을 추가해야한다.  
 
 ## 데모 코드  
 
