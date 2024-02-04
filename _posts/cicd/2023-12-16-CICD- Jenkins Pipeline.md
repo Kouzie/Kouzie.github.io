@@ -1,5 +1,5 @@
 ---
-title:  "Jenkins Pipeline!"
+title:  "CI/CD - Jenkins Pipeline!"
 
 read_time: false
 share: false
@@ -9,7 +9,7 @@ toc_sticky: true
 # # classes: wide
 
 categories:
-  - cicd
+  - CI/CD
   - jenkins
 ---
 
@@ -17,7 +17,7 @@ categories:
 
 ![jenkinsssh](/assets/cicd/jenkins0.png)
 
-대부분 위와 같은 형태의 `ci/cd` 를 구성한다.  
+대부분 위와 같은 형태의 `CI/CD` 를 구성한다.  
 Jenkins 는 간결한 지시어 파이프라이닝 `Directive pipeline` 을 통해 쉽게 위 그림과 같은 환경 구축할수있다.  
 
 ### Jenkins 설치
@@ -138,6 +138,10 @@ cat id_rsa_deploy_jenkins
 ```
 
 만약 인증서 관련 오류가 발생할 경우 `Jenkins 관리 - Security - Git Host Key Verification Configuration` 에서 `No verification` 선택
+
+username/password 형태의 git 연동에서도 ssl 인증서 오류가 발생할 수 있다.  
+
+`Jenkins 관리 - System - Global Properties` 에서 환경변수 `[GIT_SSL_NO_VERIFY, false]` 설정  
 
 ### Jenkins 플러그인
 
@@ -434,7 +438,7 @@ def sortByLength(List<String> list) {
 
 ## Multi module gradle build
 
-아래와 같은 프로젝트 구조를 가지고 있는 상태에서 연관 모듈이 변경되었을 때 `Jenkins pipeline` 에서 서비스를 빌드하는 방법을 알아본다.  
+아래와 같은 `gradle multi module` 프로젝트 구조를 가지고 있는 상태에서 연관 모듈이 변경되었을 때 `Jenkins pipeline` 에서 서비스를 빌드하는 방법을 알아본다.  
 
 ```sh
 ./gradlew projects
@@ -499,7 +503,6 @@ fun getAffectedServices(vararg input: String): Set<String> {
     val result = mutableSetOf<String>() // affected service list
     val services: List<Project> = rootProject.allprojects.filter { it.path.startsWith(":boot:service:") }
     services.forEach { service ->
-        // 만약 입력받은 모듈 path 에 service 이름이 있으면 바로 반환
         val visitedPaths = HashSet<String>()
         val q: LinkedList<Project> = LinkedList()
         q.add(service)
