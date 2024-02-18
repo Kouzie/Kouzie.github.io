@@ -18,8 +18,8 @@ categories:
 > Intro DynamoDB  
 > <https://docs.aws.amazon.com/ko_kr/amazondynamodb/latest/developerguide/Introduction.html>  
 
-
-DynamoDB는 완전관리형 NoSQL 데이터베이스로 AWS 관리 하에 다운타임 또는 성능 저하 없이 테이블의 처리 능력을 확장 또는 축소할 수 있음  
+DynamoDB는 AWS 에서 제공하는 완전관리형 NoSQL 데이터베이스  
+AWS 관리 하에 다운타임 또는 성능 저하 없이 테이블의 처리 능력을 확장 또는 축소할 수 있음  
 
 ## 핵심 구성 요소
 
@@ -55,14 +55,14 @@ DB에서 일반적으로 생각하는 단순 `기본 키` 를 가리키며 해�
 해시 함수에 대한 입력으로 `파티션 키` 값을 기준으로 파티션을 나누고, `파티션 키` 값이 동일한 모든 항목은 `정렬 키` 값을 기준으로 정렬되어 함께 저장된다.  
 여러 항목이 중복된 `파티션 키` 값을 가질수 있지만 동일한 파티션 내에서 다양한 `정렬 키`값을 가져야 한다.  
 
+> 파티션키를 해시속성 혹은 해시키, 정렬키를 범위속성 이라고 부르기도 함
+
 ![ddd1](/assets/2022/dynamodb2.png)  
 
-위 그림처럼 기본키를 `AnimalType`(`파티션 키`)와 `Name`(`정렬 키`)으로 구성된 복합 키로 가질 경우  
+위 그림처럼 기본키를 `AnimalType`(`파티션 키`)와 `Name`(`정렬 키`)으로 구성된 `복합 키`로 가질 경우  
 `파티션 키`로 파티션을 찾고 `정렬 키`로 데이터 위치를 찾는다.  
 
 각 기본 키 속성은 스칼라여야 하며 문자열, 숫자 또는 이진수 가 포함된다.  
-
-> 파티션키를 해시 속성 혹은 해시키, 정렬키를 범위속성 이라고 부르기도 함
 
 ### 보조 인덱스 (Secondary Index)
 
@@ -72,32 +72,30 @@ DynamoDB의 경우 아예 인덱스를 사용하여 저장공간을 차별화 �
 이때문에 인덱스 생성시 반드시 `파티션 키` 를 정의해야한다.  
 
 테이블당 하나 이상의 **보조 인덱스(Secondary Index)** 생성 가능하다.  
-보조 인덱스를 생성게 되면 데이터 access 방면에서 편리하다.  
-만약 보조 인덱스를 사용하지 않은 필드를 기준으로 조회쿼리를 사용하게 되면 Scan 작업(RDB 의 Full Scan) 이 일어나게 되기에 좋지 않다.  
-
-예로 아래 `Music` 테이블은 복합 키를 사용하는 테이블로  
-`Aritst` 를 `파티션 키`, `SongTitle` 을 `정렬 키`로 사용하는 테이블이다.  
+`보조 인덱스`를 생성게 되면 데이터 access 방면에서 편리하다.  
+만약 `보조 인덱스`를 사용하지 않은 필드를 기준으로 조회쿼리를 사용하게 되면 Scan 작업(RDB 의 Full Scan) 이 일어나기에 좋지 않다.  
 
 ![ddd1](/assets/2022/dynamodb1.png)  
 
-`Music` 테이블로부터 오른쪽의 `GenreAlbumTitle` 라는 보조 인덱스를 생성하였는데 생성되는 형식을 보면  
-`Genre` 는 `파티션 키`이고, `AlbumTitle` 은 `정렬 키`로 사용했고 원본 `Music` 의 복합키를 가져왔다(프로젝션).  
+예로 위 `Music` 테이블은 `복합 키`를 사용하는 테이블로, `Aritst` 를 `파티션 키`, `SongTitle` 을 `정렬 키`로 사용하는 테이블이다.  
+
+`Music` 테이블로부터 오른쪽의 `GenreAlbumTitle` 라는 `보조 인덱스`를 생성하였는데 생성되는 형식을 보면  
+`Genre` 는 `파티션 키`, `AlbumTitle` 은 `정렬 키`로 사용했고 원본 `Music` 의 `복합 키`를 가져왔다(프로젝션).  
+
+> 모든 `보조 인덱스`는 원본 테이블로부터 생성되며, 이 원본 테이블을 **기본테이블** 이라 한다.  
 
 이제 `Genre` 와 `AlbumTitle` 속성을 가지고도 `Music` 테이블 데이터를 쿼리할 수 있게 되었다.  
-`AlbumTitle`이 알파벳 `H`로 시작하는 모든 `Country` 앨범을 검색하는 조건을 지정할 수 도 있다.    
+`AlbumTitle`이 알파벳 `H`로 시작하는 모든 `Country` 앨범을 검색하는 조건을 지정할 수 도 있다.  
 
 물론 `보조 인덱스`를 사용하면 별도의 저장공간에 데이터를 저장하기에 실제 쓰는 데이터 용량보다 높은 비용이 발생할 수 있다.  
 
-모든 `보조 인덱스`는 원본 테이블로부터 생성되는 이 원본 테이블을 **기본테이블** 이라 한다.  
-인덱스의 생성 방식을 토대로 2종류로 나누는데 아래와 같다.   
+인덱스의 생성 방식을 토대로 2종류로 나누는데 아래와 같다.  
 
 **1. Global Secondary Index(GSI)**  
-기본테이블의 `파티션 키` 및 `정렬 키`가 다를 수 있는 인덱스 생성시  
-사용할 `파티션 키` 및 `정렬 키` 와 다른 경우  
+기본테이블에서 사용하는 `파티션 키` 및 `정렬 키`가 다른 인덱스 생성시 사용.  
 
 **2. Local Secondary Index(LSI)**  
 기본테이블의 `파티션 키`는 인데스의 `파티션 키`와 동일하지만 `정렬 키`가 다른 경우  
-별도의 저장공간을 생성하지 않기때문에 추가되는 쓰기용량, 읽기 용량이 없음. 
 테이블을 생성할 때에만 설정가능하며 생성 이후에는 추가, 삭제할 수 없음.  
 
 DynamoDB의 각 테이블에는 기본 할당량으로 `GSI` 20개, `LSI` 5개의 최대 할당량이 있으며 인덱스를 자동으로 유지 관리한다.  
@@ -203,34 +201,31 @@ Dynamodb 에서는 읽고 쓰는 처리에 따라 `처리량(WCU, RRU)` 이라�
 
 프로비저닝은 저장공간, 읽기, 쓰기 요청별로 과금됨,  <https://aws.amazon.com/ko/dynamodb/pricing/provisioned/>
 
-## 예제  
+## Spring with DynamoDB  
 
 DynamoDB 의 가장 큰 단점은 다른 DB 밴더보다 유용한 라이브러리가 적다는 것.  
 
-다행이 Spring Boot 에선 DynamoDB 사용을 위한 SDK, 그리고 해당 SDK 를 보다 쉽게 사용할 수 있도록 spring data 에서 제공하듯이 라이브러리를 만들어 두었는데  
-이를 사용하여 쉽게 DynamoDB 를 사용할 수 있다.  
+다행이 Spring Boot 에선 DynamoDB 사용을 위한 SDK, 그리고 해당 SDK 를 보다 쉽게 사용할 수 있도록 비공식 라이브러리인 `Spring Data DynamoDB` 를 사용할 수 있다.  
 
 > <https://github.com/boostchicken/spring-data-dynamodb>
 
-### local dynamodb + docker
-
-local 에서 DynamoDB 를 실행  
-
-```
+```sh
+# local 에서 DynamoDB 를 실행  
 docker run -d -p 8000:8000 amazon/dynamodb-local
 ```
 
-### demo
+```conf
+# application.properties
+spring.data.dynamodb.entity2ddl.auto=create-only
+```
 
 ```java
-//    @Bean(name = "amazonDynamoDB")
-//    public AmazonDynamoDB amazonDynamoDb() {
-//        return AmazonDynamoDBClientBuilder.standard()
-//                .withCredentials(credentialsProvider)
-//                .withRegion(region)
-//                .build();
-//    }
+// @Bean
+// public AWSCredentialsProvider awsCredentialsProvider() {
+//     return new DefaultAWSCredentialsProviderChain();
+// }
 
+// local-dynamodb 사용을 위한 설정
 @Bean(name = "amazonDynamoDB")
 public AmazonDynamoDB amazonDynamoDb(AWSCredentialsProvider awsCredentialsProvider) {
     AmazonDynamoDB amazonDynamoDb = AmazonDynamoDBClientBuilder.standard()
@@ -241,18 +236,14 @@ public AmazonDynamoDB amazonDynamoDb(AWSCredentialsProvider awsCredentialsProvid
 }
 ```
 
-일반적으로 `credentialsProvider` 을 사용하여 AWS 에 올라가있는 DynamoDB 에 접근할 수 있도록 해야하지만  
-데모 코드에선 docker 로 실행시킨 DynamoDB 에 접근하도록 설정  
+DynamoDB 테이블 설정을 위한 주석은 아래 url 을 참조  
 
-그외의 주석은 아래 url 을 참조  
 > <https://docs.aws.amazon.com/ko_kr/amazondynamodb/latest/developerguide/DynamoDBMapper.Annotations.html>  
 
 가장 중요한건 `DynamoDBIndexHashKey`, `DynamoDBIndexRangeKey` 어노테이션일 것인데  
 각각 보조 인덱스를 만들기 위한 파티션키와 정렬키를 설정하는 어노테이션이다.  
 
 해당 어노테이션이 설정된 후 `findBy...` 과 같은 함수로 호출시 자동으로 인덱스를 찾아 객체를 매핑한다.  
-
-> 데모 코드: <https://github.com/Kouzie/spring-boot-dynabodb-demo>
 
 ### 트랜잭션  
 
@@ -269,17 +260,17 @@ DynamoDB 에서는 트랜잭션 기능을 제공하지만 안타깝게도 `Srpin
 loadedObjects = mapper.transactionLoad(transactionLoadRequest);
 ```
 
-### Dynamic Query  
+### DyanamoDB Java Client
 
-`RDB` 에서는 `Dynamic Query` 지원을 위해 `QueryDSL` 이나 `Criteria` 등을 사용하는데  
+> <https://docs.aws.amazon.com/ko_kr/sdk-for-java/latest/developer-guide/java_ec2_code_examples.html>
 
-`DynamoDB` 에서는 별도의 라이브러리가 없고 `DynamoDBMapper` 클래스를 사용해서 `query`, `scan` 을 진행한다.  
+비공식 `Spring Data DyanamoDB` 를 사용하기보다 AWS 에서 제공하는 `DyanamoDB Java Client` 라이브러리를 사용하는것도 좋은 방법이다.  
+
+또한 `Dynamic Query` 지원을 위해서는 AWS 에서 제공하는 `DyanamoDB Java Client` 의 `DynamoDBMapper` 의 `scan`, `query` 기능을 사용할 수 밖에 없다.  
 
 > DynamoDB scan vs query: <https://dynobase.dev/dynamodb-scan-vs-query/>
 ![ddd1](/assets/2022/dynamodb4.png)  
-
-두 메서드의 사용방법은 모두 테이블에서 데이터 컬렉션을 읽어오기 위한 것으로 동일하나.  
-일반적으로 `query` 가 파티션 키를 사용하기 때문에 대부분 성능이 더 뛰어나며 문서 역시 `query` 메서드 사용을 권장한다.  
+> `scan`, `query` 모두 테이블에서 컬렉션을 읽어오기 위한 메서드이지만, `query` 가 `파티션 키`를 사용하기 때문에 성능이 더 뛰어나며 문서 역시 `query` 메서드 사용을 권장한다.  
 
 일단 아래처럼 `Filter Condition` 을 생성하는 코드를 작성할 수 있다.  
 
@@ -292,7 +283,7 @@ private Map<String, Condition> generateFilter(GetCustomerRequestDto requestDto) 
             .withAttributeValueList(new AttributeValue(requestDto.getName())));
     }
     if (StringUtils.hasLength(requestDto.getType())) {
-        BookmarkType type = BookmarkType.forValue(requestDto.getType());
+        CustomerType type = CustomerType.forValue(requestDto.getType());
         if (type != null) {
             filter.put("type", new Condition()
                 .withComparisonOperator(ComparisonOperator.EQ)
@@ -354,6 +345,10 @@ public List<Customer> findAllByIdIn(List<String> customerIds, GetCustomerRequest
 }
 ```
 
+RCU 를 낮추기 위해 HashKey 를 사용하는데, 아쉽게도 동시에 여러개의 HashKey 를 사용하여 쿼리하는 것은 불가능하다.  
+
+queryFilter 를 사용해 전체읽기를 사용하거나, 두번 읽은다음 어플리케이션 레이어에서 조인해야한다.  
+
 ### 여담  
 
 테이블 생성시 `LSI` 을 생성하려면 `RangeKey` 를 설정해야 한다.  
@@ -369,7 +364,7 @@ public List<Customer> findAllByIdIn(List<String> customerIds, GetCustomerRequest
 
 모두 `Repository` 인터페이스에서 제공하는 에러들이다.  
 
-만약 일반적인 방식의 어노테이션을 사용해서 클래스 정의를 하고 `RangeKey` 를 써야한다면 `Repository` 빈 객체를 사용하지 않고 `DynamoDBMapper` 를 이용해 쿼리를 작성하면 된다.  
+`RangeKey` 를 써야한다면 `Repository` 객체를 사용하지 않고 `DynamoDBMapper` 를 이용해 쿼리를 작성하면 된다.  
 
 혹은 `Spring Data DynamoDB` 에서 제공하는 `Custom Key Class` 를 별도로 작성하면 된다.  
 
@@ -377,14 +372,10 @@ public List<Customer> findAllByIdIn(List<String> customerIds, GetCustomerRequest
 
 > `DynamoDBMapper` 만을 사용하는것을 추천
 
-또한 RCU 를 낮추기 위해 HashKey 를 사용하는데  
-동시에 여러개의 HashKey 를 사용하여 쿼리하는 것은 불가능하다.  
-
-> queryFilter 를 사용해 전체읽기를 사용해야함  
-
-또한 하나의 해시키에 대해 LSI 생성은 하나만 가능하기 때문에  
-여러개의 LSI 를 사용하려면 해시테이블을 2배로 늘어나기에 추가비용이 발생한다.  
-
 만약 두개의 칼럼을 기반으로 필터링해야할 경우 `칼럼1#칼럼2` 형태로 2개의 칼럼을 하나의 칼럼에 우겨넣어 LSI 로 설정해야 한다.  
 
 DynamoDB 는 단순한 CRUD 에선 최적이라할 수 있지만 복잡한 쿼리식은 아예 설계불가능할 수 있기에 충분한 요구분석후에 사용을 결정해야 한다.  
+
+## 데모코드
+
+> <https://github.com/Kouzie/spring-boot-demo/tree/main/dynamodb-demo>
