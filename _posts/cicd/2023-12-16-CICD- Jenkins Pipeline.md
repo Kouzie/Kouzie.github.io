@@ -438,6 +438,8 @@ def sortByLength(List<String> list) {
 
 ## Multi module gradle build
 
+> repository 가 모두 분리되어 있고 `JFrog Aritifactory` 와 같은 사내 `Maven Repository` 운영시에는 `multi module` 로 구성할 필요가 없기에 skip
+
 아래와 같은 `gradle multi module` 프로젝트 구조를 가지고 있는 상태에서 연관 모듈이 변경되었을 때 `Jenkins pipeline` 에서 서비스를 빌드하는 방법을 알아본다.  
 
 ```sh

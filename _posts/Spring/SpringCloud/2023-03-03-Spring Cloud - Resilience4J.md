@@ -30,7 +30,7 @@ categories:
 `Resilience4J` 라이브러리도 결국은 메서드의 겉을 `try..catch` 문으로 감싸고 개발자가 정의한 로직대로 움직이도록 지원하는 정교한 라이브러리일 뿐이며  
 각종 람다식과 데코레이터 패턴을 구성하여 좀더 유지보수하기 쉽고 간결하게 구현하였을 뿐이다.  
 
-먼저 6개 core 라이브러리가 하는 역할을 알아보고 어떻게 우리가 정의한 메서드에 적용시킬 수 있는지 알아본다.  
+위의 `Resilience4J` 의 코어 라이브러리 별 역할을 알아보고 어떻게 우리가 정의한 메서드에 적용시킬 수 있는지 알아본다.  
 
 ### CircuitBreaker
 
@@ -88,10 +88,13 @@ CircuitBreakerConfig cbc = CircuitBreakerConfig.custom()
 `CircuitBreakerRegistry` 를 사용해 `CricuitBreaker` 인스턴스를 생성한다.  
 
 ```java
+// config
 CircuitBreakerConfig cbc1 = CircuitBreakerConfig.ofDefaults();
 CircuitBreakerConfig cbc2 = CircuitBreakerConfig.ofDefaults();
+// registry
 CircuitBreakerRegistry registry = CircuitBreakerRegistry.of(cbc1); // "default" key 로 들어감
 registry.addConfiguration("demo-cbc", cbc2);
+// instance
 CircuitBreaker cb1 = registry.circuitBreaker("default-cb");
 CircuitBreaker cb2 = registry.circuitBreaker("demo-cb", "demo-cbc");
 CircuitBreaker cb_default = CircuitBreaker.of("my-db", cbc1); // registry 안통하고 바로 생성 가능
@@ -101,7 +104,7 @@ CircuitBreaker cb_default = CircuitBreaker.of("my-db", cbc1); // registry 안통
 여러개 저장해두 었다 적재적소에 꺼내어 `CircuitBreaker` 인스턴스 생성이 가능하다.  
 
 앞으로 나올 `Resilience4J` 의 다른 core 라이브러리도  
-동일한 `registry`, `config`, `instance` 생성 구조를 가졌으니 참고  
+동일한 `registry-config-instance` 생성 구조를 가졌으니 참고  
 
 `CircuitBreaker` 의 유일한 구현체인 `CircuitBreakerStateMachine` 가 회로차단기로써 각종 이벤트들을 처리한다.  
 

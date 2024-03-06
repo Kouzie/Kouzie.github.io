@@ -22,11 +22,11 @@ categories:
 
 ### OpenTelemetry
 
-> <https://opentelemetry.io/docs/languages/java/instrumentation/>
+> <https://opentelemetry.io/docs/languages/java/instrumentation/>  
 > <https://medium.com/cloud-native-daily/how-to-send-traces-from-spring-boot-to-jaeger-229c19f544db>  
 > <https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/logback/logback-appender-1.0/library>  
 
-`Spring` 진영에서 `OpenTelemetry` 를 지원하는 프로젝트가 대표적으로 3개 있다.  
+`Spring` 진영에서 `OpenTelemetry` 를 지원하는 프로젝트가 대표적으로 아래 3개.  
 
 - Micrometer - Spring Boot 3
 - Sleuth - Spring Boot 2
@@ -34,9 +34,12 @@ categories:
 
 결론부터 말하자면 `SpringBoot 3.x` 부터는 `Micrometer` 사용을 권장한다.  
 
-`OpenTelemetry agent` 의 경우 Java 에이전트의 잠재적인 보안 문제, 애플리케이션 내 메서드 인터셉터로 인해 성능 문제가 발생한다.  
+`javaagent` 는 잠재적인 보안 문제, 애플리케이션 내 메서드 인터셉터로 인해 성능 문제가 발생함으로 편하지만 피해야할 요소중 하나.  
 
 `Micrometer` 가 `SpringBoot 3.x` 부터 지원되며 `Spring Cloud Sleuth` 형태를 이어받았다.  
+
+> `Spring Cloud Sleuth` 는 `SpringBoot 3.x` 에서 중단되었다.  
+> 반대로 `SpringBoot 2.x` 를 사용한다면 `Spring Cloud Sleuth` 를 사용해야한다.  
 
 ```conf
 # application.properties
@@ -46,10 +49,12 @@ spring.main.banner-mode=off
 ```groovy
 // spring cloud 에 종속성 있음₩
 implementation "io.micrometer:micrometer-tracing-bridge-otel" 
-```
 
-> `Spring Cloud Sleuth` 는 `SpringBoot 3.x` 에서 중단되었다.  
-> 반대로 `SpringBoot 2.x` 를 사용한다면 `Spring Cloud Sleuth` 를 사용해야한다.  
+// log parsing 을 쉽게하기 위해 json 형태로 출력
+implementation "ch.qos.logback.contrib:logback-json-classic:0.1.5"
+implementation "ch.qos.logback.contrib:logback-jackson:0.1.5"
+
+```
 
 여기까지 설정하고 실행하면 아래와 같은 로그가 출력된다.  
 `mdc(traceId, spanId)` 확인.  
@@ -80,7 +85,7 @@ implementation "io.micrometer:micrometer-tracing-bridge-otel"
 - **opentelemetry-sdk**: 측정데이터의 처리 및 출력을 설정.  
 - **opentelemetry-exporter-otlp**: exporter 의 구현체, `OTEL HTTP`, `OTEL GRPC` 프로토콜을 사용 가능.  
 
-`opentelemetry-sdk` 안에 이미 `opentelemetry-api` 가 포함되어 있지만 비니니스 로직에서는 `opentelemetry-api` 의존성 주입 받아 사용하는것을 권장.  
+> `opentelemetry-sdk` 안에 이미 `opentelemetry-api` 가 포함되어 있지만 비즈니스 로직에서는 `opentelemetry-api` 의존성 주입 받아 사용하는것을 권장.  
 
 ```groovy
 dependencyManagement {
@@ -154,13 +159,6 @@ public class OtlpConfig {
 
 `OpenTelemetryAppender.install` 를 사용하게 되면 콘솔에서 `mdc` 정보가 뜨지 않지만 실제 `Loki` 서비스에 전송된 로그를 확인해보면 `trace` 정보가 같이 찍혀있다.  
 
-파싱 및 라벨링에서 번거로운 작업을 줄이기 위해 json 형태로 로그를 저장.  
-
-```groovy
-implementation "ch.qos.logback.contrib:logback-json-classic:0.1.5"
-implementation "ch.qos.logback.contrib:logback-jackson:0.1.5"
-```
-
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
@@ -185,13 +183,12 @@ implementation "ch.qos.logback.contrib:logback-jackson:0.1.5"
 </configuration>
 ```
 
-
 > 반드시 모든 관측데이터의 exporter 를 java 라이브러리로 구현하지 않아도 된다.  
 >
-> log 의 경우 fluentbit 같은 file log 를 tail 하는 방식, metric 의 경우 시스템 메트릭만 관측해도 된다면 prometheus 의 pull 방식을 사용하면 된다.  
+> log 의 경우 fluentbit 같은 `file log tail` 방식, metric 의 경우 시스템 메트릭만 관측해도 된다면 prometheus 사이드카 방식을 사용하면 된다.  
 > trace 는 opentelemetry 연동구조가 가장 대중적이며, zipkin 이나 jeager 시스템을 사용중이라면 전용 라이브러리를 사용할 수 있다.  
 
-만약 `otlp log exporter` 를 사용하지 않고 `[fluentbit, promtail]` 를 사용해 tail 방식으로 file log 를 전송할 예정이라면 단순 출력을 위한 라이브러리를 사용  
+만약 `otlp log exporter` 를 사용하지 않고 `[fluentbit, promtail]` 를 사용해 `file log tail` 방식으로 전송할 예정이라면 아래와 같이 단순 출력을 위한 `logback` 라이브러리를 사용  
 
 ```groovy
 dependencies {

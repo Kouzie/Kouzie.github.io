@@ -11,24 +11,24 @@ categories:
   - java
 ---
 
-# Java 9 - Flow
+## java9 - Flow
 
-`java9` 에 추가된 `java.util.concurrent.Flow` 패키지를 사용해 리액티브 프로그래밍이 가능하다.  
-
-> <https://grokonez.com/java/java-9-flow-api-reactive-streams>  
-> 그림으로 설명이 잘되어있음.
-> ![image16](/assets/java/reactive-java/image16.png)  
-
-
-`CompletableFuture` 를 사용해 연산이 끝났음을 알리고(발행) 이후에 동작할 연산을 미리 정의(구독) 하는 모델은 간단하지만  
+`CompletableFuture` 를 사용해 연산이 끝났음을 알리고(발행)  
+이후에 동작할 연산을 미리 정의(구독) 하는 모델은 간단하지만  
 
 어플리케이션이 커질수록 자바의 객체지향을 사용한 옵저버 패턴으로 변경해야 쉬운 유지보수가 가능하다.  
 
-또한 `RxJava, Akka, Reactor` 등의 프레임워크, 라이브러리들이 `java9 Flow` 패키지를 기반으로 사용해 리액티브 프로그래밍을 위한 라이브러리를 업데이트 진행중이다.  
+`java9` 에 추가된 `java.util.concurrent.Flow` 패키지를 사용해 옵저버 패턴을 기반으로하는 **리액티브 프로그래밍**이 가능하다.  
 
-`Publisher`, `Subscriber`, `Subscription`, `Processor` 인터페이스 들이 각 프레임워크, 라이브러리에 화려하게 구현되어 있으며 일반 개발자들도 위 인터페이스 규칙만 지키면 연동 가능한 코드 작성이 가능하다.  
+![image16](/assets/java/reactive-java/image16.png)  
+
+`RxJava, Akka, Reactor` 등의 라이브러리들이 리액티브 프로그래밍을 위해 `java9 Flow` 패키지를 기반으로 개발되었다.  
+
+`[Publisher, Subscriber, Subscription, Processor]` 인터페이스 들이 각 프레임워크, 라이브러리에 화려하게 구현되어 있으며 일반 개발자들도 위 인터페이스 규칙만 지키면 연동 가능한 코드 작성이 가능하다.  
 
 ![image17](/assets/java/reactive-java/image17.png)  
+
+발행자는 구독자를 등록하고 subscription(신청) 할 데이터를 가져와 비즈니스 로직을 수행시킨다.  
 
 ```java
 package java.util.concurrent;
@@ -36,11 +36,7 @@ package java.util.concurrent;
 public static interface Publisher<T> {
     public void subscribe(Subscriber<? super T> subscriber);
 }
-```
 
-발행자(`Publisher`) 는 `subscribe()` 메서드로 구독자를 등록할 수 있다.  
-
-```java
 public static interface Subscriber<T> {
     public void onSubscribe(Subscription subscription);
     public void onNext(T item);
@@ -64,9 +60,9 @@ public static interface Processor<T,R> extends Subscriber<T>, Publisher<R> {
 
 `Processor` 는 발행/구독자 상속으로 두가지 역할을 모두 수행한다.  
 
-발행자와 구독자 사이에 껴서 데이터를 재가공 하는 역할이 가능하다.   
+발행자와 구독자 사이에 껴서 데이터를 재가공 하는 역할이 가능하다.  
 
-## 역압력   
+### 역압력  
 
 발행자가 구독자에게 데이터를 밀어넣는(`onNext`) 것을 압력이라 한다.  
 
@@ -89,8 +85,7 @@ public static interface Subscription {
 
 아래의 `TempSubscription` 처럼 
 `Subscriber` 에서 `onSubscribe(Subscription subscription)` 형식으로 필드에 `Subscription`(신청자) 을 저장해두고  
-신청자를 동해 
-구독자에게 특정 데이터를 전달하거나 특정 코드(`request`, `cancel`)를 전달할 수 있다.  
+신청자를 동해 구독자에게 특정 데이터를 전달하거나 특정 코드(`request`, `cancel`)를 전달할 수 있다.  
 
 ![image18](/assets/java/reactive-java/image18.png)  
 
@@ -101,9 +96,9 @@ public static interface Subscription {
 
 구독자가 신청자의 `request` 메서드를 통해 몇개 데이터를 처리할지 결정하고 신청자는 공급자로부터 데이터를 가져와 구독자에게 전달한다.  
 
-구독자가 데이터를 땡겨오기에 시스템 압력조절이 가능하다.   
+구독자가 데이터를 땡겨오기에 시스템 압력조절이 가능하다.  
 
-## 발행자 구독자 모델   
+### 발행자 구독자 모델  
 
 ```java
 public static void main(String[] args) {
@@ -229,13 +224,16 @@ Error!
 `TempSubscriber` 의 `onNext` 메서드 `TempSubscription` 의 `request` 를 호출하면서 역압력형식으로 구성된다.  
 만약 구독자가 많은 시스템 부담을 느낀다면 request 호출을 제거하면 된다.  
 
-# RxJava
+## RxJava
 
-> http://reactivex.io/RxJava/javadoc/io/reactivex/Observable.html
+> <http://reactivex.io/RxJava/javadoc/io/reactivex/Observable.html>
 
-**넷플릭스**에서 리액티브 프로그래밍을 위해 개발한 라이브러리로 `java 9` 이 업데이트 되기 전에 개발되었다.  
+**넷플릭스**에서 리액티브 프로그래밍을 위해 개발한 라이브러리로 `java9` 이 업데이트 되기 전에 개발되었다.  
 
-`RxJava 2.0` 부터 `Flow` 패키지의 인터페이스를 구현하도록 업데이트 되었으며 많은 기업들이 `java 9` 이 제공한 표준을 사용해 리액티브 프로그래밍 라이브러리를 업데이트 했다.  
+`RxJava 2.0` 부터 `java9 Flow` 패키지의 인터페이스를 구현하도록 업데이트 되었으며  
+많은 기업들이 `java9` 에서 제공한 표준을 사용해 리액티브 프로그래밍 라이브러리를 업데이트 했다.  
+
+`RxJava` 에선 `Observable` 클래스가 공급자 역할, `Observer` 클래스가 구독자 역할을 한다.  
 
 ```java
 package io.reactivex;
@@ -243,10 +241,13 @@ package io.reactivex;
 public interface ObservableSource<T> {
     void subscribe(@NonNull Observer<? super T> observer);
 }
+
+// 공급자
 public abstract class Observable<T> implements ObservableSource<T> {
     ...
 }
 
+// 구독자
 public interface Observer<T> {
     void onSubscribe(@NonNull Disposable var1);
     void onNext(@NonNull T var1);
@@ -255,35 +256,30 @@ public interface Observer<T> {
 }
 ```
 
-`RxJava` 에선 `Observable` 클래스가 공급자(`Publisher`) 역할  
-`Observer` 클래스가 구독자(`Subscriber`) 역할을 한다.  
-
-
-```java
-// 1 초 간격으로 long 값을 1에서 무한 증가 값을 방출
-Observable<Long> onePerSec = Observable.interval(1, TimeUnit.SECONDS);
-
-// 한개 이상의 요소를 방출하는 Observable 생성
-Observable<String> strings  = Observable.just("first", "second");
-// onNext("first"), onNext("second"), onComplete() 가 차례대로 호출됨
-```
 
 다양한 방법으로 `Observable`(공급자) 생성 가능하고 구독자 인터페이스에서 `onNext` 메서드만 구현하면 바로 `Observable` 을 `Observer` 에 등록 가능하다.  
 
-아래처럼 `ON_ERROR_MISSING`, `EMPTY_ACTION`, `Functions.emptyConsumer()` 와같은 클래스 내부에 정의해둔 `Consumer` 객체들을 사용해 `Observer` 의 `onNext` 를 제외한 `onError`, `onComplete`, `onSubscribe` 를 구현해주기 때문  
+```java
+public static void main(String[] args) {
+    // 1 초 간격으로 long 값을 1에서 무한 증가 값을 방출
+    Observable<Long> onePerSec = Observable.interval(1, TimeUnit.SECONDS);
+
+    // 한개 이상의 요소를 방출하는 Observable 생성
+    Observable<String> strings  = Observable.just("first", "second");
+    // onNext("first"), onNext("second"), onComplete() 가 차례대로 호출됨
+}
+```
+
+아래처럼 `Observer` 의 `onNext` 를 제외한 `onError`, `onComplete`, `onSubscribe` 는 기본 구현체를 사용할 수 있다.  
+
+`subscribe` 오버라이딩 메서드는 모두 `Disposable` 객체를 반환한다.  
 
 ```java
 public final Disposable subscribe(Consumer<? super T> onNext) {
     return this.subscribe(onNext, Functions.ON_ERROR_MISSING, Functions.EMPTY_ACTION, Functions.emptyConsumer());
 }
-```
 
-유연하게 구독자 생성이 가능하다.  
-
-`subscribe` 오버라이딩 메서드는 모두 `Disposable` 객체를 반환한다.  
-
-```java
-package io.reactivex.disposables;
+... 
 
 public interface Disposable {
     void dispose();
@@ -291,8 +287,7 @@ public interface Disposable {
 }
 ```
 
-`dispose()` 메서드는 `Observable`(공급자) 가 더이상 데이터를 발행하지 않도록 구독관계를 해지하는 역할을 하며 `Observable` 의 `Observer` 의 `onComplete` 를 호출할때 자동으로 같이 호출된다.  
-
+`dispose()` 메서드는 공급자가 더이상 데이터를 발행하지 않도록 구독관계를 해지하는 역할을 하며 `Observer` 의 `onComplete` 가 호출되면 자동으로 같이 호출된다.  
 
 ```java
 // 0 ~ 1 초 간격으로 long 값을 무한 증가 값을 방출
@@ -316,46 +311,31 @@ io.reactivex.exceptions.OnErrorNotImplementedException:
 Further reading: https://github.com/ReactiveX/RxJava/wiki/Error-Handling | number is three
 ```
 
-## RxJava 를 사용한 발행자 구독자 모델
+### RxJava 를 사용한 발행자 구독자 모델
 
-구독자(`Subscriber`)에 해당하는 `Observer` 생성
-
-위의 `TempSubscriber` 에 대응되는 `TempObserver` 정의
-
+구독자(`Subscriber`)에 해당하는 `Observer` 생성  
 
 ```java
 public class TempObserver implements Observer<TempInfo> {
     @Override
-    public void onSubscribe(Disposable disposable) {
-    }
+    public void onSubscribe(Disposable disposable) { }
     @Override
-    public void onError(Throwable t) {
-        System.err.println(t.getMessage()); // 에러 출력
-    }
+    public void onError(Throwable t) { System.err.println(t.getMessage()); }
     @Override
-    public void onNext(TempInfo tempInfo) {
-        System.out.println(tempInfo);
-    }
+    public void onNext(TempInfo tempInfo) { System.out.println(tempInfo); }
     @Override
-    public void onComplete() {
-        System.out.println("Done!");
-    }
+    public void onComplete() { System.out.println("Done!"); }
 }
 ```
 
-`TempSubscriber` 와 다르게 `onSubscribe` 와 `onNext` 부분에 역압력을 담당하는 `request` 호출문이 없다.  
-또한 신청자(`Subscription`)를 필드로 저장하지도 않는다.  
-
-
-그다음엔 공급자(`Publisher`)에 해당하는 `Observable` 생성
-
+공급자(`Publisher`)에 해당하는 `Observable` 생성
 
 ```java
 public static void main(String[] args) {
     String town = "NewYork";
     Observable<TempInfo> observable = Observable.create(new ObservableOnSubscribe<TempInfo>() {
         @Override
-        public void subscribe(@NonNull ObservableEmitter<TempInfo> observableEmitter) throws Exception {
+        public void subscribe(ObservableEmitter<TempInfo> observableEmitter) throws Exception {
             Observable.interval(1, TimeUnit.SECONDS).subscribe(i -> { //매초마다 1 ~ n long 방출
                 if (!observableEmitter.isDisposed()) {  // 구독자가 폐기되지 않았다면 수행
                     if (i >= 5) observableEmitter.onComplete(); // 구독자 완료처리
@@ -382,16 +362,15 @@ NewYork : 30
 Done!
 ```
 
+`java9` 의 발행자 모델과 다르게 `onSubscribe` 와 `onNext` 부분에 역압력을 담당하는 `request` 호출문이 없다.  
+또한 신청자(`Subscription`)를 필드로 저장하지도 않는다.  
 
-## Observalble 
-
-위에서 간단하게 `RxJava` 의 발행/구독 클래스, 메서드를 살펴보았는데 좀더 자세히 알아보자.  
+## Observalble  
 
 ### create
 
-함수원형
-
 ```java
+// 함수원형
 public static <T> Observable<T> create(ObservableOnSubscribe<T> source) {
     ObjectHelper.requireNonNull(source, "source is null");
     return RxJavaPlugins.onAssembly(new ObservableCreate<T>(source));
@@ -400,14 +379,18 @@ public static <T> Observable<T> create(ObservableOnSubscribe<T> source) {
 
 개발자가 `onNext, onComplete, onError` 등의 메서드를 직접 호출하는 수동적인 `Observable` 생성 방법
 
-매개변수로 사용되는 `ObservableOnSubscribe` 인터페이스에는 하나의 메서드만 정의되어 있고    
+매개변수로 사용되는 `ObservableOnSubscribe` 인터페이스에는 하나의 메서드만 정의되어 있고  
 
 ```java
 public interface ObservableOnSubscribe<T> {
     void subscribe(@NonNull ObservableEmitter<T> var1) throws Exception;
 }
 ```
+
 `ObservableEmitter` 인터페이스는 아래와 같은 같다.  
+
+> Emitter 상속하여 구독자역할을 수행하는 인터페이스  
+> <http://reactivex.io/RxJava/javadoc/io/reactivex/ObservableEmitter.html>
 
 ```java
 public interface Emitter<T> {
@@ -426,9 +409,6 @@ public interface ObservableEmitter<T> extends Emitter<T> {
 }
 ```
 
-> http://reactivex.io/RxJava/javadoc/io/reactivex/ObservableEmitter.html  
-`Emitter` 상속하여 구독자역할을 할 수 있는 인터페이스이다.  
-
 ```java
 public static void main(String[] args) {
     Observable<String> observable = Observable.create(emitter -> {
@@ -443,8 +423,6 @@ public static void main(String[] args) {
     System.out.println(disposable.isDisposed()); // true
 }
 ```
-
-
 
 ### fromArray, fromIterable
 
@@ -631,21 +609,20 @@ public static void main(String[] args) throws InterruptedException {
 
 하지만 `repeat` 는 발행 시퀀스가 종료되면 해당 발행자의 스레드를 종료하고 새로운 발행자(스레드)를 만들어 구독자를 재등록하기에 약간 다르다.  
 
-
-### 뜨거운 Observable, 차가운 Observable
+### Hot Observable, Cold Observable
 
 `subscribe` 메서드가 호출되기 전까진 데이터를 발행하지 않는 구조를 차가운 `Observable` 이라 한다(Lazy 접근법).  
 
-위의 `interval, timer` 발행자도 예외 없이 구독자가 ₩ 해야 시간을 체크하고 데이터를 발행하기 시작한다.  
+위의 `interval, timer` 발행자도 구독자가 구독을 시작해야 시간을 체크하고 데이터를 발행하기 시작한다.  
 
-반면 뜨거운 `Observable` 은 구독 여부 상관 없이 데이터를 발행하며, 이로 인해 앞부분 데이터를 유실될 수 있다.  
+반면 `Hot Observable` 은 구독 여부 상관 없이 데이터를 발행하며, 이로 인해 앞부분 데이터를 유실될 수 있다.  
 
-웹요청, DB쿼리, 파일 입출력은 차가운 `Observable`    
-마우스, 키보드, 센서 입출력은 뜨거운 `Observable` 를 사용한다.  
+웹요청, DB쿼리, 파일 입출력은 차가운 `Observable`,  
+마우스, 키보드, 센서 입출력은 `Hot Observable` 를 사용한다.  
 
 ### ConnectableObservable
 
-뜨거운 `Observable` 생성시 사용하는 클래스  
+`Hot Observable` 생성시 사용하는 클래스  
 
 ```java
 public abstract class ConnectableObservable<T> extends Observable<T> {
@@ -654,11 +631,11 @@ public abstract class ConnectableObservable<T> extends Observable<T> {
 
 ![image25](/assets/java/reactive-java/image25.png)  
 
-#### publish, connect, share
+#### publish
 
-뜨거운 `Observable` 인 `ConnectableObservable` 은 `Observable` 의 `publish` 메서드 를 통해 생성되며  
-`ConnectableObservable` 의 `connect` 메서드 호출 전까지는 데이터 발행을 하지 않는다.   
-반대로 `connect` 메서드가 호출되었다면 구독자가 없더라도 데이터가 발행된다.   
+`Hot Observable` 인 `ConnectableObservable` 은 `Observable` 의 `publish` 메서드 를 통해 생성된다.  
+`ConnectableObservable` 의 `connect` 메서드 호출 전까지는 데이터 발행을 하지 않는다.  
+반대로 `connect` 메서드가 호출되었다면 구독자가 없더라도 데이터가 발행된다.  
 
 ```java
 public static void main(String[] args) throws InterruptedException {
@@ -697,7 +674,8 @@ public static void main(String[] args) throws InterruptedException {
 또 한가지 `publish` 의 특징으로 **멀티캐스팅** 기능이 있다.  
 
 먼저 `publish` 없이 `map` 을 통해 1초마다 시간값을 출력하면 두 구독자 사이의 값이 다르게 나온다.  
-각 구독자에게 다른 데이터가 발행된다는 뜻.  
+
+> 각 구독자에게 다른 데이터가 발행된다는 뜻.  
 
 ```java
 public static void main(String[] args) throws InterruptedException {
@@ -807,7 +785,7 @@ public static void main(String[] args) throws InterruptedException {
 }
 ```
 
-`replay` 는 반환값이 `onnectableObservable` 이고  
+`replay` 는 반환값이 `ConnectableObservable` 이고  
 `cache` 의 경우 `Observable` 이다.  
 
 `replay` 의 경우 `Hot, Cold Observable` 을 `autoConnect` 나 `publish, connect` 를 통해 선택 가능하다.  
@@ -870,8 +848,6 @@ public static void main(String[] args) {
 
 `Single` 의 경우 최소, 최대 1개 데이터를 발행하기에 `default value` 가 필요하지만  
 `Maybe` 의 경우 최소 0개, 최대 1개 데이터를 발행 할 수 있다.  
-
-
 
 ### AsyncSubject  
 
@@ -973,7 +949,7 @@ public static void main(String[] args) {
 
 ### ReplaySubject
 
-뜨거운 `Observable` 로 동작시키기 위한 발행자 모델  
+`Hot Observable` 로 동작시키기 위한 발행자 모델  
 
 ![image24](/assets/java/reactive-java/image24.png)  
 
@@ -1495,7 +1471,6 @@ public static void main(String[] args) {
 }
 ```
 
-
 ### scan, scanWith
 
 ![image31](/assets/java/reactive-java/image31.png)  
@@ -1706,7 +1681,6 @@ public static void main(String[] args) {
 
 발행 스트림이 무한할 경우 메모리가 고갈될 수 있음으로 조심  
 
-
 ## Observable 흐름제어 메서드  
 
 데이터 발행 속도와 데이터 처리 속도 차이가 발생할 때 제어(처리)하는 흐름제어 메서드가 있다.  
@@ -1861,12 +1835,6 @@ public static void main(String[] args) {
 
 보다싶이 데이터 발행 이후 다음 데이터 발행시 `sleep` 을 4초 이상 한 데이터만 출력된다.  
 
-
-## RxJava 스케줄러  
-
-데이터 발행과 구독처리에 대한 CPU(스레드) 스케줄링 설정이 가능하다.  
-
-
 ### Schedulers.newThread  
 
 새로운 스레드를 생성하여 데이터를 발행하는 방법  
@@ -1924,6 +1892,9 @@ public static void main(String[] args) throws InterruptedException {
 ### Schedulers.computation
 
 대표적으로 `interval` 메서드에서 기본 사용되는 스케줄러이다.  
+빠른 연산 및 반환을 위해 내부생성한 스레드 풀을 사용해 데이터를 발행한다.  
+
+> 스레드 개수는 프로세서 개수와 동일  
 
 ```java
 @CheckReturnValue
@@ -1932,8 +1903,6 @@ public static Observable<Long> interval(long period, TimeUnit unit) {
     return interval(period, period, unit, Schedulers.computation());
 }
 ```
-
-빠른 연산 및 반환을 위해 내부생성한 스레드 풀을 사용해 데이터를 발행한다.  
 
 ```java
 public static void main(String[] args) throws InterruptedException {
@@ -1948,8 +1917,6 @@ public static void main(String[] args) throws InterruptedException {
 // RxComputationThreadPool-1:3
 // RxComputationThreadPool-1:4
 ```
-
-> 스레드 개수는 프로세서 개수와 동일  
 
 ### Schedulers.trampoline
 
@@ -2010,8 +1977,7 @@ public static void main(String[] args) throws InterruptedException {
 
 `Schedulers.computation` 의 경우 CPU 개수만큼 스레드가 생성되지만 `Schedulers.io` 의 경우 필요한 만큼 스레드가 계속 생성됨  
 
-
-### subscribeOn, observeOn
+### 스케줄러 지정 - subscribeOn, observeOn
 
 `subscribeOn` 메서드는 구독자가 `subscribe` 되었을 때 데이터 발행 스레드를 지정  
 `observeOn` 메서드는 처리된 결과를 구독자에게 전달하는 스레드를 지정한다.  
@@ -2067,10 +2033,9 @@ public static void main(String[] args) {
 // RxNewThreadScheduler-1
 ```
 
-observeOn 메서드로 여러 스케줄러를 지정해서 데이터를 가공하였다.  
+`observeOn` 메서드로 여러 스케줄러를 지정해서 데이터를 가공하였다.  
 
 요소의 개수만큼 현재 스레드 이름을 출력하도록 하였고 `main, RxSingleScheduler-1, RxNewThreadScheduler-1` 3 종류의 스레드 이름이 출력되었다.  
-
 
 ## RxJava 디버깅  
 
@@ -2080,34 +2045,19 @@ observeOn 메서드로 여러 스케줄러를 지정해서 데이터를 가공�
 
 ```java
 public static void main(String[] args) {
-    Integer[] arr = {1, 2, 3};
+    // Integer[] arr = {1, 2, 3};
+    Integer[] arr = {1, 2, 3, 0}; // onError 결과를 보기 위해 배열 마지막에 0 추가
     Observable<Integer> observable = Observable.fromArray(arr);
-    observable.map(i -> 6 / i)
+    observable
         .doOnNext(i -> System.out.println("doOnNext invoked:" + i))
         .doOnError(e -> System.out.println("doOnError invoked:" + e.getMessage()))
         .doOnComplete(() -> System.out.println("doOnComplete invoked"))
+        .map(i -> 6 / i)
         .subscribe(i -> System.out.println(i));
     System.out.println("main end");
 }
-// 출력결과
-// doOnNext invoked:6
-// 6
-// doOnNext invoked:3
-// 3
-// doOnNext invoked:2
-// 2
-// doOnComplete invoked
-// main end
-```
-
-`onError` 결과를 보기 위해 배열 마지막에 `0` 추가
-
-```java
-// Integer[] arr = {1, 2, 3};
-Integer[] arr = {1, 2, 3, 0};
-```
-
-```
+/* 
+출력결과
 doOnNext invoked:6
 6
 doOnNext invoked:3
@@ -2116,6 +2066,7 @@ doOnNext invoked:2
 2
 doOnError invoked:/ by zero
 main end
+*/
 ```
 
 `doOnNext, doOnError, doOnComplete` 를 한번에 구현할 수 있는 `doOnEach` 도 있음.  
@@ -2171,6 +2122,8 @@ public static void main(String[] args) throws InterruptedException {
 
 ### doOnTerminate, doFinally
 
+`complete, error, dispose` 등의 메서드 호출로 발행이 완료되면 `doOnTerminate` 와 `doFinally` 가 호출될 수 있다.  
+
 ```java
 public static void main(String[] args) {
     Integer[] arr = {1, 2, 3, 0};
@@ -2184,22 +2137,21 @@ public static void main(String[] args) {
         .subscribe(i -> System.out.println(i));
     System.out.println("main end");
 }
-// 출력결과
-// 6
-// 3
-// 2
-// doOnError invoked:/ by zero
-// doOnTerminate invoked
-// doFinally invoked
-// main end
-```
-
-아래처럼 `complete, error, dispose` 등의 메서드 호출로 발행이 완료되면 `doOnTerminate` 와 `doFinally` 가 호출될 수 있다.  
-
-```
+/* 
 onComplete, onError -> doOnTerminate -> doFinally
 dispose -> doFinally
+
+출력결과
+6
+3
+2
+doOnError invoked:/ by zero
+doOnTerminate invoked
+doFinally invoked
+main end
+ */
 ```
+
 
 ## 예외처리
 
@@ -2496,7 +2448,7 @@ public static void main(String[] args) throws InterruptedException {
 
 최상위 `Observable` 에선 에러 발생시 `retryWhen` 에 설정된 발행자에 데이터가 추가되어 동적으로 재실행할 지 끝낼지 정할 수 있다.   
 
-# Reactive Stream
+## Reactive Stream
 
 `RxJava, Reactor, Akka` 등 각 라이브러리 밴더사에서 같은 스펙을 사용해 이용자들이 일관된 사용방법으로 코딩할 수 있도록 하기 위한 연동을 위해 정해둔 스팩이다.  
 
@@ -2524,15 +2476,15 @@ public class Main {
 
 `org.reactivestreams` 패키지에 주목   
 
-실제 `org.reactivestreams` 패키지에 정의된 자바파일을 보면 `java 9` 에 정의된 `Flow` 패키지의 자바파일 이름부터 구성까지 모두 동일하다.(`Processor`, `Publisher`, `Subscriber`, `Subscription`)  
+실제 `org.reactivestreams` 패키지에 정의된 자바파일을 보면 `java9` 에 정의된 `Flow` 패키지의 자바파일 이름부터 구성까지 모두 동일하다.(`Processor`, `Publisher`, `Subscriber`, `Subscription`)  
 
-아직 이전버전의 jdk 유저를 위해 `org.reactivestreams` 패키지에 별도 정의해두었지만 위에서 설명한 `java 9 - Flow` 패키지의 스펙과 일치한다.  
+아직 이전버전의 jdk 유저를 위해 `org.reactivestreams` 패키지에 별도 정의해두었지만 위에서 설명한 `java9 - Flow` 패키지의 스펙과 일치한다.  
 
 이제 `RxJava` 외의 다른 라이브러리나 프레임워크를 사용해도 `Publisher, Subscriber` 를 지원하는 코드만 작성한다면 쉽게 연동이 가능하다.  
 
 ![image18](/assets/java/reactive-java/image18.png)  
 
-## RxJava to Reactive Stream  
+### RxJava to Reactive Stream  
 
 > https://github.com/ReactiveX/RxJavaReactiveStreams  
 위의 git 주소에서 `RxJava` 개발자들이 제공하는 `RxJava` 와 `Reactive Stream` 호환을 위한 `dependency` 를 먼저 적용해야한다.  
@@ -2641,18 +2593,19 @@ public static void main(String[] args) throws InterruptedException {
 
 > `Observable` 흐름제어 메서드를 사용하여 처리 불가능할 경우 사용하는 것이 좋다  
 
-**Observable을 선택하는 기준**  
-- 최대 1000개 미만의 데이터 흐름, Out of Memory Exception 이 발생할 확률이 적은 경우  
-- 마우스, 터치 이벤트를 다루는 GUI 프로그래밍, 초당 1000회 이하의 이벤트를 다룸  
+#### Observable을 선택하는 기준  
 
-**Flowable을 선택하는 기준**  
-- 10000개 이상의 데이터를 처리하는 경우, 메서드 체인에서 데이터 소스에 데이터 개수 제한을 요청해야 함  
-- 디스크에서 파일을 읽어 들일 경우  
-- JDBC를 활용해 데이터베이스의 쿼리 결과를 가져오는 경우  
-- 네트워크 I/O를 실행하는 경우 ( 서버에서 가져오길 원하는 만큼의 데이터양을 요청할 수 있을 때 )  
+* 최대 1000개 미만의 데이터 흐름, Out of Memory Exception 이 발생할 확률이 적은 경우  
+* 마우스, 터치 이벤트를 다루는 GUI 프로그래밍, 초당 1000회 이하의 이벤트를 다룸  
 
+#### Flowable을 선택하는 기준
 
-#### onBackPressure - 배압 이슈 대응  
+* 10000개 이상의 데이터를 처리하는 경우, 메서드 체인에서 데이터 소스에 데이터 개수 제한을 요청해야 함  
+* 디스크에서 파일을 읽어 들일 경우  
+* JDBC를 활용해 데이터베이스의 쿼리 결과를 가져오는 경우  
+* 네트워크 I/O를 실행하는 경우 ( 서버에서 가져오길 원하는 만큼의 데이터양을 요청할 수 있을 때 )  
+
+### onBackPressure - 배압 이슈 대응  
 
 `Flowable` 에 제공되는 버퍼를 기반으로 배압 전략을 설정할 수 있다.  
 `onBackPressureBuffer` - 배압 이슈 발생시 별도의 버퍼에 저장 발행된 데이터를 저장한다.  
@@ -2704,8 +2657,7 @@ public static void main(String[] args) throws InterruptedException {
 ## TCK
 
 > TCK: (`Reactive Stream Technology Compatibility Key`: 리액티브 스트릠 기술 호환성 키트)  
-
-> https://github.com/reactive-streams/reactive-streams-jvm/tree/master/tck
+> <https://github.com/reactive-streams/reactive-streams-jvm/tree/master/tck>
 
 `Reactive Stream` 을 사용하기 위한 수많은 규칙들이 정의되어 있고 모든 벤더사들은 해당 규칙을 준수하여 호환성을 보장한다.  
 

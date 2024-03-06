@@ -675,6 +675,9 @@ kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releas
 kubectl get all -n opentelemetry-operator-system
 ```
 
+`sidecar-for-spring` 이름을 설정해서 `sidecar` 로 동작할 `OTEL 컬렉터` 정의
+`sidecar` 의 모든 입력, 처리 결과를 `otlp` 로 출력하여 기존에 배포되어있는 `OTEL 게이트웨이` 에 전달한다.  
+
 ```yaml
 apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
@@ -721,7 +724,41 @@ spec:
           exporters: [logging, otlp]
 ```
 
-`sidecar` 의 모든 입력, 처리 결과를 `otlp` 로 출력하여 기존에 배포되어있는 `OTEL 게이트웨이` 에 전달한다.  
+해당 `sidecar` 는 `sidecar.opentelemetry.io/inject: "sidecar-for-spring"` 라벨을 가지고 있는 pod 에서 실행된다.  
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: spring
+  name: greet-deployment
+  labels:
+    app: greet-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: greet-deployment
+  template:
+    metadata:
+      labels:
+        app: greet-deployment
+      annotations:
+        sidecar.opentelemetry.io/inject: "sidecar-for-spring" # pod 에 sidecar 삽입
+    spec:
+      containers:
+        - name: greet-deployment
+          ...
+```
+
+Pod 실행 후 내부에서 동작중인 컨테이너 이름 출력.  
+
+```sh
+kubectl get pod/greet-deployment-7874469746-52h5t -n spring -o=jsonpath='{.spec.containers[*].name}' | tr ' ' '\n'
+
+# greet-deployment
+# otc-container
+```
 
 ## 데모코드  
 
