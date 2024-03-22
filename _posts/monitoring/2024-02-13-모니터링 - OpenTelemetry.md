@@ -530,15 +530,15 @@ if __name__ == "__main__":
 
 ![1](/assets/monitoring/observability_6.png)  
 
-- **sidecar**: 동일한 포드에 컬렉터를 배치, 어플리케이션과 동일한 리소스 및 수명주기 를 공유.  
-- **agent**: 모든 노드에 컬렉터를 배치, 측정데이터를 일괄처리, 필터링, 전처리 가능.  
-- **gateway**: 특정 노드에 컬렉터를 배치, 독립 실행 서비스로 운영되며 수평확장, 중앙제어 등이 가능.  
+- **sidecar**: 동일한 Pod 에 컬렉터를 배치(sidecar 패턴), 어플리케이션과 동일한 리소스 및 수명주기 를 공유.  
+- **agent**: 모든 노드에 컬렉터를 배치(daemon 으로 동작), 측정데이터를 일괄처리, 필터링, 전처리 가능.  
+- **gateway**: 특정 노드에 컬렉터를 배치(deployment 으로 동작), 독립 실행 서비스로 운영되며 수평확장, 중앙제어 등이 가능.  
 
 `sidecar -> agent -> gateway` 규모순으로, 각 위치에 배포되어 있는 컬렉터들간의 연동 또한 가능하다.  
 
 규모가 작을수록 어플리케이션 입장에서 데이터 전송을 위한 네트워크 오버헤드가 줄어들고, 규모가 클수록 수집할 수 있는 데이터 종류가 늘어나며 관측 백엔드 와의 통신량을 줄일 수 있다.  
 
-대부분 `[agent, gateway]` 방식중 하나를 사용한다.  
+> 개인적으로 k8s 환경이라면 sidecar 방식을 사용하는 것이 좋은듯.  
 
 ### OTEL 컬렉터 helm
 
@@ -549,10 +549,7 @@ if __name__ == "__main__":
 `OTEL` 은 `CNCF` 규칙을 따르는 만큼 k8s 와 같은 클라우드 환경에서 주로 실행된다.  
 k8s 클러스터 자체 관측데이터 수집, 어플리케이션 관측데이터 수집을 수행한다.  
 
-일반적으로 `agent` 방식으로 관측데이터를 수집하기 때문에 `sideccar` 방식을 주로 사용한다.  
-
 위 helm 차트에서 쉽게 `gateway` 방식으로 운영되는 `OTEL 컬렉터` 설치가 가능하다.  
-
 
 ```shell
 helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
@@ -572,6 +569,8 @@ mv opentelemetry-collector opentelemetry-collector-helm
 > <https://grafana.com/docs/opentelemetry/>  
 
 여러 운영방식이 있겠지만 여기선 어플리케이션이 직접 전달한 `[메트릭, 로그, 추적]` 데이터만 gateway 방식으로 수집하기 위해 `deployment` 으로 운영.  
+
+수집한 데이터들은 `prometheusremotewrite` 를 통해 `Prometheus` 에 `push base` 로 전달한다.  
 
 ```yaml
 # Valid values are "daemonset", "deployment", and "statefulset".
@@ -656,14 +655,16 @@ kubectl create ns monitoring
 helm install opentelemetry-collecor -f values.yaml . -n monitoring
 ```
 
-### Operating Mode
+### Sidecar Operating Mode
 
 > <https://github.com/open-telemetry/opentelemetry-operator>  
 > <https://opentelemetry.io/docs/kubernetes/operator/>  
 > <https://cert-manager.io/docs/installation/helm/>  
 
-sidecar 방식은 위의 helm 차트만으로는 설치할 수 없다.  
-OpenTelemetry 에서 제공하는 `k8s 커스텀 리소스` 를 설치하고 `Pod` 의 설치마다 `sidecar` 어플리케이션이 같이 동작하도록 설정해야한다.  
+k8s 환경에선 `sidecar` 방식을 주로 사용한다.  
+
+`sidecar` 방식은 위의 helm 차트만으로는 설치할 수 없다.  
+`OpenTelemetry` 에서 제공하는 `k8s CRD` 를 설치하고 웹훅을 통해 `Pod` 의 생성마다 `sidecar` 어플리케이션이 같이 동작하도록 설정해야한다.  
 
 ```shell
 # cert-manager 설치

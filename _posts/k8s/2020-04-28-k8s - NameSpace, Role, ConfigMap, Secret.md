@@ -1,5 +1,5 @@
 ---
-title:  "k8s - NameSpace, ConfigMap, Secret!"
+title:  "k8s - NameSpace, Role, ConfigMap, Secret!"
 
 read_time: false
 share: false
@@ -13,7 +13,7 @@ categories:
 
 ---
 
-## 네임스페이스
+## NameSpace
 
 k8s 리소스로 네임스페이스는 하나의 클러스터를 여러개의 논리적 단위로 나눠 사용하기 윈한 기능으로 클러스터 하나를 여러 팀이 함께 공유할 수 있음.  
 
@@ -105,6 +105,256 @@ Switched to context "my-context".
 # 삭제
 $ kubectl delete -f Namespace/namespace.yaml
 namespace "trade-system" deleted
+```
+
+## 인증, 권한
+
+`kubectl` 명령을 사용해 `kube-apiserver` 에 접근해왔고  
+`~/.kube/config` 파일을 사용해 인증과정을 거쳤다.  
+
+`docker internal k8s` 를 사용한다면 config 정보는 아래와 같다.  
+
+```yaml
+apiVersion: v1
+current-context: docker-desktop
+kind: Config
+clusters:
+preferences: {}
+- cluster:
+    certificate-authority-data: ...
+    server: https://kubernetes.docker.internal:6443 # 쿠버네티스 API 에 접속할 주소
+  name: docker-desktop # 클러스터의 이름
+contexts: # 사용자, 네임스페이스를 연결하는 설정
+- context:
+    cluster: docker-desktop # 접근할 클러스터를 설정
+    user: docker-desktop # 클러스터에 접근할 사용자 그룹이 누구인지를 설정
+  name: docker-desktop # 컨텍스트의 이름
+users:
+- name: docker-desktop # 사용자 그룹의 이름을 설정
+  user:
+    client-certificate-data: ... # 클라이언트 인증에 필요한 해시값(TSL 인증 기반)
+    client-key-data: ... # 클라이언트의 키 해시값
+```
+
+`kube-apiserver` 접근시 사용자 인증과 더불어 **권한**을 검증한다.  
+클러스터 하나를 여러 명이 사용할 때 Namespace 별로 사용자 권한을 구분하여 접근을 제한시키는것이 대부분이다.  
+
+권한관리는 크게 아래 2가지로 나뉜다.  
+
+* **ABAC**(Attribute-based access control)
+  권한 설정 내용을 파일로 관리, 수정시  `kube-apiserver` 컴포넌트를 재시작해야 해서 잘 사용하지 않음
+* **RBAC**(Role-based access control)  
+  **사용자(ServiceAccount)** 와 **역할(Role)** 을 별개의 리소스로 생성한 후 두 가지를 **조합(RoleBinding)**
+
+. `RBAC` 를 주로 사용함.  
+
+`Role`(역할) 는 아래 두가지 `kind` 가 있음  
+
+- Role  
+- ClusterRole  
+
+### Role
+
+`일반 Role` 이라 부르며 롤이 속한 **네임스페이스의 사용 권한**을 관리한다.  
+
+```yaml
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1 # RBAC
+metadata:
+  namespace: default # 네임스페이스
+  name: read-role # 룰 이름
+rules: # 룰 규칙
+- apiGroups: [""] # core api 사용
+  resources: ["pods"] # 접근 가능한 리소스 정의
+  resourceNames: ["mypod"] # 접근 가능한 리소스의 name 설정
+  verbs: ["get", "list"] # 리소스에서 어떤 동작을 할 건지 정의 
+```
+
+`verbs` 들어갈 수 있는 동작들은 아래와 같다.  
+
+|verb|설명|
+|---|---|
+`Create` | 새로운 자원 생성
+`Get` | 개별자원조회
+`List` | 여러개자원조회
+`Update` | 기존자원내용전체업데이트
+`Patch` | 기존자원중일부내용변경
+`Delete` | 개별자원삭제
+`deletecollection` | 여러개자원삭제
+
+### ClusterRole
+
+`클러스터 Role` 이라 부르며 **클러스터 전체 사용 권한**을 관리한다.  
+
+```yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: read-clusterrole
+rules:
+- apiGroups: [""] # core api 사용
+  resources: ["pods"]
+  verbs: ["get", "list"]
+```
+
+`metadata.namespace` 속성이 없는 것 빼고 일반 `Role` 과 크게 다를건 없다.  
+
+`클러스터 Role` 엔 다른 `클러스터 Role` 설정을 가져올 수 있는 `aggregationRule` 속성이 있다.  
+일치된 레이블의 `클러스터 Role` 을 가져와 집계(aggregation), 대부분 k8s 에 사전 정의되어있는 `클러스터 Role` 을 가져와 사용.   
+
+```yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: admin-aggregation
+aggregationRule:
+  clusterRoleSelectors:
+  - matchLabels:
+      kubernetes.io/bootstrapping: rbac-defaults
+      rbac.example.com/aggregate-to-monitoring: "true"
+rules: []
+```
+
+클러스터의 관리용 API 호출 또한 접근가능한 리소스로 구분할 수 있다.  
+
+```yaml
+rules:
+- nonResourceURLs: ["/healthcheck", "/metrics/*"] 
+  verbs: ["get", "post"] # nonResourceURLs 은 get, post 2가지만 존재
+```
+
+### ServiceAccount
+
+서비스계정 `ServiceAccount` 을 생성  
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata: 
+  name: myuser
+  namespace: default
+```
+
+### 룰 바인딩
+
+`일반 Role` `클러스터 Role` 과 서비스계정을 묶기 위해 사용
+
+`RoleBinding` `ClusterRoleBinding` 2가지 종류의 리소스를 사용한다.  
+
+```yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: read-rolebinding
+  namespace: default # ServiceAccount, Role 모두 같은 네임스페이스에 있어야함
+subjects: # 어떤 유형의 사용자 계정과 연결하는지 설정
+- kind: ServiceAccount
+  name: myuser
+  apiGroup: "" # core api 사용
+roleRef:
+  kind: Role
+  name: read-role
+  apiGroup: rbac.authorization.k8s.io # RBAC 룰 사용
+```
+
+```yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: read-clusterrolebinding
+subjects:
+- kind: ServiceAccount
+  name: myuser
+  namespace: default # namespace 지정 필수
+  apiGroup: ""
+roleRef:
+  kind: ClusterRole
+  name: read-clusterrole
+  apiGroup: rbac.authorization.k8s.io
+```
+
+### 사용자 변경
+
+> `deploy` 와 같은 클러스터 단위의 명령어를 사용하려면 `ClusterRole` 을 사용해야 한다.  
+
+```yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1 # RBAC
+metadata:
+  name: spring-role # 룰 이름
+rules: # 룰 규칙
+  - apiGroups: [""] # core api 사용
+    resources: ["*"] # 접근 가능한 리소스 정의
+    verbs: ["*"] # 리소스에서 어떤 동작을 할 건지 정의
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: spring-user
+  namespace: spring
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: spring-rolebinding
+  namespace: spring
+subjects:
+  - kind: ServiceAccount
+    name: spring-user
+    namespace: spring
+    apiGroup: ""
+roleRef:
+  kind: ClusterRole
+  name: spring-role
+  apiGroup: rbac.authorization.k8s.io # RBAC 룰 사용
+```
+
+유저 생성에 따라 자동으로 만들어진 `secret` 확인
+
+```
+kubectl get secret -n spring 
+NAME                                TYPE                                  DATA   AGE
+default-token-rplrs                 kubernetes.io/service-account-token   3      96m
+spring-user-token-d4fjj   kubernetes.io/service-account-token   3      3m19s
+
+kubectl describe secrets -n spring spring-user-token-d4fjj 
+...
+token:      eyJhbGciOiJSUzI1NiIsIm...
+```
+
+만들어진 secret 을 로컬 `context` 에 저장하고 `사용자명-클러스터명` 를 묶어 저장.
+
+```
+kubectl config set-credentials -n spring spring-user --token=eyJhbGciOiJ...
+kubectl config set-context spring-context --cluster=cluster.dev --user=spring-user
+```
+
+사용하고자 하는 `private registry` 를 등록하기 위한 코드
+
+```
+kubectl patch -n spring serviceaccount spring-user -p '{"imagePullSecrets": [{"name": "docker-secret"}]}'
+serviceaccount/spring-user patched
+```
+
+만들어진 `context` 로 현재 `context` 를 변경
+
+```
+kubectl config use-context spring-context 
+Switched to context "spring-context".
+
+kubectl config current-context                     
+spring-context
+```
+
+현재 `context` 가 사용중인 `namespace` 를 `default` 에서 다른 `namespace` 로 지정
+
+```
+kubectl config set-context spring-context --namespace=spring
+Context "spring-context" modified.
+
+kubectl config get-contexts $(kubectl config current-context)
+CURRENT   NAME                       CLUSTER       AUTHINFO                NAMESPACE
+*         spring-context   cluster.dev   spring-user   spring
 ```
 
 ## ConfigMap
