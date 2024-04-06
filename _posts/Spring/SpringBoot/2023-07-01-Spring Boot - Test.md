@@ -575,7 +575,7 @@ public class UserControllerTests {
 > <https://testcontainers.com/>  
 > <https://testcontainers.com/guides/getting-started-with-testcontainers-for-java/>
 
-`H2DB` 는 훌륭한 테스트용 `In-Memort DB` 이지만 `native query` 는 테스트가 부정확할 수 있다.  
+`H2DB` 는 훌륭한 테스트용 `In-Memory DB` 이지만 `native query` 는 테스트가 부정확할 수 있다.  
 또한 DB 외의 기타 `프로세스 외부 의존성`의 경우 테스트를 Mock 으로 대체하거나 테스트를 포기해야할 경우가 있는데, 이때 도움을 주는게 컨테이너 기반 테스트이다.  
 
 실제 테스트용 Docker 컨테이너를 실행시켜 테스트를 지원한다.  

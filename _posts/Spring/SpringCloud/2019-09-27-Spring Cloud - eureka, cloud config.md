@@ -21,6 +21,13 @@ categories:
 
 이에 맞춰 클라우드 환경에 어울리는 서버환경을 구축하기 위해 `Spring Cloud` 라이브러리가 추가되었다.  
 
+> 2024년 현재 `Spring Cloud` 라이브러리들은 레거시로 취급되고 있다.  
+> k8s 가 출시되면서 대부분의 서비스가 `Eureka` 의 `Server Discovery, LoadBalancing, Cloud Config` 기능을 사용하지 않고 k8s 자체 기능을 사용한다.  
+>  
+> `Spring Cloud Kubernetes` 라이브러리 역시 굳이 사용하지 않더라도 k8s 설정을 통해 동일한 기능을 구현 가능하기 때문에 꼭 사용할 필요는 없다.  
+>  
+> `Feign, Gateway, Stream` 같은 기능은 서버 운영편리 및 가독성 때문에 사용하긴 하지만 Spring 기반 MSA 구축시 필수사용은 아니다.  
+
 ### 릴리즈 트레인
 
 - `Spring Cloud Task`  

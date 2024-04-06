@@ -243,10 +243,12 @@ public String greet() throws JsonProcessingException {
 }
 ```
 
+`OTEL 컬렉터` 를 사용해 `Metric` 데이터를 수집하기 보단 `Prometheus` 사용을 권장한다.  
+
 ### Prometheus
 
 `Metric` 대부분 서버 상태 관측에 사용되며 `Prometheus` 를 주로 사용한다.  
-위와같은 단건 정보를 전송시에도 `micrometer` 라이브러리를 사용해 `Proemtheus` 데이터에 통합시키는 방법을 사용한다.  
+위와같은 단건 정보를 전송시에도 `micrometer` 라이브러리를 사용해 `Prometheus` 데이터에 통합시키는 방법을 사용한다.  
 
 `Prometheus Metric` 정보는 전달하는 방식으로 `push base, pull base` 가 있으며 대부분 `pull base` 를 사용한다.  
 

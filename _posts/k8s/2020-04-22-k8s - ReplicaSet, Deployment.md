@@ -145,6 +145,7 @@ metadata:
 # 디플로이먼트 스팩
 spec:
   replicas: 10
+  revisionHistoryLimit: 2 # replicaset version 을 2개까지만 유지, default 10
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -395,68 +396,68 @@ spec:
     app: photo-view
 ```
 
-```
+```sh
 kubectl apply -f Deployment/rollout-depoyment.yaml
 
-deployment.apps/rollout-deployment created
-service/rollout created
+# deployment.apps/rollout-deployment created
+# service/rollout created
 ```
 
 현재 사용중인 이미지 `photo-view:v1.0` 를 `photo-view:v2.0` 으로 수정 후 다시 적용(`Roll out`)
 
-```
+```sh
 kubectl apply -f Deployment/rollout-depoyment.yaml
-
-deployment.apps/rollout-deployment configured
-service/rollout unchanged
-
-kubectl describe deploy rollout-deployment
-
-Name:                   rollout-deployment
-Namespace:              default
-...
-Annotations:            deployment.kubernetes.io/revision: 2
-...
-Events:
-  Type    Reason             Age   From                   Message
-  ----    ------             ----  ----                   -------
-  Normal  ScalingReplicaSet  41s   deployment-controller  Scaled up replica set rollout-deployment-d8bf6cb58 to 3
-  Normal  ScalingReplicaSet  27s   deployment-controller  Scaled up replica set rollout-deployment-6b5ddcb6b7 to 1
+# deployment.apps/rollout-deployment configured
+# service/rollout unchanged
 ``` 
 
 `describe` 명령으로 출력된 `Annotations` 속성으로 `revision` 값 확인  
 해당 디플로이먼트가 **몇번 업데이트** 되었는지 확이 가능하다.  
 
+```sh
+
+kubectl describe deploy rollout-deployment
+# Name:                   rollout-deployment
+# Namespace:              default
+# ...
+# Annotations:            deployment.kubernetes.io/revision: 2
+# ...
+# Events:
+#   Type    Reason             Age   From                   Message
+#   ----    ------             ----  ----                   -------
+#   Normal  ScalingReplicaSet  41s   deployment-controller  Scaled up replica set rollout-deployment-d8bf6cb58 to 3
+#   Normal  ScalingReplicaSet  27s   deployment-controller  Scaled up replica set rollout-deployment-6b5ddcb6b7 to 1
+```
+
 `d8bf6cb58 -> 6b5ddcb6b7` 해시의 변경값이다.  
 
-이제 `photo-view:v2.0` 으로 업데이트된 디플로이먼트를 다시 예전버전으로 롤 백해보자.  
+`photo-view:v2.0` 에 문제가 있단 가정 하에, 업데이트된 디플로이먼트를 다시 이전버전으로 `rollback` 해보자.  
 
 첫번째 방법으로 탬플릿 이미지를 `photo-view:v1.0` 로 다시 적용해보자.  
 
-```
+```sh
 kubectl apply -f Deployment/rollout-depoyment.yaml
-deployment.apps/rollout-deployment configured
-service/rollout unchanged
+# deployment.apps/rollout-deployment configured
+# service/rollout unchanged
 
 kubectl describe deploy rollout-deployment
-...
-Annotations:            deployment.kubernetes.io/revision: 3
-...
+# ...
+# Annotations:            deployment.kubernetes.io/revision: 3
+# ...
 
 kubectl get pod
-NAME                                 READY   STATUS    RESTARTS   AGE
-rollout-deployment-d8bf6cb58-9nwh5   1/1     Running   0          33s
-rollout-deployment-d8bf6cb58-t2f4l   1/1     Running   0          34s
-rollout-deployment-d8bf6cb58-tgg57   1/1     Running   0          31s
+# NAME                                 READY   STATUS    RESTARTS   AGE
+# rollout-deployment-d8bf6cb58-9nwh5   1/1     Running   0          33s
+# rollout-deployment-d8bf6cb58-t2f4l   1/1     Running   0          34s
+# rollout-deployment-d8bf6cb58-tgg57   1/1     Running   0          31s
 ```
 
 `revision`값은 3이 되었고 해시값이 새롭게 변하지 않고 다시 `d8bf6cb58` 로 돌아갔다.  
-
-디플로이먼트, 리플리카셋, 파드 모두 매니페스트 이력을 가지고 롤아웃/롤백을 진행하고 있기 때문  
+`[Deployment, Replicaset, Pod]` 모두 매니페스트 이력을 가지고 롤아웃/롤백을 진행하고 있기 때문.  
 
 이 외에도 현재 사용중인 매니페스트 수정하거나 `kubectl rollout` 명령을 사용해 롤백이 가능하다.  
 
-```
+```sh
 kubectl edit deploy rollout-deployment
 kubectl rollout undo deployment rollout-deployment --to-revision=2 
 ```
@@ -517,21 +518,21 @@ spec:
             - containerPort: 80
 ```
 
-```
+```sh
 kubectl apply -f Deployment/blue-deployment.yaml
-deployment.apps/blue-deployment created
+# deployment.apps/blue-deployment created
 
 kubectl apply -f Deployment/green-deployment.yaml
-deployment.apps/green-deployment created
+# deployment.apps/green-deployment created
 
 kubectl get pod
-NAME                                 READY   STATUS        RESTARTS   AGE
-blue-deployment-58d5d4869b-kmn88     1/1     Running       0          19s
-blue-deployment-58d5d4869b-vlx2c     1/1     Running       0          19s
-blue-deployment-58d5d4869b-w4729     1/1     Running       0          19s
-green-deployment-5466fc4568-7hxqp    1/1     Running       0          15s
-green-deployment-5466fc4568-mvs2w    1/1     Running       0          15s
-green-deployment-5466fc4568-t8hp2    1/1     Running       0          15s
+# NAME                                 READY   STATUS        RESTARTS   AGE
+# blue-deployment-58d5d4869b-kmn88     1/1     Running       0          19s
+# blue-deployment-58d5d4869b-vlx2c     1/1     Running       0          19s
+# blue-deployment-58d5d4869b-w4729     1/1     Running       0          19s
+# green-deployment-5466fc4568-7hxqp    1/1     Running       0          15s
+# green-deployment-5466fc4568-mvs2w    1/1     Running       0          15s
+# green-deployment-5466fc4568-t8hp2    1/1     Running       0          15s
 ```
 
 그리고 이 `Deployment` 에 접근하는 서비스를 작성하고 실행한다.  
@@ -552,9 +553,9 @@ spec:
     ver: v1.0
 ```
 
-```
+```sh
 kubectl apply -f Deployment/service.yaml
-service/webserver created
+# service/webserver created
 ```
 
 이제 `service.yml` 매니페스트 파일만 수정해서 두 버전의 디플로이먼트에 접근할 수 있도록 설정하면 된다.  

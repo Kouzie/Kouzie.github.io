@@ -207,6 +207,8 @@ services:
 
 #### PARSER
 
+아래는 docker 컨테이너가 출력하는 전형적인 로그.  
+
 ```json
 {"log":"VM settings:\n","stream":"stderr","time":"2024-02-14T06:11:01.863689738Z"}
 {"log":"    Max. Heap Size (Estimated): 48.32G\n","stream":"stderr","time":"2024-02-14T06:11:01.864559753Z"}
@@ -230,7 +232,7 @@ services:
   ...
 ```
 
-위와 같은 로그를 저장해야할 경우 `[json, regex]` 를 처리할 `PARSER 섹션` 를 정의해야한다.  
+위와 같은 형태의 로그를 저장해야할 경우 `[json, regex]` 를 처리할 `PARSER 섹션` 를 정의해야한다.  
 
 > `PARSER 섹션` 은 별도의 별도의 파일로 저장해서 사용해야한다.  
 
@@ -262,19 +264,17 @@ services:
     flush_timeout 1000
     # rules |   state name  | regex pattern                  | next state
     # ------|---------------|--------------------------------------------
-    # 문자로 시작하는 줄을 멀티라인 로그의 시작으로 식별
+    # 문자로 시작하는 줄을 멀티라인 로그의 시작으로 식별, 보통 spring boot 로그는 시간(숫자)로 시작함
     Rule     "start_state"   "^[^\d]"                         "multi_line"
     # 멀티라인 로그 처리를 계속
     Rule     "multi_line"    "/.*/"                           "multi_line"
 ```
 
-실제 로그는 docker 컨테이너가 출력하는 `/var/log/containers/*.log` 로그파일을 tail 하는데 모든 로그형태가 json 이다.  
-
-이를 한번 파싱하기 위해 `docker_json` 를 정의한다.  
+docker 컨테이너가 출력하는 `/var/log/containers/*.log` 로그파일을 tail 하는데 모든 로그형태가 json 이기에, 이를 한번 파싱하기 위해 `docker_json` 를 정의한다.  
 
 파싱된 로그안에는 SpringBoot 기본 로그, 에러 혹은 기타 출력물의 멀티라인 형태 로그가 구성되어있다.  
 
-이를 파싱하기 위해 `springboot_log, springboot_multiline` 를 정의한다.  
+이를 파싱하기 위해 `springboot_log`, `springboot_multiline` 를 정의한다.  
 
 #### INPUT, OUTPUT, FILTER
 
@@ -305,7 +305,7 @@ services:
     Match *
 ```
 
-여기선 `parser FILTER` 와 `mutline FILTER` 를 사용한다.  
+여기선 `parser FILTER` 와 `multiline FILTER` 를 사용한다.  
 
 `stdout` 으로 출력된 결과를 확인하고 `regex` 로 로그가 파싱되어 라벨이 붙어있는지 확인한다.  
 
@@ -328,6 +328,7 @@ mv fluent-bit fluent-bit-helm
 ```
 
 위에서 구성한 SpringBoot 로그 `[PARSING, INPUT, OUTPUT, FILTER]` 를 `value.yaml` 에 설정  
+수많은 conatiners 로그중 `demo-*.log` 형태의 로그만 저장시킨다.  
 
 ```conf
 # value.yaml

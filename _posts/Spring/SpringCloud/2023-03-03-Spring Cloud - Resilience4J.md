@@ -19,7 +19,7 @@ categories:
 
 `Resilience4J` 는 서비스의 가용성을 위해 아래 MSA 가용성 향상을 위한 기술을 지원하는 라이브러리이다.  
 
-회로차단기 기능부터 회복, 재시도 와 같은 기능을 제공한다.  
+Circuit Breaker 외에도 아래와 같은 4가지 추가기능을 제공한다.  
 
 - `resilience4j-circuitbreaker`: Circuit breaking  
 - `resilience4j-bulkhead`: Bulkheading  
@@ -37,10 +37,11 @@ categories:
 > Circuit breaker(회로 차단기)
 > 위키: 전기 회로에서 과부하가 걸리거나 단락으로 인한 피해를 막기 위해 자동으로 회로를 정지시키는 장치
 
-MSA 환경에선 하나의 서비스 장애가 다른 서비스로의 장애 전파로 이뤄질 수 있기 때문에  
+MSA 환경에선 하나의 마이크로 서비스 장애가 다른 서비스로의 장애 전파로 이뤄질 수 있기 때문에  
 서비스의 장애가 발견되면 개발자의 장애 대응 로직으로 전환될수 있도록 해야한다.  
 
-이때 장애를 발견하고 대응 로직으로 이동시키는 것을 `Circuit breaker` 라 한다.  
+즉 `Cacading Failure` 를 방지하기 위해 `Circuit breaker` 를 사용한다 할 수 있다.  
+장애를 발견하고 대응 로직으로 이동시키는 것을 `Circuit breaker` 라 한다.  
 
 ![r4j1](/assets/springboot/spring-cloud/springcloud_r4j1.png)  
 
@@ -225,7 +226,7 @@ TimeLimiter timeLimiter2 = registry.timeLimiter("name2", config);
 usage 에서 `@TimeLimiter` 어노테이션을 사용하거나 데코레이터로 감싸 사용하는데  
 반환타입이 `Mono`, `Flux`, `CompletableFuture` 셋중 하나여야 한다.  
 
-### usage
+## usage
 
 `CircuitBreaker`, `Bulkhead`, `RateLimiter`, `Retry`, `TimeLimiter` 모두 데코레이트 패턴을 기반으로 하는 객체들로  
 적용하고 싶은 메서드를 감쌓면 된다.  
@@ -248,17 +249,17 @@ public class BackendService {
 
 ```java
 public static void main(String[] args) {
-BackendService backendService = new BackendService();
-CircuitBreaker circuitBreaker = CircuitBreaker.ofDefaults("backendService");
-circuitBreaker.getEventPublisher()
-    .onSuccess(event -> System.out.println("onSuccess invoked, " + event))
-    .onError(event -> System.out.println("onError invoked, " + event))
-    .onIgnoredError(event -> System.out.println("onIgnoredError invoked, " + event))
-    .onReset(event -> System.out.println("onReset invoked, " + event))
-    .onStateTransition(event -> System.out.println("onStateTransition invoked, " + event))
-;
-String result1 = circuitBreaker.executeSupplier(() -> backendService.doSomething());
-System.out.println(result1);
+    BackendService backendService = new BackendService();
+    CircuitBreaker circuitBreaker = CircuitBreaker.ofDefaults("backendService");
+    circuitBreaker.getEventPublisher()
+        .onSuccess(event -> System.out.println("onSuccess invoked, " + event))
+        .onError(event -> System.out.println("onError invoked, " + event))
+        .onIgnoredError(event -> System.out.println("onIgnoredError invoked, " + event))
+        .onReset(event -> System.out.println("onReset invoked, " + event))
+        .onStateTransition(event -> System.out.println("onStateTransition invoked, " + event))
+    ;
+    String result1 = circuitBreaker.executeSupplier(() -> backendService.doSomething());
+    System.out.println(result1);
 }
 ```
 
@@ -311,15 +312,13 @@ hello 2023-05-02T18:57:08.164362
 ### usage - Spring Cloud
 
 > <https://github.com/resilience4j/resilience4j-spring-boot2-demo>
+> 공식 `Spring Boot Resilience4j Demo` 페이지를 보는 것을 추천  
 
-위의 공식 `Spring Boot Resilience4j Demo` 페이지를 보는 것을 추천  
-
-아래와 같이 Spring Boot 에선 어노테이션과 AOP 환경을 사용해 아래와 같이 구현 가능하다.  
-
-> 위의 데코레이트 패턴으로 `Resilience4j` 를 적용해도 좋은 방법
+위의 데코레이트 패턴으로 `Resilience4j` 를 적용할 때도 있겠지만 대부분의 경우 수작업으로 `[CircuitBreakerir, Retry, Bulkhead]` 객체를 생성해서 데코레이트 패턴으로 감쌓는 작업을 하지않는다.  
+아래와 같이 `Spring Boot AOP` 를 사용해 어노테이션으로 데코레이트 패턴을 구현한다.  
 
 ```java
-@Component(value = "backendAService")
+@Service(value = "backendAService")
 public class BackendAService implements Service {
 
     private static final String BACKEND_A = "backendA";
@@ -371,12 +370,12 @@ public CircuitBreakerRegistry circuitBreakerRegistry() {
 }
 ```
 
-`Resilience4j` AOP 어노테이션을 사용하는 경우 미리 생성해둔 `CircuitBreaker` 인스턴스를 부여하는 방식이기 때문에 `RegistryStore` 에 사전에 객체를 생성해서 저장해두어야 한다.  
+> `java config` 보다 `properties` 기반 구성이 가독성이 좋음으로 `properties` 사용을 권장  
 
-> 동일한 `CircuitBreaker` 인스턴스를 사용하기 때문에 `state` 가 `open` 으로 변경되면 해당 `CircuitBreaker` 인스턴스를 사용하는 모든 메서드는 예외처리된다.
+`Resilience4j AOP` 어노테이션을 사용하는 경우 미리 생성해둔 `CircuitBreaker` 인스턴스를 부여하는 방식이기 때문에 `RegistryStore` 에 사전에 객체를 생성해서 저장해두어야 한다.  
+동일한 `CircuitBreaker` 인스턴스를 사용할 경우 `state` 가 `open` 으로 변경되면 해당 `CircuitBreaker` 인스턴스를 사용하는 모든 메서드는 예외처리됨으로 인스턴스를 생성하고 등록하는 과정을 꼭 거쳐야한다.  
 
 비단 `CircuitBreaker` 뿐 아니라 `Bulkhead`, `Retry` 모두 `Register` 구조를 따르고 있음으로 동일하게 구성하면 된다.  
-`java config` 보다 `properties` 기반 구성이 가독성이 좋음으로 `properties` 사용을 권장  
 
 어노테이션과 AOP 를 사용하면 자동 생성되는 코드는 아래와 같은 순서로 데코레이트된다.  
 `properties` 를 사용해 순서를 변경 가능함으로 참고  
@@ -545,3 +544,7 @@ ProductRequestLine productService(@Autowired ObjectFactory<HttpMessageConverters
         .target(ProductRequestLine.class, "http://localhost:8080/");
 }
 ```
+
+## 데모코드
+
+> <https://github.com/Kouzie/spring-cloud-demo/tree/master/app/order/src/main>

@@ -54,12 +54,14 @@ categories:
 아래처럼 `Loadbalancer` 용 `RestTemplate` 을 생성하고 `@LoadBalanced` 어노테이션을 사용해 의존성 주입하여 사용하면 된다.  
 
 ```java
+// Eureka 연동 Client-side LB 를 위한 RestTemplate
 @LoadBalanced
 @Bean
 RestTemplate loadBalanced() {
     return new RestTemplate();
 }
 
+// 일반 Rest 요청을 위한 RestTemplate
 @Primary
 @Bean
 RestTemplate restTemplate() {

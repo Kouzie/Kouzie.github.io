@@ -260,9 +260,9 @@ curl --location 'http://localhost:30081/greeting/1/2'
 
 `Discovery Client` 할 필요가 없고 내부에 `client server list` 또한 가지고 있을 필요가 없기에 서비스 입장에선 효율적이다.  
 
-### k8s 의존성 제거  
+## k8s 의존성 제거  
 
-위와같이 `org.springframework.cloud` 라이브러리를 사용해  k8s와 연동하는 방법도 좋지만,  
+위와같이 `org.springframework.cloud` 라이브러리를 사용해 k8s 와 연동하는 방법도 좋지만,  
 k8s 라이브러리 의존성을 없에고 외부에서 환경변수를 사용해 주입시키는 방법도 있다.  
 
 `SpringBoot` 버전에 따라 `ConfigMap` 을 가져오는 라이브러리도 달라지고, 언어 별로 k8s API 를 사용하는 방식이 다 다르기 때문에 `k8s API` 를 사용하지 않고 설정값을 가져올 수 있게 하는것이 좀 더 낫다 할 수 있다.  
@@ -287,6 +287,7 @@ k8s 라이브러리 의존성을 없에고 외부에서 환경변수를 사용�
 
 ```java
 @FeignClient(name="calc", url = "http://calc-service:8080")
+// @FeignClient(name="calc", url = "http://calc-service.namespace.svc.cluster.local:8080")
 public interface CalculatingClient {
     @GetMapping("/calculating/{num1}/{num2}")
     Long addNumbers(@PathVariable Long num1, @PathVariable Long num2);
