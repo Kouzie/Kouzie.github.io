@@ -58,7 +58,7 @@ dependencies {
 `end-to-end` 테스트를 위한 어노테이션  
 모든 빈 객체를 `Spring Context` 에 등록하고 실제 서버 port 까지 지정해서 실행시킨다.  
 
-보통 `end-to-end` 테스트의 경우 외부 접근 URL 부터 테스트하는 경우가많음으로 `@AutoConfigureMockMvc` 를 함께 사용한다.  
+보통 `end-to-end` 테스트의 경우 외부 접근 URL 부터 테스트하는 경우가 많음으로 `@AutoConfigureMockMvc` 를 함께 사용한다.  
 
 ```java
 @SpringBootTest
@@ -665,6 +665,102 @@ public class MysqlTestContainer {
     <logger name="com.github.dockerjava" level="WARN"/>
 </configuration>
 ```
+
+## Jacoco
+
+> <https://github.com/jacoco/jacoco>  
+> <https://docs.gradle.org/current/userguide/jacoco_plugin.html>  
+> <https://techblog.woowahan.com/2661/>  
+
+Jacoco 는 테스트 커버리지를 측정하는 라이브러리로, 테스트코드를 실행했을 때 얼마나 많은 운영코드가 실행되는지 측정하는 도구이다.  
+
+Jacoco 는 ASM 라이브러리를 사용하여 생성되는 바이트코드를 조작한다.  
+운영 코드 사이사이에 계측코드를 삽입하고, 해당 계측코드의 실행여부를 기준으로 커버리지를 측정한다.  
+
+> ASM(어셈블리 이름을 따온듯)  
+> <https://asm.ow2.io/>  
+> 0.8.12 버전 기준 JaCoCo now depends on ASM 9.7 (GitHub #1600).  
+
+![springboot_test_1](/assets/springboot/springboot_test_2.png)  
+
+```groovy
+// build.gradle
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version "$springBootVersion" apply false
+    id 'io.spring.dependency-management' version "$springDependencyManagement" apply false
+    id 'jacoco'
+}
+
+allprojects {
+    jacoco {
+        toolVersion = "$jacocoVersion"
+        // 기본 설정되어있음
+        // reportsDirectory = layout.buildDirectory.dir("reports/jacoco/test")
+    }
+    // 자동으로 모든 task 의 test 시에 jacoco 설정
+    test {
+        finalizedBy jacocoTestReport // report is always generated after tests run
+    }
+    // jacoco test 결과를 report 형태로 발행
+    jacocoTestReport {
+        reports {
+            html.required = true
+            csv.required = false
+            xml.required = false
+        }
+    }
+
+    // 커버리지 기준 만족여부 확인
+    jacocoTestCoverageVerification {
+        violationRules {
+            // 전페 프로젝트, 바이트 코드 수 기준, 0.3 커버 필요
+            rule {
+                limit {
+                    minimum = 0.3
+                }
+            }
+            // 특정 패키지에 한해 조건을 변경할 수 있음  
+            rule {
+                enabled = true
+                includes = ['com.demo.unit.domain.*']
+                element = 'CLASS'           // 계측 묶음 단위
+                                            // BUNDLE(default): 패키지 번들 (전체 프로젝트)
+                                            // PACKAGE
+                                            // SOURCEFILE
+                                            // CLASS
+                                            // METHOD
+                limit {
+                    counter = 'LINE'        // 계측 요소
+                                            // INSTRUCTION(default): 바이트코드 명령 수
+                                            // LINE: 코드의 라인 수, 빈줄 제외
+                                            // BRANCH: 제어문 분기 수
+                                            // CLASS
+                                            // METHOD
+                                            // COMPLEXITY: 복잡도, 수식은 문서 참고
+
+                    value = 'COVEREDRATIO'  // 계측 방식
+                                            // COVEREDRATIO (default): 커버된 비율.
+                                            // MISSEDRATIO: 커버되지 않은 비율.
+                                            // TOTALCOUNT: 전체 개수
+                                            // MISSEDCOUNT: 커버되지 않은 개수
+                                            // COVEREDCOUNT: 커버된 개수
+                    minimum = 0.3
+                }
+            }
+        }
+    }
+}
+```
+
+```sh
+./gradlew --console verbose test jacocoTestReport jacocoTestCoverageVerification
+```
+
+`jacocoTestCoverageVerification` task 는 아래 url 참고  
+
+> <https://docs.gradle.org/current/dsl/org.gradle.testing.jacoco.tasks.JacocoCoverageVerification.html>  
+> <https://docs.gradle.org/current/javadoc/org/gradle/testing/jacoco/tasks/rules/JacocoViolationRule.html>  
 
 ## 데모코드  
 

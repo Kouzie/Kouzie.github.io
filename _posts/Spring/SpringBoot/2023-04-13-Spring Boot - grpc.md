@@ -12,6 +12,21 @@ categories:
   - springboot
 ---
 
+## 개요  
+
+`object, struct, list, array, map, tree` 와 같은 데이터를 파일에 쓰거나 네트워크 전송시 데이터를 일련의 바이트열로 **직렬화** 해야한다.  
+
+> 여러가지 이름으로 불림. 직렬화(부호화, 마샬링), 역직렬화(부호화, 파싱, 언마샬링)  
+
+편리성 때문에 직렬화 방식으로 `JSON, XML` 을 주로 사용한다.  
+하지만 서버간의 통신(조직내부 통신) 이라면 최적화를 위해 **이진 부호화** 방식을 많이 사용한다.  
+
+> JSON 과 통합되는 이진 부호화(BSON, BJSON, UBJSON, BISON, MessagePack, Smile),  
+> XML 과 통합되는 이진 부호화(WBXML, FastInfoset) 등이 있다.  
+
+현재 가장 많은 인기를 가지고 있는 `이진 부호화` 방식은 `protobuf` 이다.  
+
+
 ## protobuf(protocol buffers)  
 
 > mainpage: <https://developers.google.com/protocol-buffers>  

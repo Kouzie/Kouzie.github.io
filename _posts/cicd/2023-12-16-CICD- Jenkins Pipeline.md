@@ -250,18 +250,18 @@ node {
 
 `job - Pipeline Syntax` 페이지에 가면 현재 Jenkins 에서 사용가능한 `global env` 를 확인할 수 있다.  
 
-| global env   | 설명                                       |
-| ------------ | ------------------------------------------ |
-| JOB_NAME     | job 이름                                   |
-| JOB_URL      | job URL                                    |
-| BUILD_URL    | job 의 build URL                           |
-| BUILD_NUMBER | 현재 build number.                         |
-| JENKINS_URL  | jenkins URL                                |
-| BRANCH_NAME  | 브랜치명, multibranch 프로젝트인 경우 사용 |
-| WORKSPACE    | 브랜치명, multibranch 프로젝트인 경우 사용 |
+| global env   | 설명                                        |
+| ------------ | ------------------------------------------- |
+| JOB_NAME     | job 이름                                    |
+| JOB_URL      | job URL                                     |
+| BUILD_URL    | job 의 build URL                            |
+| BUILD_NUMBER | 현재 build number.                          |
+| JENKINS_URL  | jenkins URL                                 |
+| BRANCH_NAME  | 브랜치명, multibranch 프로젝트인 경우 사용  |
+| WORKSPACE    | 브랜치명, multibranch 프로젝트인 경우 사용  |
+| CHANGE_ID    | PR number, multibranch 프로젝트인 경우 사용 |
 
 <!-- 
-|CHANGE_ID| PR number, multibranch 프로젝트인 경우 사용  
 |CHANGE_URL| multibranch 프로젝트의 change request에 대한 change URL을 나타낸다.  
 |CHANGE_TARGET| multibranch 프로젝트의 change request에 대해 merge될 base branch를 나타낸다.  
 |CHANGE_BRANCH| multibranch 프로젝트의 change request에 대해 현재 HEAD가 가리키고 있는 브랜치 명을 알려준다. 이는 BRANCH_NAME과 같을 수 있다.   -->

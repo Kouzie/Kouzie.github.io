@@ -20,13 +20,20 @@ categories:
 클라우드 네이티브 환경에서 어플리케이션의 관측가능성을 지원하기 위한 유명한 프로젝트.  
 각종 언어별 라이브러리, 컨테이너 이미지, helm 차트, `k8s CRD` 등을 제공한다.  
 
+`OpenTelemetry` 프로젝트를 사용하면 아래 3개 추적데이터에 대해 `Observability` 기능을 지원한다.  
+
+- 로그
+- 추적
+- 메트릭
+
 ### OpenTelemetry
 
 > <https://opentelemetry.io/docs/languages/java/instrumentation/>  
 > <https://medium.com/cloud-native-daily/how-to-send-traces-from-spring-boot-to-jaeger-229c19f544db>  
 > <https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/logback/logback-appender-1.0/library>  
 
-`Spring` 진영에서 `OpenTelemetry` 를 지원하는 프로젝트가 대표적으로 아래 3개.  
+`Spring` 진영에서 `추적` 데이터를 수집하기 위해 `OpenTelemetry` 를 사용할 수 있다.  
+이때 사용하는 라이브러리가 대표적으로 아래 3개.  
 
 - Micrometer - Spring Boot 3
 - Sleuth - Spring Boot 2
@@ -42,6 +49,7 @@ categories:
 > 반대로 `SpringBoot 2.x` 를 사용한다면 `Spring Cloud Sleuth` 를 사용해야한다.  
 
 ```conf
+# 필요없는형태의 로그를 삭제
 # application.properties
 spring.main.banner-mode=off
 ```
