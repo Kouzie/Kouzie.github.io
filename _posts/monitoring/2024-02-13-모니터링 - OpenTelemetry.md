@@ -12,7 +12,9 @@ categories:
   - monitoring
 ---
 
-## OpenTelemetry 개요
+## Observability
+
+> 
 
 > <https://opentelemetry.io/docs/what-is-opentelemetry/>
 
@@ -20,7 +22,7 @@ categories:
 
 > 관찰가능성은 시스템의 외부 출력에 대한 결과 값(지식)으로부터 시스템의 내부 상태를 얼마나 잘 추론 할 수 있는지를 나타내는 척도  
 
-관찰가능성 크게 `[로깅, 메트릭, 추적]` 3가지 주제로 나뉘며 주제별로 아래와 같은 대표적인 오픈소스가 존재한다.  
+관찰가능성 크게 `[로깅, 메트릭, 추적]` 3가지 주제로 나뉘며 주제별로 아래와 같은 관측 데이터 백엔드 오픈소스가 존재한다.  
 
 - 로깅  
   - Fluentd  
@@ -39,26 +41,28 @@ categories:
   - Zipkin  
   - Jaeger  
 
-다양한 관찰가능성 지원 오픈소스를 사용하기 위해 `OpenTelemtry`(이하 `OTEL`) 라는 공통적인 포멧을 만들었다.  
+각 백엔드별로 지원하는 언어, 라이브러리, 프로토콜 모두 다르다.  
+
+다양한 관찰가능성 지원 오픈소스를 사용하기 위해 `OpenTelemtry`(이하 `OTEL`) 라는 공통적인 포멧, 프로젝트를 만들었다.  
+
 2023 년 기준으로 `OTEL` 에서 11 개 언어에 대한 구현을 제공, `Prometheus` 와 `OpenMetrics` 프로젝트를 포함한 많은 오픈소스 커뮤니티가 `OTEL` 에 합류했다.  
 
-`OTEL` 는 `OpenTracing` 과 `OpenCensus` 라는 두 프로젝트 의 병합으로 탄생했다.  
+### OpenTelemetry
 
-> `OpenTracing` 은 분산추적을 위한 API 규격을 제공한다.  
-> `OpenCensus` 구글 내부에서 시작된 프로젝트, 애플리케이션을 추적하고 메트릭을 생산 및 수집할 수 있도록 라이브 러리를 제공  
+`OTEL` 는 `OpenTracing` 과 `OpenCensus` 라는 두 프로젝트 의 병합으로 탄생했다.  
 > Census: 인구조사  
 
-`OpenCensus` 는 `[터기, 컬렉터, 스토리지]` 로 활동하면서 서비스의 **측정데이터**를 수집, 분석한다.  
+`OpenCensus` 구글에서 시작된 프로젝트로, 추적/메트릭 데이터를 생산/수집하는 라이브러리를 제공, `OpenTracing` 은 분산추적을 위한 API 규격을 제공한다.  
+
+`OpenCensus` 는 `[미터기, 컬렉터, 스토리지]` 로 활동하면서 서비스의 **측정데이터**를 수집, 분석한다.  
 
 모든 서비스가 `OpenCensus` SDK 에 의존성이 생기지만 단순한 아키텍처 구성이 가능하다.  
 
-![zipkin](/assets/monitoring/observability_1.png)  
+![1](/assets/monitoring/observability_1.png)  
 
-> `OpenCensus 컬렉터` 는 향후 `OTEL 컬렉터` 재개발된다.  
+> `OpenCensus 컬렉터` 는 향후 `OTEL 컬렉터` 로 재개발된다.  
 
-### OpenTelemetry 구성
-
-`OTEL` 는 아래와 구성요소를 가진다.  
+`OTEL` 는 관찰가능성의 개념을 아래와 구성요소로 표현한다.  
 
 - 시그널  
 - 파이프라인  
@@ -66,26 +70,23 @@ categories:
 
 #### 시그널  
 
-**측정데이터**를 담을 수 있는 **개방형 규격(specification)**  
+시그널은 측정데이터를 담을 수 있는 **개방형 규격(specification)** 이다.  
 
-> 언어에 관계없이 통일된 경험, 유연한 확장을 지원함.  
-> 아래 github 링크에서 확인 가능  
+> 언어에 관계없이 통일된 경험, 유연한 확장을 지원함. 아래 github 링크에서 확인 가능  
 > <https://github.com/open-telemetry/opentelemetry-specification>  
 
-**측정데이터**에 대해 아래 4가지 개념으로 나누고 `시그널`을 정의했다.  
-
-> 시그널 = 규격화된 측정데이터
+**측정데이터**에 대해 아래 4가지 개념으로 나누고, 해당 규격을 `시그널` 이라 부른다.  
 
 - 추적(tracking)  
 - 메트릭(metric)  
 - 로그(log)  
 - 배기지(baggage)  
-
-> `배기지`는 `메트릭, 추적, 로그` 에 `주석/문맥` 을 추가하기 위한 개념, `key-value` 형태를 가짐  
+  `key-value` 형태로 `메트릭, 추적, 로그` 에 `주석/문맥` 을 추가하기 위한 개념  
 
 #### 파이프라인  
 
-`OTEL 시그널` 에 해당하는 `메트릭, 추적, 로그` 의 측정데이터를 `[생성, 처리, 전송]`하는 일련의 과정
+`파이프라인` 은 `측정데이터(시그널)` 을 `[생성, 처리, 전송]` 하는 **일련의 과정**이다.  
+모든 `OTEL` 구현체(라이브러리)가 아래와 같은 형태로 구성되어있다.  
 
 ```text
 프로바이더 → 생성기 → 처리기 → 익스포터
@@ -97,15 +98,15 @@ categories:
 측정데이터를 만들 수 있도록 생성기를 정의하고, 어플리케이션이 접근가능하도록 하게함.  
 
 **생성기**  
-프로바이더로부터 정의/생성 됨.  
 SDK 를 통해 코드 여러 지점에서 측정데이터를 생성한다.  
+생성기별로 다른 주석/문맥을 가지고 측정데이터를 생성함.  
 생성하는 측정데이터 종류에 따라 이름이 다르게 불림.  
 
-- 추적기: 추척 데이터
-- 미터: 메트릭 데이터
+- 추적기: 추척 데이터 생성기  
+- 미터기: 메트릭 데이터 생성기  
 
 **처리기**  
-생성기로부터 받은 측정데이터를 후처리 진행.  
+생성기로부터 받은 측정데이터의 후처리 진행.  
 빈도수 제어, 측정데이터의 수정을 진행.  
 
 **익스포터**  
@@ -119,10 +120,11 @@ SDK 를 통해 코드 여러 지점에서 측정데이터를 생성한다.
 - OpenTelemetry Protocol(OTLP)  
 - OpenCensus  
 
-#### 리소스, 시맨틱 표기법
+#### 리소스(시맨틱 표기법)
 
-측정데이터에 적용된 일련의 속성, 주석과 같은 개념이다.  
-원격 측정 데이터의 출처가 서버인지, 컨테이너인지, 함수인지 식별할 때 사용한다.  
+`리소스`는 측정데이터에 적용된 **일련의 속성, 주석과 같은 개념**이다.  
+
+`측정데이터(시그널)` 의 출처가 서버인지, 컨테이너인지, 함수인지 식별할 때 사용한다.  
 
 - `service.name`: 서비스명  
 - `service.version`: 서비스 버전  
@@ -140,6 +142,8 @@ SDK 를 통해 코드 여러 지점에서 측정데이터를 생성한다.
 
 아래는 HTTP 클라이언트 스팬의 시멘틱 표기법이다.  
 
+> 스팬은 분산 시스템이 처리하는 작업 단위 혹은 요청을 의미  
+
 | 속성             | 값                              |
 | ---------------- | ------------------------------- |
 | http.method      | "GET"                           |
@@ -148,29 +152,25 @@ SDK 를 통해 코드 여러 지점에서 측정데이터를 생성한다.
 | net.peer.ip      | "192.0.2.5"                     |
 | http.status_code | 200                             |
 
-시그널별로 수많은 `속성`과 `리소스`가 들이 시멘틱 표기법을 따르며 관찰가능성 기능을 지원한다.  
+`시그널` 별로 시멘틱 표기법을 따르는 수많은 `리소스` 가 관찰가능성 기능을 지원한다.  
 
-> 스팬은 분산 시스템이 처리하는 작업 단위 혹은 요청을 의미  
+### 자동계측
 
-### Opentelemetry 자동계측
+`[zipkin, jaeger, prometheus]` 등의 오픈소스를 사용해봤다면 코드에 별다른 설정을 추가하지 않더라도 자동으로 다양한 `[메트릭, 추적, 로그]` 이 관측되는 것을 알 수 있다.  
+관찰가능성의 모토가 최소한의 코드변경, 최소비용으로 높은 관찰가능성을 지원하는 **자동계측**이기 때문이다.  
 
-대부분의 라이브러리, 프레임워크에서 별다른 코드추가 없이 `[zipkin, jaeger, prometheus]` 등의 오픈소스와 연동하고 `[메트릭, 추적, 로그]` 의 관측을 지원한다.  
-위에서 알바왔던 `[메트릭, 추적, 로그]` 의 파이프라인 클래스를 생성하지 않고도 측정데이터를 수집하고 계측을 지원한다.  
-
-`OTEL` 의 모토가 최소한의 코드변경, 최소비용으로 높은 관측가능성을 지원하는 **자동계측**이기 때문이다.  
+OTEL 또한 위에서 알아봤던 `파이프라인` 클래스를 정의/생성하지 않고도 측정데이터를 수집하고 계측을 지원한다.  
 언어별, 프레임워크별로 구현방법은 다르겠지만 라이브러리에서 `OTEL` 를 지원한다면 `자동계측`을 지원한다.  
-
-java 진영에선 `[Akka, gRPC, Hibernate, JDBC, Kafka, Spring, Tomcat]` 등에서 `OTEL` 를 지원한다.  
-
-> java 어플리케이션에서 `OTEL 자동계측`을 사용하려면 아래 url 참고  
->
-> javaagent 모듈  
-> <https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases>
 
 `자동계측` 의 단점으론 운영에 필요없는 데이터 계측이 강제될 수 있고, 반대로 운영에 꼭 필요한 커스텀한 비지니스 로직은 계측하지 않는다.  
 하지만 운영코드에 변경없이 꾸준한 관측데이터를 쌓을 수 있다는 점때문에 자동계측을 많이 사용한다.  
 
-자동계측 내부에선 `[매트릭, 추적, 로그]` 측정데이터를 생성하고 백엔드로 보내기 위한 함수들이 호출되는 내용이 구현되어 있다는것을 알아야한다.  
+java 진영에선 `[Akka, gRPC, Hibernate, JDBC, Kafka, Spring, Tomcat]` 등에서 `OTEL` 를 지원한다.  
+`javaagent` 를 사용하면 간단히 자동계측을 사용할 수 있다.  
+
+> `OTEL javaagent` 아래 url 참고  
+> <https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases>  
+> 내부에선 `[매트릭, 추적, 로그]` 측정데이터를 생성하고 백엔드로 보내기 위한 함수들이 호출되는 내용이 구현되어 있다는것을 알아야한다.  
 
 ### 측정데이터 운영
 
@@ -197,6 +197,9 @@ java 진영에선 `[Akka, gRPC, Hibernate, JDBC, Kafka, Spring, Tomcat]` 등에�
 - AWS Cloudwatch, X-ray  
 
 베어메탈 k8s 에서도 Observability 를 위한 오픈소스 백엔드가 위와 같은 고민사항을 고려하고 개발되고 있다.  
+
+- Grafana Labs LGTM
+- Thanos
 
 ## 메트릭
 
@@ -260,7 +263,7 @@ if __name__ == "__main__":
     )
 ```
 
-일반적으로 메트릭에는 아래와 같은 데이터가 포함된다.  
+일반적으로 `메트릭` 에는 아래와 같은 데이터가 포함된다.  
 
 - 진행 중인 현재 스팬의 추적 ID  
 - 진행 중인 현재 스팬의 스팬 ID  
@@ -285,7 +288,6 @@ if __name__ == "__main__":
 반대로 `Prometheus` 와 같은 백엔드 서비스에서 `OTEL 컬렉터` 가 가지고 있는 Metric 데이터를 가져갈 수 있다(`pull base`).  
 
 > `Prometheus remote write` 는 `Prometheus` 에서 default 로 제공해주지 않는 설정이기 때문에 추가구성을 해줘야 한다.  
-> `Thanos Receiver`, `Cortex remote write` 기능을 사용하는 것도 가능.  
 
 ## 추적  
 
@@ -518,9 +520,9 @@ if __name__ == "__main__":
 
 ![1](/assets/monitoring/observability_5.png)  
 
-- **Receiver**: `[jeager, zinkin, OLTP, prometheus]` 등 다양한 입력 포멧 데이터를 수집 및 OTLP 형식으로 변환.  
+- **Receiver**: `[jeager, zinkin, OLTP, prometheus]` 등 다양한 입력 포멧 데이터를 수집 및 `OTLP` 형식으로 변환.  
 - **Processer**: 측정데이터 필터링, 변환(속성추가 등) 등의 보조 작업을 수행.  
-- **Exporter**: OLTP 형식의 데이터를 출력 형식으로 변환 및 지정된 대상으로 전송.  
+- **Exporter**: `OLTP` 형식의 데이터를 출력 형식으로 변환 및 지정된 대상으로 전송.  
 
 지금까지는 어플리케이션에서 자체적으로 파이프라인을 설정하고 벡엔드에 측정데이터를 전달했었다.  
 `OTEL 컬렉터` 로 인해 환경이 통합되면서 설정이 간편해지고 효율적인 파이프라이닝이 가능해졌다.  
@@ -540,7 +542,7 @@ if __name__ == "__main__":
 
 > 개인적으로 k8s 환경이라면 sidecar 방식을 사용하는 것이 좋은듯.  
 
-### OTEL 컬렉터 helm
+### OTEL 컬렉터 헬름
 
 > <https://opentelemetry.io/docs/kubernetes/helm/>  
 > <https://opentelemetry.io/docs/kubernetes/getting-started/>  
@@ -549,7 +551,7 @@ if __name__ == "__main__":
 `OTEL` 은 `CNCF` 규칙을 따르는 만큼 k8s 와 같은 클라우드 환경에서 주로 실행된다.  
 k8s 클러스터 자체 관측데이터 수집, 어플리케이션 관측데이터 수집을 수행한다.  
 
-위 helm 차트에서 쉽게 `gateway` 방식으로 운영되는 `OTEL 컬렉터` 설치가 가능하다.  
+위 헬름 차트에서 쉽게 `gateway` 방식으로 운영되는 `OTEL 컬렉터` 설치가 가능하다.  
 
 ```shell
 helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
@@ -663,7 +665,7 @@ helm install opentelemetry-collecor -f values.yaml . -n monitoring
 
 k8s 환경에선 `sidecar` 방식을 주로 사용한다.  
 
-`sidecar` 방식은 위의 helm 차트만으로는 설치할 수 없다.  
+`sidecar` 방식은 위의 헬름 차트만으로는 설치할 수 없다.  
 `OpenTelemetry` 에서 제공하는 `k8s CRD` 를 설치하고 웹훅을 통해 `Pod` 의 생성마다 `sidecar` 어플리케이션이 같이 동작하도록 설정해야한다.  
 
 ```shell

@@ -14,18 +14,16 @@ categories:
 
 ## 개요
 
-> <https://prometheus.io/>
-
 관측모니터링에서 시스템 기반 모니터링의 첫번째 관측 대상인 Metric 을 가장 효과적으로 다루는 오픈소스.  
 
+> <https://prometheus.io/>
+
 2012년 몇 명의 개발자가 사운드클라우드 Go 언어로 작성되었으며 아파치 2.0 라이선스
-2016년 CNCF 에 두번쨰로 합류, 첫번째는 k8s 
+2016년 CNCF 에 두번째로 합류(첫번째는 k8s)  
 
+수만은 프레임워크와 서드파티에서 `Prometheus` 라이브러리와 exporter 를 제공하고 `label(key-value)` 형태의 문자열로 메트릭을 게시한다.
 
-수만은 언어에 Prometheus 라이브러리를 지원하고, Nginx, HaProxy, Kafka, Redis 등 수많은 서드파티에 exporter 를 제공한다.  
-label(key-value) 형태의 문자열로 메트릭을 게시한다.
-
-모니터링 작업의 종류
+모니터링 작업의 종류는 아래 4가지  
 
 - **alerting**  
   문제 발생 시기 파악
@@ -36,13 +34,13 @@ label(key-value) 형태의 문자열로 메트릭을 게시한다.
 - **plumbing**  
   모니터링 시스템을 또 다른 작업을 처리하기 위한 목적으로 사용, 이메일 전송같은 관리자 노티 등이 여기에 속함.  
 
-```sh
-docker run -d \
-    --name p8s-demo \
-    -p 9090:9090 \
-    -v /path/to/prometheus.yml:/etc/prometheus/prometheus.yml \
-    prom/prometheus
-```
+Prometheus 는 위 4가지를 작업을 효과적으로 수행할 수 있게 도와준다.  
+
+### 데모코드
+
+> <https://github.com/Kouzie/spring-boot-demo/tree/main/micrometer-demo>
+
+기본 `config` 파일  
 
 ```yml
 # my global config
@@ -75,10 +73,6 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 ```
-
-### 데모코드
-
-> <https://github.com/Kouzie/spring-boot-demo/tree/main/micrometer-demo>
 
 ## 계측데이터
 

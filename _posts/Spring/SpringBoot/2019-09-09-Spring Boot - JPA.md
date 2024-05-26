@@ -588,7 +588,7 @@ restartStatus = deviceRestartLog.getStatus();
 어플리케이션 단위에서 공유하는 캐시, 애플리케이션을 종료할 때까지 유지된다.  
 대부분 API 단의 캐시(Redis, EhCache 등) 을 사용하고 hibernate 의 2차캐시는 사용하지 않는다.  
 
-아래 url 과 `@javax.persistence.Cacheable`, `@org.hibernate.annotations.Cache` 설정을 통해 각종 추가설정이 가능하다.  
+hibernate 에서 2차 캐시 연동을 위한 설정을 제공, 아래 url 과 `@javax.persistence.Cacheable`, `@org.hibernate.annotations.Cache` 설정을 통해 각종 추가설정이 가능하다.  
 
 > <https://docs.jboss.org/hibernate/orm/6.2/userguide/html_single/Hibernate_User_Guide.html#caching>  
 
@@ -974,26 +974,31 @@ List<Author> findAllWithPageable(Pageable pageable);
 
 동작하긴 하지만 마법같은 SQL 문이 발생하는 것이 아니라, **테이블 풀스캔** 쿼리 실행 후 List 에서 상위 size개수를 가져오는 방식으로 동작한다.  
 
-### cascade(전이전략)
+### 영속성, cascade(전이전략)
 
 > 참고: <https://www.baeldung.com/jpa-cascade-types>
 > `Oracle`, `Mysql` 등 DDL 에서 `on delete cascade` 편의기능과는 관련없다.  
 
+`EntityManager` 가 제공하는 `[New, Managed, Detached, Removed]` 상태의 전이를 `[OneToMany, ManyToOne]` 관계 객체에게 적용하기 위한 설정.  
+
 ![springboot2_1](/assets/springboot/springboot_jpa_2.png)
 
-default cacade 는 빈 배열 형태이며  
+- **New**: 엔티티를 생성자를 통해 생성만 한 상태  
+- **Managed**: `persist()` 를 통해 영속 컨텍스트에 저장해둔 상태,  
+  트랜잭션이 완료(flush)되면 DB 에 쿼리가 발생한다.  
+- **Removed**: `remove()` 를 통해 영속 컨텍스트에서 삭제된 상태,  
+- 트랜잭션이 완료(flush)되면 DB 에 쿼리가 발생한다.  
+- **Detached**: `detached(), clear()` 를 통해 준영속(영속 컨텍스트에서 분리)된 상태,  
+  `merge()` 를 통해 준영속에서 업데이트된 객체를 영속 컨텍스트에서 찾아 병합시킨다.  
 
-`CascadeType.PERSIST` -  부모를 영속화할 때 연관된 자식들도 함께 영속화 한다. 부모 객체 저장과 동시에 같이 설정된 자식객체도 저장.
+`default cacade` 는 빈 배열 형태, 아래 설정을 진행할 수 있음.  
 
-`CascadeType.REMOVE` -  부모 객체 삭제시 연관된 자식들도 함께 삭제
-
-`CascadeType.MERGE` -  병합 시에만 전이
-
-`CascadeType.REFRESH` -  엔티티 매니저의 `refresh()`호출시 전이
-
-`CascadeType.DETACH` -  부모엔티티가 detach(준영속)되면 자식도 detach
-
-`CascadeType.ALL` -  위의 모든 사항을 포함, 가장 일반적으로 사용됨.
+- **CascadeType.PERSIST**: 부모 엔티티 영속화시 때 연관된 자식들도 함께 영속화.  
+- **CascadeType.MERGE**: 부모 엔티티 병합시 연관된 자식들도 함께 병합.  
+- **CascadeType.REMOVE**: 부모 객체 삭제시 연관된 자식들도 함께 삭제.  
+- **CascadeType.REFRESH**: 엔티티 매니저의 `refresh()`호출시 전이.  
+- **CascadeType.DETACH**: 부모 객체 detach() 함수 호출시 연관객체도 준영속 진행.  
+- **CascadeType.ALL**: 위의 모든 사항을 포함, 가장 일반적으로 사용됨.  
 
 > CascadeType defaults to the empty array  
 
@@ -1498,12 +1503,6 @@ DB데이터 매핑시 `getter`, `setter` 없이도 매핑할 수 있도록 `@Acc
 
 `TransactionManager` 을 직접사용할 경우는 없지만 내부적으로 결국 `TransactionManager` `commit()`, `rollback()` 을 사용해 트랜잭션 처리가 진행되는 구조이다.  
 
-![springboot2_1](/assets/springboot/springboot_jpa_5.png)  
-
-구현체별로 다르겠지만 JPA 사용시 `JpaTransactionManager` 을 사용할 것  
-
-`TransactionManager` 내부적으로 결국 JDBC 의 `commit()`, `rollback()` 을 사용해 트랜잭션 처리가 진행되는 구조이다.  
-
 ```java
 Connection conn = null;
 try {
@@ -1754,3 +1753,15 @@ void unlock(String key) {
     command.del(key);
 }
 ```
+
+### open-in-view
+
+```
+spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+```
+
+true 의 경우 영속성 컨텍스트의 생존 법위가 스레드의 종료까지 이어진다(REST API 의 Response 완료까지)
+
+default true 이기 떄문에 컨트롤러에서 Lazy Loading 을 통해 엔티티를 통해 객체를 찾고 DB 에서 가져올 수 있다.  
+
+default false 로 설정하게 되면 Transaction 안에서만 Lazy Loading 을 수행할 수 있고, 컨트롤러 코드에서 접근시 no session 에러가 발생하게 된다.  

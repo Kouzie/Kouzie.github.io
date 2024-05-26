@@ -30,7 +30,7 @@ categories:
 위 `log agent` 모두 file 에서 tail 방식으로 로그를 읽어들여 서버에 전달하는 방법을 사용하며,  
 `[DB, App, Web]` 등에서 발생하는 로그를 scrape 해서 `로그 수집 백엔드 서비스` 로 전달한다.  
 
-> CNCF 에서 운영되는 fluentd 가 많이 사용되며 커뮤니티도 크다.  
+> 다양한 로그 수집툴이 있지만 CNCF 에서 운영되는 fluentd 가 많이 사용되며 커뮤니티도 크다.  
 > 이번 포스팅에선 회사에서 만든 fluentbit 에 대해 알아볼 예정.  
 
 <!-- 
@@ -313,7 +313,7 @@ docker 컨테이너가 출력하는 `/var/log/containers/*.log` 로그파일을 
 
 > <https://docs.fluentbit.io/manual/installation/kubernetes>
 
-`fluentbit` 와 같은 `log agent` 은 대부분 클라우드 환경에서 운영되며 helm 을 이용한 설치도 지원한다.  
+`fluentbit` 와 같은 `log agent` 은 대부분 클라우드 환경에서 운영되며 헬름을 이용한 설치도 지원한다.  
 `fleuntbit` 의 로그수집은 `filelog tail` 방식이기 때문에 각 노드에 로그에 접근하기 위한 `Daemonset` 으로 설치된다.  
 
 ```sh
