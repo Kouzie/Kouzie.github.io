@@ -348,6 +348,24 @@ public class GradeRatingCronJob extends QuartzJobBean implements InterruptableJo
 - 매일 1시 15분에 실행 : `0 15 1 * * ?`
 - 4시간마다 실행 : `0 0 */4 ? * *`
 
+## misfire  
+
+> <https://github.com/quartz-scheduler/quartz/issues/95>  
+> <https://github.com/quartz-scheduler/quartz/issues/218>  
+
+JOB의 실행 도중 어플리케이션 문제가 발생해 중간에 멈추는일이 발생했고, `CRON_JOB` 으로 생성한 `QRTZ_TRIGGERS` 테이블 `TRIGGER_STATE` 칼럼값이 `ACQUIRED` 로 설정되어 장기간동안 실행되지 않았다.  
+
+스케쥴이 실행되지 않을 경우를 `misfired trigger` 라 하며 이를 위한 정책을 추가할 수 있다.  
+
+`Cron Trigger` 에서 지원하는 정책은 아래 3가지.  
+
+- **withMisfireHandlingInstructionIgnoreMisfires**  
+  misfire 상황에서 스케줄에 별도처리하지 않음. 향후 원복되었을때 fire 횟수를 채우기 위해 한번에 여러번 실행될 수 있음.  
+- **withMisfireHandlingInstructionDoNothing**  
+  misfire 상황에서 다음 스케줄 시간에 실행되도록 설정.  
+- **withMisfireHandlingInstructionFireAndProceed**  
+  misfire 상황에서 스케줄러에게 지금 실행되도록 설정. 다른 잘못된 실행은 병합하여 실행하지 않음.  
+
 ## 데모코드
 
 > <https://github.com/Kouzie/spring-boot-demo/tree/main/quartz-demo>

@@ -1201,6 +1201,14 @@ create table purchase_order
 */
 ```
 
+```java
+public interface OrderRepository extends JpaRepository<Order, OrderId> {
+    List<Order> findByOrderIdIn(List<OrderId> ids);
+    // SELECT * FROM purchase_order
+    // WHERE (number, date) IN (("1", "20230918"), ("1", "20230714"));
+}
+```
+
 ### @Embedded
 
 벨류객체를 사용해야할 때 사용  
@@ -1425,9 +1433,11 @@ public class Board {
 }
 ```
 
-### @CreateTimestamp, @UpdateTimestamp
+### @CreationTimestamp, @UpdateTimestamp, @CreatedDate, @LastModifiedDate
 
-`org.hibernate`에서 지원하는 어노테이션, 엔티티가 생성되거가 업데이트 되는 시점의 날짜를 기록하는 설정.  
+`@CreationTimestamp`, `@UpdateTimestamp` 의 경우 `org.hibernate`에서 지원하는 어노테이션, `VM date` 의 시간값을 사용해 값을 기록한다.  
+
+> VM date: 어플리케이션 서버 시간이지만, 추가적으로 동기화 가능.  
 
 ```java
 @CreationTimestamp
@@ -1436,9 +1446,17 @@ private LocalDateTime createTime;
 private LocalDateTime updateTime;
 ```
 
-`@CreatedDate`, `@LastModifiedDate` 의 경우 `spring data` 에서 지원하는 어노테이션이라 범용적이긴 하지만  
+```java
+// Hibernate 6.0.0 부터 SourceType 지정 가능
+@CreationTimestamp(source = SourceType.DB)
+private Instant createdOn;
+@UpdateTimestamp(source = SourceType.DB)
+private Instant lastUpdatedOn;
+```
 
-`@EnableJpaAuditing`, `@EntityListeners(AuditingEntityListener.class)` 설정이 필요함으로 편한거 사용하면 된다.  
+`@CreatedDate`, `@LastModifiedDate` 의 경우 `spring data` 에서 지원하는 어노테이션, 어플리케이션 서버의 시간값을 사용해 값을 기록한다.  
+
+`spring data` 에서 제공하는 어노테이션이 좀 더 범용적이지만 `@EnableJpaAuditing`, `@EntityListeners(AuditingEntityListener.class)` 설정이 필요함으로 편한거 사용하면 된다.  
 
 ### @Inheritance, @DiscriminatorValue, @DiscriminatorColumn
 
@@ -1574,7 +1592,7 @@ JPA 에선 트랜잭션 내에서 `영속성 컨텍스트`를 유지시킨다.
 `DB row` 에 잠금을 걸어 트랜잭션을 `block` 시키는 **비관적 락** 방식이 있고  
 `version` 정보를 통해 `Lost Update` 를 제한시키는 **낙관적 락** 방식이 있다.  
 
-#### 낙관적 락
+#### 낙관적 락(Optimistic Lock)
 
 `낙관적 락` 에선 DB에서 제공하는 락을 사용하지 않고 `@Version` 을 사용한다.  
 `@Version` 어노테이션만 지정해도 자동 사용된다.  
@@ -1673,7 +1691,7 @@ update purchase_order set version=? where order_number=? and version=?
 `낙관적 락`의 단점은 DB 락을 가져올수 있는지 즉시 체크하지 못하기 때문에 **데이터 일관성 체크를 커밋 시점에야 가능**하다는 것이다.  
 `낙관적 락` 과 연계된 쿼리가 있다면 별도의 처리를 해줘야할 수 도 있다.  
 
-#### 비관적 락
+#### 비관적 락(Pessimistic Lock)
 
 `비관적 락`에선 `@Lock(LockModeType.PESSIMISTIC...)` 을 사용한다.  
 
@@ -1688,6 +1706,7 @@ DBMS 마다 다르지만 MySQL 의 경우 `비관적 락` 을 설정하면 쿼�
   `PESSIMISTIC_WRITE` 와 동일한 기능에 더불어 잠금 흭득시 `@Version` 을 증가시킨다.  
 
 > `비관적 락` 방식의 경우 락에 의한 교착상태가 발생가능하니 타임아웃 설정을 권장한다.  
+> DBMS 레이어에서 Lock Timeout 을 설정해도 된다. `innodb_lock_wait_timeout=50(default)`
 
 ```java
 public interface OrderRepository extends CrudRepository<Order, OrderId> {
@@ -1695,6 +1714,8 @@ public interface OrderRepository extends CrudRepository<Order, OrderId> {
     Optional<Order> findById(OrderId orderId);
 
     @Lock(LockModeType.PESSIMISTIC_FORCE_INCREMENT)
+    // javax.persistence.lock.timeout
+    @QueryHints(@QueryHint(name = AvailableSettings.JPA_LOCK_TIMEOUT, value   ="5000"))
     @Query("SELECT o FROM Order o WHERE o.state = :state")
     List<Order> findAllByOrderState(OrderState state);
 }
@@ -1720,43 +1741,86 @@ update purchase_order set version=? where order_number = ? and version = ?;
 
 ### 분산락  
 
-분산락(Distributed lock) 은 DB 접근을 제한하기 보다, 서버 어플리케이션 특정 코드접근(임계영역)을 제한하기 위한 기법이다.  
+> <https://hyperconnect.github.io/2019/11/15/redis-distributed-lock-1.html>
 
-다수의 동일한 서버 어플리케이션이 동작하고 있을 때 특정 코드영역에 대해 동기화를 위해 접근을 제한시킬 때 분산락을 사용한다.  
+`분산락(Distributed lock)` 은 DB 접근을 제한하기 보다, 특정 코드접근(임계영역)을 제한하기 위한 기법이다.  
 
-따라서 어플리케이션 중앙에서 Lock 을 관리해줄 별도의 서버가 필요한데, 주로 `[Redis, Mysql Lock]` 을 사용한다.  
+분산 서버 환경으로 인해 다수의 동일한 코드가 동시 동작하고 있을 때 해당 코드영역의 동기화를 위해 접근을 제한시킬 때 분산락을 사용한다.  
+
+> java 에서 `syncronize` 사용을 최대한 피하는것 처럼, 분산락 사용을 최대한 기피해야한다.  
+
+중앙에서 Lock 을 관리해줄 별도의 서버가 필요한데, 아래와 같은 서비스를 사용해 구현 가능하다.  
+
+- Redis: Redisson  
+- Mysql: NamedLock(메타 데이터 락)  
 
 ```java
-void doProcess() {
-    String lockKey = "lock";
+@Repository
+@RequiredArgsConstructor
+public class NamedLockRepository {
+    private final JdbcTemplate jdbcTemplate;
 
-    try {
-        while (!tryLock(lockKey)) { // (2) 락 흭득 시도
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+    public Integer getLock(String lockName, int timeout) {
+        Integer result = jdbcTemplate.queryForObject(
+                "SELECT GET_LOCK(?, ?)",
+                Integer.class, // return type
+                lockName, timeout // params
+        );
+        return result;
+    }
+
+    public Integer releaseLock(String lockName) {
+        Integer result = jdbcTemplate.queryForObject(
+                "SELECT RELEASE_LOCK(?)",
+                Integer.class,
+                lockName
+        );
+        return result;
+    }
+
+}
+```
+
+```java
+public void executeWithLock(String lockName) {
+    int lockStatus = lockRepository.getLock(lockName, 10);
+    if (lockStatus == 1) {
+        try {
+            // 락을 획득한 상태에서 실행할 작업
+            Thread.sleep(100);
+            count += 1;
+            log.info("Lock acquired. Executing protected code. count:{}", count);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            lockRepository.releaseLock(lockName);
+            log.info("sLock released.");
         }
-        
-        // (3) 비지니스 로직 실행
-    } finally {
-        unlock(lockKey); // (4) 락 반납
+    } else {
+        log.info("Could not acquire lock.");
     }
 }
 
-boolean tryLock(String key) {
-    return command.setnx(key, "1"); // (1)
+public void executeWithoutLock() {
+    try {
+        Thread.sleep(100);
+        count += 1;
+        log.info("Lock acquired. Executing protected code. count:{}", count);
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
 }
+```
 
-void unlock(String key) {
-    command.del(key);
-}
+아래와 같이 api 100번 연속 호출시 분산락 내부 임계영역이 정확히 몇번 호출되는지 테스트하면 된다.  
+
+```sh
+for i in {1..100}; do curl -s http://localhost:8080/distribute-lock/test & done; wait
 ```
 
 ### open-in-view
 
-```
+```text
 spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
 ```
 
