@@ -295,6 +295,110 @@ public class RedisTemplateController {
 
 지금까지 저장된 키 목록이 출력된다.  
 
+### Redisson
+
+> <https://github.com/redisson/redisson>
+
+`Redis` 기반 분산락 기능을 지원하는 라이브러리.  
+
+`Pub/Sub` 기반의 락을 사용하기에, 계속해서 CPU 자원을 사용하는 스핀락보다 효율적이다.  
+
+```groovy
+// 내부적으로 spring data redis 사용
+implementation 'org.redisson:redisson-spring-boot-starter:3.30.0'
+```
+
+```java
+@Bean
+public RedissonClient redissonClient() {
+    Config config = new Config();
+    config.useSingleServer().setAddress("redis://localhost:6379");
+    return Redisson.create(config);
+}
+```
+
+```java
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class DistributedLockService {
+
+    private final RedissonClient redissonClient;
+    private Integer count = 0;
+
+    public void executeWithLock(String lockKey) {
+        RLock lock = redissonClient.getLock(lockKey);
+        boolean isLocked = false;
+        try {
+            // 락을 획득하기 위해 100초 동안 시도하고, 10초 동안 락을 유지합니다.
+            isLocked = lock.tryLock(100, 10, TimeUnit.SECONDS);
+            if (isLocked) {
+                // 락을 획득한 상태에서 실행할 작업
+                Thread.sleep(100);
+                count += 1;
+                log.info("Lock acquired. Executing protected code. counter:{}", count);
+                // 비즈니스 로직 실행
+                // for (int i = 0; i < 10; i++) {
+                //     log.info("business code invoked");
+                //     Thread.sleep(2000);
+                // }
+            } else {
+                log.info("Could not acquire lock.");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            if (isLocked) {
+                lock.unlock(); // TTL 을 넘길경우 IllegalMonitorStateException 발생
+                log.info("Lock released.");
+            }
+        }
+    }
+
+    public void executeWithoutLock() {
+        try {
+            Thread.sleep(100);
+            count += 1;
+            log.info("Lock acquired. Executing protected code. counter:{}", count);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+해당 라이브러리의 주의해야할 점은 LOCK 의 TTL 동안 임계영억 코드실행이 완료되지 않는다면 중복실행될 수 있다.  
+TTL 로 인해 Lock 이 해제되어도 어플리케이션 코드는 지속 실행되다 `lock.unlock()` 시점에야 TTL 을 넘겼음을 알 수 있다.  
+
+데드락 상황을 감수한다면 TTL 을 무제한으로 설정하여 확실하게 임계영역을 지킬 수 있다.  
+
+#### RedLock
+
+`Redisson` 은 `RedLock` 이라는 분산환경에서 사용가능한 기법을 사용한다.  
+
+아래와 같이 `Multi Instance` 로 구성된 `Redis Cluster` 에서도 분산락을 흭득할 수 있다.  
+
+```java
+@Bean
+public RedissonClient redissonClient() {
+    Config config = new Config();
+    config.useReplicatedServers()
+            .addNodeAddress(
+                "redis://127.0.0.1:6379", 
+                "redis://127.0.0.1:6380", 
+                "redis://127.0.0.1:6381"
+            );
+    return Redisson.create(config);
+}
+```
+
+- 시작시간 구하기
+- 과반수 이상의 인스턴스에서 락을 획득
+- 락 흭득시간 계산
+  락 흭득시간이 TTL 을 넘었을 경우 실패처리
+  락 흭득시간을 제하고 TTL 만큼 임계코드 실행
+- 획득한 모든 락을 해제
+
 ## Spring Cache
 
 `spring-boot-starter` 라이브러리에 기본적으로 사용할 수 있는 캐싱 설정을 제공한다.  

@@ -1752,7 +1752,7 @@ update purchase_order set version=? where order_number = ? and version = ?;
 중앙에서 Lock 을 관리해줄 별도의 서버가 필요한데, 아래와 같은 서비스를 사용해 구현 가능하다.  
 
 - Redis: Redisson  
-- Mysql: NamedLock(메타 데이터 락)  
+- Mysql: NamedLock(메타데이터 락)  
 
 ```java
 @Repository
@@ -1761,6 +1761,7 @@ public class NamedLockRepository {
     private final JdbcTemplate jdbcTemplate;
 
     public Integer getLock(String lockName, int timeout) {
+        // timeout 은 락을 획득하기 위해 기다리는 시간(초)
         Integer result = jdbcTemplate.queryForObject(
                 "SELECT GET_LOCK(?, ?)",
                 Integer.class, // return type
@@ -1817,6 +1818,20 @@ public void executeWithoutLock() {
 ```sh
 for i in {1..100}; do curl -s http://localhost:8080/distribute-lock/test & done; wait
 ```
+
+아래 명령으로 현재 사용중인 메타데이터 락을 확인 가능.  
+
+```SQL
+SELECT * FROM performance_schema.metadata_locks;
+```
+
+하지만 MySQL 의 `메타데이타 락` 은 코드의 임계영역을 동시에 한번 실행시키진 않는다.  
+동일 세션의 `GET_LOCK` 호출은 이미 락을 흭득했다 보고 성공코드를 돌려주기 때문.
+
+`SELECT GET_LOCK('testLock', 10);` 해당 코드를 같은 DB 콘솔에서 여러번 실행하면 동일 세션이기 때문에 모두 1(성공) 이 출력된다.  
+
+즉 어플리케이션 단위로 `메타데이타 락` 을 가져간다고 봐야한다.  
+어플리케이션 레이어에서 `메타데이타 락` 과 함께 `로컬 Lock` 를 관리하거나 `synchronized` 키워드를 사용하면 분산환경에서도 임계영역을 지정할 수 있다.  
 
 ### open-in-view
 
