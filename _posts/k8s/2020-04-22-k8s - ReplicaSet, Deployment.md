@@ -112,29 +112,11 @@ nginx-replicaset-p2w5f   0/1     ContainerCreating   0          2s
 
 쿠버네티스에선 어플리케이션의 유연한 `CI/CD` 를 위해 `Deployment` 를 제공한다.  
 
-`Deployment` 는 `ReplicaSet`의 상위개념이다.  
+`Deployment` 는 `ReplicaSet` 의 상위개념이다.  
 똑같이 여러개의 파드를 생성하고 관리면서 **업데이트 관련 기능을 추가 제공한다**.  
+기본적으로 무중단 배포를 위해 `Rolling Update` 를 지원한다.  
 
-**Recreate**  
-오래된 파드를 정지시키고 새로운 파드를 다시 작성하는 방식.  
-가장 심플하고 빠르지만 서버가 모두 내려가 버리기에 다운타임이 발생한다.  
-
-**Rolling update**  
-애플리케이션 버전업이 모두 한꺼번에 업데이트 되는것이 아닌 순서대로 조금씩 업데이트하는 방법  
-똑같은 애플리케이션이 여러 개 병렬로 움직이는 경우 가능하다.  
-
-**blue/green Deployment**   
-버전이 다른 두 애플리케이션을 동시에 가동하고 네트워크 설정을 사용해 별도의 공간에서 동작시킨다.  
-업데이트 버전의 애플리케이션 테스트 완료 후 서비스는 전환시켜 업데이트 완료.  
-블루(구버전), 그린(신버전) 을 전환하는 뜻에서 유래됨.  
-그린의 애플리케이션에서 장애 발생시 블루로 바로 복구 가능한 장점이 있다.  
-
-**Roll out, Roll back**  
-롤아웃(`roll-out`) 간단히 번역하면 신제품 또는 정책출시 또는 릴리즈라 할 수 있다.  
-`Deployment`는 컨테이너 이미지 버전업 등 업데이트가 있을 때 사로운 사양의 리플리카셋(매니페스트) 를 작성하고  
-그에 해당하는 새로운 파드로 이를 대체해 롤아웃을 수행한다.  
-
-### 매니페스트 
+### 매니페스트  
 
 ```yaml
 # 기본항목
@@ -170,27 +152,23 @@ spec:
 
 `Deployment`의 매니페스트 또한 `spec` 속성이 좀 다를뿐 나머지는 비슷하다.  
 
-|필드|설명|
-|---|---|
-`replicas` | 클러스터 안에서 가동시킬 파드의 수  
-`selector` | 어떤 파드를 가동시킬지에 대한 셀렉터, 파드에 적용된 라벨을 사용한다.  
-`template` | 클러스터 내부 파드 수가 리플리카수보다 작을때 새로 작성할 파드의 템플릿  
-`strategy` | 업데이트 방식 결정 가능, `RollingUpdate`, `Recreate` 가 있으며 기본값은 `RollingUpdate`  
-`maxUnavailable` | 롤링 업데이트중 항상 사용가능한 파드의 총수, 위의 경우 신버전, 구버전 합쳐서 리플리카수의 50%의 파드가 항상 동작중이어야 한다. 기본값은 25%  
-`maxSurge` | 파드를 작성할 수 있는 최대 개수, 100%로 설정시 신버전의 파드수가 리플리카수만큼 실행되어 한번에 20개의 파드가 동작하게 된다. 기본값은 25%. 리소스 상황에 따라 특이사항이 발생할 수 있음으로 `maxSurge` 는 작성하는 것을 권장한다.  
-`readinessProbe` | 실행한 파드가 정상인지 확인하는 속성 파드의 `livenessProbe` 와 비슷하다. 
+- `strategy`  
+  업데이트 방식 결정 가능, `Recreate`, `RollingUpdate` 사용 가능, 기본값은 `RollingUpdate`  
+  `Recreate` 는 오래된 파드를 정지시키고 새로운 파드를 다시 작성하는 방식, 가장 심플하고 빠르지만 서버가 모두 내려가 버리기에 다운타임이 발생한다.  
 
+- `rollingUpdate.maxUnavailable`  
+  spec.replicas 수 기준 unavailable 상태인 Pod 의 최대 개수를 설정. 기본값은 25%  
 
-
-- `livenessProbe`: 컨테이너가 동작 중인지 여부를 나타낸다. 만약 활성 프로브(liveness probe)에 실패한다면, `kubelet`은 컨테이너를 죽이고, 해당 컨테이너는 재시작 정책의 대상이 된다. 만약 컨테이너가 활성 프로브를 제공하지 않는 경우, 기본 상태는 `Success`이다.  
-
-- `readinessProbe`: 컨테이너가 요청을 처리할 준비가 되었는지 여부를 나타낸다. 만약 준비성 프로브(readiness probe)가 실패한다면, 엔드포인트 컨트롤러는 파드에 연관된 모든 서비스들의 엔드포인트에서 파드의 IP주소를 제거한다. 준비성 프로브의 초기 지연 이전의 기본 상태는 `Failure`이다. 만약 컨테이너가 준비성 프로브를 지원하지 않는다면, 기본 상태는 `Success`이다.  
+- `rollingUpdate.maxSurge`
+  spec.replicas 수 기준 최대 새로 추가되는 파드 수, 기본값은 25%.  
+  100% 설정시 신버전의 파드수가 리플리카수만큼 실행되어 한번에 20개의 파드가 동작하게 된다.  
+  리소스 상황에 따라 특이사항이 발생할 수 있음으로 `maxSurge` 는 작성하는 것을 권장한다.  
 
 ### 디플로이먼트 CRUD
 
 도커 허브에서 바로 이미지를 가져와 디플로이먼트 CRUD
 
-```
+```sh
 # 생성
 kubectl create deployment --image=nginx nginx-app
 deployment.apps/nginx-app created
@@ -295,7 +273,6 @@ pod/nginx-deployment-5bff7844cb-kc7ph   1/1     Running   0          5m11s
 `Pod` - `nginx-deployment-5bff7844cb-kc7ph`  
 
 뒤에 특정 해시값이 라벨로도 붙어있으며 이를 사용해 `Deployment`가 리소스를 관리한다.  
-
 
 기존의 `nginx:1.14` 버전의 이미지를 `nginx:1.15` 로 변경해보자.  
 

@@ -675,13 +675,11 @@ public class MysqlTestContainer {
 Jacoco 는 테스트 커버리지를 측정하는 라이브러리로, 테스트코드를 실행했을 때 얼마나 많은 운영코드가 실행되는지 측정하는 도구이다.  
 
 Jacoco 는 ASM 라이브러리를 사용하여 생성되는 바이트코드를 조작한다.  
-운영 코드 사이사이에 계측코드를 삽입하고, 해당 계측코드의 실행여부를 기준으로 커버리지를 측정한다.  
+바이트코드로 생성된 운영 코드 사이사이에 Jacoco 계측코드를 삽입하고, 해당 계측코드의 실행여부를 기준으로 커버리지를 측정한다.  
 
 > ASM(어셈블리 이름을 따온듯)  
 > <https://asm.ow2.io/>  
 > 0.8.12 버전 기준 JaCoCo now depends on ASM 9.7 (GitHub #1600).  
-
-![springboot_test_1](/assets/springboot/springboot_test_2.png)  
 
 ```groovy
 // build.gradle
@@ -756,6 +754,8 @@ allprojects {
 ```sh
 ./gradlew --console verbose test jacocoTestReport jacocoTestCoverageVerification
 ```
+
+![springboot_test_1](/assets/springboot/springboot_test_2.png)  
 
 `jacocoTestCoverageVerification` task 는 아래 url 참고  
 
