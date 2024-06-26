@@ -1568,6 +1568,54 @@ try {
 
 > `Isolation.DEFAULT` 는 DBMS 에 설정된 격리수준을 사용한다는 뜻  
 
+#### TransactionManager
+
+`TransactionManager` 는 DB 영역에서 트랜잭션 기능을 추상화 시킨 클래스이다.  
+
+`JPA` 의 경우 `EntityManager` 의 `begin, commit` 를 통해 트랜잭션을 진행하고,  
+`JDBC` 의 경우 `dataSource.getConnection` 의 `setAutoCommit(false), commit` 을 통해 트랜잭션을 진행한다.  
+
+스프링에선 이를 아래와 같은 `TransactionManager` 인터페이스로 트랜잭션 과정을 추상화 시켰다.  
+
+```java
+public interface TransactionManager {}
+
+public interface PlatformTransactionManager extends TransactionManager {
+    TransactionStatus getTransaction(@Nullable TransactionDefinition definition) throws TransactionException;
+    void commit(TransactionStatus status) throws TransactionException;
+    void rollback(TransactionStatus status) throws TransactionException;
+}
+
+public abstract class AbstractPlatformTransactionManager
+    implements PlatformTransactionManager, ConfigurableTransactionManager, Serializable {
+    ...
+}
+// 아래와 같은 AbstractPlatformTransactionManager 구현체들이 있음.  
+// JpaTransactionManager
+// DataSourceTransactionManager
+// JmsTransactionManager - java message system 을 같이 사용할 경우 이용
+```
+
+`JpaTransactionManager` 를 사용하는 상황에서 `@Transactional` 어노테이션을 만나면 `Spring AOP` 가 알아서 추상화 처리된 `AbstractPlatformTransactionManager` 의 동작대로 DB 와의 연결 및 트랜잭션 작업을 수행한다.  
+
+1. 트랜잭션 시작, 하래 함수를 순서대로 호출
+   `TransactionAspectSupport.createTransactionIfNecessary`  
+   `AbstractPlatformTransactionManager.getTransaction`   
+   `AbstractPlatformTransactionManager.startTransaction`  
+2. `DataSource` 로부터 `Connection` 흭득 및 `ThreadLocal` 에 등록
+   `AbstractPlatformTransactionManager.doBegin` 
+   `TransactionSynchronizationManager.bindResource - ThreadLocal 등록`  
+3. 트랜잭션 내부에서 수행되는 `Repository` 메서드들은 `ThreadLocal` 로부터 `Connection` 을 가져와서 쿼리를 실행  
+4. 트랜잭션 종료(commit or rollback)  
+   `TransactionAspectSupport.cleanupTransactionInfo`
+5. `DataSource` 에 `Connection` 반환  
+
+`@Transactional(readOnly = true)` 설정시 수정요청시 에러를 발생시키도록 하거나 `Hibernate` 의 영속성 플러시 작업을 추가적으로 하지않아 성능을 최적화 할 수 있다.  
+
+의 동작 방식을 최적화하여 성능을 향상시키는 데 도움이 됩니다. 특별한 유형의 연결을 생성하지는 않지만, 읽기 전용 트랜잭션의 이점을 활용하여 데이터베이스와 ORM의 성능을 최적화할 수 있습니다. 이를 통해 데이터 일관성을 보장하고, 읽기 전용 작업의 성능을 극대화할 수 있습니다.
+
+`DataSourceTransactionManager` 를 JPA 에서 사용하면 간단한 쿼리는 정상동작 하겠지만 영속성 관리, Lazy loading 등에서 문제가 발생할 수 있음으로 `JpaTransactionManager` 사용을 권장한다.  
+
 #### 지연로딩 with @Transactional
 
 JPA 에선 트랜잭션 내에서 `영속성 컨텍스트`를 유지시킨다.  

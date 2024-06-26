@@ -72,7 +72,7 @@ public class UserControllerEndTests extends MysqlTestContainer {
     UserRepository repository;
 
     @Autowired
-    MockMvc mockMvc;
+    MockMvc mockMvc; // 가상 요청
 
     @Test
     void patch_user_end_to_end() throws Exception {
@@ -154,6 +154,7 @@ JPA 에서 사용하는 `[Entity, Repository]` 클래스 테스트.
 
 ```java
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class StoreServiceTests {
 
     @Autowired
@@ -212,6 +213,23 @@ DB 다형성을 완벽히 지원하는 JPA 어플리케이션이라면 `ANY` 로
 **connection** 속성  
 
 `EmbeddedDatabaseConnection` 에서 어떤 `In-Memory DB` 를 사용할건지 선택.  
+
+기본적으로 `@DataJpaTest` 사용시 `@AutoConfigureTestDatabase` 가 설정되며 H2 DB 가 자동 생성된다.  
+
+```java
+...
+@AutoConfigureDataJpa
+@AutoConfigureTestDatabase
+@AutoConfigureTestEntityManager
+@ImportAutoConfiguration
+public @interface DataJpaTest { ... }
+```
+
+하지만 대부분 `datasource` 를 직접 지정하여 테스트를 많이 지정하기 때문에, 위 코드와 같이 `replace=...NONE` 을 주로 사용한다.  
+
+```conf
+spring.datasource.url=jdbc:h2:mem:testdb;MODE=MYSQL;
+```
 
 ### @RestClientTest
 

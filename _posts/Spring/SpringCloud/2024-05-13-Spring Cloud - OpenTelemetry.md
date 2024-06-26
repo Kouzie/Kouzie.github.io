@@ -30,8 +30,7 @@ categories:
 - 추적
 - 메트릭
 
-`Spring` 에서 `OpenTelemetry` 를 사용하는 여러가지 방법이 있지만,  
-여기선 가장 쉽고, 보편적인 `Micrometer` 를 사용한다.  
+`Spring` 에서 `OpenTelemetry` 를 사용하는 여러가지 방법이 있지만, 여기선 가장 쉽고, 보편적인 `Micrometer` 를 사용한다.  
 
 테스트를 위해 `OTEL 컬렉터`를 실행
 
@@ -55,16 +54,15 @@ services:
       # - 55679:55679 # zpages extension
 ```
 
-> `OpenTelemetry javaagent` 를 사용하면 코드변경 없이 `[로그, 추적, 메트릭]` 에 대해 자동계측이 가능하다.  
+> `OpenTelemetry` `javaagent` 를 사용하면 코드변경 없이 `[로그, 추적, 메트릭]` 에 대해 자동계측이 가능하다.  
 > 하지만 `javaagent` 의 잠재적인 보안 문제, 애플리케이션 내 메서드 인터셉터로 인해 성능 문제가 발생함으로 직접 구성하는 것을 추천한다.  
 > <https://medium.com/cloud-native-daily/how-to-send-traces-from-spring-boot-to-jaeger-229c19f544db>  
-
-> 반드시 모든 관측데이터를 otel 를 사용하지 않아도 된다.  
 >
-> 로그는 fluentbit 같은 `file log tail` 방식, 메트릭은 prometheus pull 방식을 사용하면 된다.  
-> trace 는 opentelemetry 연동구조가 가장 대중적이며, zipkin 이나 jeager 시스템을 사용중이라면 전용 라이브러리를 사용할 수 있다.  
+> 모든 관측데이터를 수집하기 위해 `OpenTelemetry` 를 사용하지 않아도 된다.  
+> 로그는 `fluentbit` 같은 `file log tail` 방식, 메트릭은 `prometheus pull` 방식을 사용하면 된다.  
+> 추적데이터는 `OpenTelemetry` 연동구조가 가장 대중적이며, `zipkin` 이나 `jeager` 시스템을 사용중이라면 전용 라이브러리를 사용할 수 있다.  
 
-## io.opentelemetry
+## io.opentelemetry  
 
 > <https://mvnrepository.com/artifact/io.opentelemetry>  
 
@@ -181,22 +179,20 @@ public class MyOtlpConfig {
 
 ### Meter, Trace
 
-`Meter` 에 대한 설정을 하지 않으면 생존신고를 위한 메트릭만을 `OTEL 컬렉터`로 전송한다.  
-`Tracer` 에 대한 설정을 하지 않으면 어떠한 추적데이터도 전송되지 않는다.  
+`Meter` 에 대한 설정을 하지 않으면 생존신고를 위한 메트릭만 `OTEL 컬렉터`로 전송한다.  
+`Tracer` 에 대한 설정을 하지 않으면 어떠한 추적데이터도 `OTEL 컬렉터`로 전송되지 않는다.  
 
 추가적인 메트릭, 추적데이터를 `OTEL 컬렉터` 에 전송하기 위한 `Meter`, `Tracer` 설정방법은 아래와 같다.  
 
 ```java
-// 메트릭데이터 생성기
-// io.opentelemetry.api.metrics.Meter
+// 메트릭데이터 생성기 io.opentelemetry.api.metrics.Meter
 @Bean
 public Meter customMeter(OpenTelemetry openTelemetry) {
     return openTelemetry.meterBuilder("exampleMeter")
             .setInstrumentationVersion("1.0.0")
             .build();
 }
-// 추적데이터 생성기
-// io.opentelemetry.api.trace
+// 추적데이터 생성기 io.opentelemetry.api.trace
 @Bean
 public Tracer customTracer(OpenTelemetry openTelemetry) {
     return openTelemetry.tracerBuilder("exampleTracer")
@@ -275,23 +271,19 @@ OpenTelemetryAppender.install(openTelemetry);
 </appender>
 
 <root level="info">
-    <appender-ref ref="OpenTelemetry"/>
+    <!-- OTEL 컬렉터 전달을위한 appender -->
+    <appender-ref ref="OpenTelemetry"/> 
+    <!-- mdc 정보를 같이 로그에 출력하기 위한 appender -->
     <appender-ref ref="OpenTelemetryConsole"/>
 </root>
 ```
-
-- io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender
-  `OTEL 컬렉터` 로 전달한다.  
-- io.opentelemetry.instrumentation.logback.mdc.v1_0.OpenTelemetryAppender
-  `file log` 에 관측데이터가 포함된 로그를 출력한다.  
 
 만약 `[fluentbit, promtail]` 를 사용해 `file log tail` 방식으로 전송할 예정이라면 `file log` 에도 `mdc` 정보 출력해야 함으로 `opentelemetry-logback-mdc` 라이브러리를 사용해야 한다.  
 
 `opentelemetry-logback-mdc` 설정하고 실행하면 아래와 같은 추적 데이터가 포함된 로그가 출력된다.  
 
-> `mdc` 에 출력된 추적데이터 확인.  
-
 ```text
+// logback 출력 로그
 {
     timestamp=2024-05-14T04:02:18.106Z, 
     level=INFO, 
@@ -312,23 +304,23 @@ OpenTelemetryAppender.install(openTelemetry);
 위에서 느꼈겠지만 `io.opentelemetry` 는 자동계측은 지원하지 않는다,  
 사용자가 코드 사이사이에 `[Meter, Tracer]` 를 사용해 수기로 관측데이터를 생성 및 지정해줘야 한다.  
 
-그렇게 때문에 단독으로 사용하지 않고 `io.micrometer` 와 같은 자동계측을 지원하는 라이브러리와 같이 사용한다.  
+그렇기 때문에 단독으로 사용하지 않고 `io.micrometer` 와 같은 자동계측을 지원하는 라이브러리와 같이 사용한다.  
 
 `io.micrometer` 는 자동계측 뿐만 아니라 동일한 코드로 다양한 관측 백엔드 서비스를 사용할 수 있도록 도와준다.  
-
 메트릭, 추적 데이터를 수집하는 어플리케이션은 OpenTelemetry 말고도 굉장히 많은데,  
-대부분 관측 백엔드에서 제공하는 라이브러리를 사용하는 방식이 비슷하다.  
 
 - OpenTelemetry  
 - Prometheus  
 - Zipkin  
 - Jaeger  
 
-메트릭에선 `[Counter, Gauage, Summary]` 를 정의하고 추적에선 `Span` 을 정의한다.  
+대부분 관측백엔드에서 제공하는 라이브러리의 사용방식이 비슷하다.  
 
 `io.micrometer` 를 사용하면 여러가지 백엔드 서비스 라이브러리를 주입받아 동일한 코드로 관측데이터 계측을 지원한다.  
 
-### Metric    
+메트릭에선 `[Counter, Gauage, Summary]` 를 정의하고 추적에선 `Span` 을 정의한다.  
+
+### Metric  
 
 `io.micrometer` 에서 제공하는 `MeterRegistry` 를 사용면 jvm 자동계측 메트릭과 사용자 지정 메트릭을 같이 관리할 수 있다.  
 
@@ -399,7 +391,7 @@ public class GreetingController {
 }
 ```
 
-`MeterRegistry` 는 HTTP 프로토콜을 사용하는 만큼 `Opentelemetry` 와의 의존성이 완벽히 분리되어, 아예 `io.opentelemetry` 라이브러리를 사용하지 않는다.  
+`MeterRegistry` 는 HTTP 프로토콜을 사용하는 만큼 `Opentelemetry` 와의 의존성이 완벽히 분리되어 아예 `io.opentelemetry` 라이브러리를 사용하지 않는다.  
 
 메트릭만 측정해도 되는 상황이라면 `io.opentelemetry` 라이브러리를 모두 걷어내고 `micrometer-registry-otlp` 만 설정해도 `Micrometer` 에서 메트릭 데이터를 `OTEL 컬렉터` 로 Export 해준다.  
 
@@ -410,10 +402,9 @@ public class GreetingController {
 > <https://opentelemetry.io/docs/kubernetes/operator/>  
 > <https://medium.com/@dudwls96/kubernetes-환경에서-opentelemetry-collector-구성하기-d20e474a8b18>
 
-`OTEL 컬렉터` 에서 사용하는 `Pull Prometheus Metric` 방식도 사용하기에 같이 소개한다.  
-이번 포스팅에선 `OTEL 사이드카 컬렉터` 를 사용해보기로 한다.  
+`OTEL 컬렉터` 에서 `Pull Prometheus Metric` 방식도 지원하기에 같이 소개한다.  
 
-> 보통 `Prometheus` 에서 모든 `Pod` 의 `Metric` 수집 시 `ServiceMonitor k8s CRD` 방식을 사용한다.  
+보통 모든 `Pod` 의 `Pull Prometheus Metric` 수집 시 `ServiceMonitor k8s CRD` 사이드카 방식을 사용하지만, 이번 포스팅에선 `OTEL 사이드카 컬렉터` 를 사용해보기로 한다.  
 
 `Prometheus Metric` 노출을 위해 `[actuator, micrometer]` 라이브러리 사용.  
 
@@ -497,16 +488,15 @@ spec:
 
 #### Prometheus Metric Push Base
 
-참고로 `OTEL 컬렉터 receivers` 에서 `Prometheus` 의 `push base` 를 지원하지 않는다.  
+참고로 `OTEL 컬렉터` receivers 에서 `Prometheus` 의 `push base` 를 지원하지 않는다.  
 `push base` 를 사용하고 싶다면 아래와 같이 `SpringBoot` 서버에서 `Prometheus` 서버에 직접 `Metric` 을 전달해야한다.  
 
 ```conf
 management.prometheus.metrics.export.pushgateway.base-url=${METRIC_URL:http://localhost:9091}
 ```
 
-> <https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html#actuator.metrics.export.prometheus>
+> <https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html#actuator.metrics.export.prometheus>  
 > `--management.prometheus.metrics.export.pushgateway.enabled=true` 커맨드 실행명령으로 전달시 동작한다.  
-
 
 ### Trace
 
@@ -514,7 +504,10 @@ management.prometheus.metrics.export.pushgateway.base-url=${METRIC_URL:http://lo
 `SpringBoot3` 부터는 `Micrometer` 를 사용해서 추적 백엔드 서비스 사용이 가능하다.  
 
 > `Spring Cloud Sleuth` 는 `SpringBoot 3.x` 에서 중단되었다.  
-> `Micrometer` 는 `SpringBoot 3.x` 부터 지원되며 `Spring Cloud Sleuth` 형태를 이어받았다.  
+> `Micrometer` 를 사용한 추적데이터 수집은 `SpringBoot 3.x` 부터 지원되며 `Spring Cloud Sleuth` 형태를 이어받았다.  
+
+`micrometer-tracing-bridge-otel` 은 의존성 분리가 되어있지 않기 때문에 `io.opentelemetry` 라이브러리를 같이 사용해야한다.  
+실제 `Micromter` 에서 제공하는 `OtelTracer` 구현체 내부에서 `io.opentelemetry` 패키지의 구현체를 필요로 한다.  
 
 `OTEL 컬렉터` 로 추적 데이터를 Push 하려면 아래와 같이 설정  
 
@@ -523,9 +516,6 @@ implementation "io.micrometer:micrometer-tracing-bridge-otel"
 implementation "io.opentelemetry:opentelemetry-sdk"
 implementation "io.opentelemetry:opentelemetry-exporter-otlp"
 ```
-
-`micrometer-tracing-bridge-otel` 은 의존성 분리가 되어있지 않기 때문에 `io.opentelemetry` 라이브러리를 같이 사용해야한다.  
-실제 `Micromter` 에서 제공하는 `OtelTracer` 구현체 내부에서 `io.opentelemetry` 패키지의 구현체를 필요로 한다.  
 
 ```java
 package io.micrometer.tracing.otel.bridge;
