@@ -914,7 +914,7 @@ public class Reply {
 
 `...ToOne`, `...ToMany`, `EAGER`, `LAZY` 조합에 따라 `N+1` 이슈가 발생 가능하다.  
 
-참조가 이루어지는 코드, `serialize` 만 조심하면 `LAZY` 로 설정하더라도 `N+1` 이슈가 발생하지 않음으로  
+`LAZY` 로 설정하더라도 참조가 이루어지는 코드, `serialize` 과정에서 `N+1` 이슈가 발생할 수 있다.  
 
 #### Cartessian Product 이슈
 

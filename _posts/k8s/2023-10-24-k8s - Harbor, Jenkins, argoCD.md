@@ -101,7 +101,7 @@ coredns-cfbfd9cb6-p7h5p                    1/1     Running
 
 L7 Gateway 역할을 해주는 `ingress` 를 사용하기위해 `ingress controller` 를 설치  
 
-> <https://github.com/kubernetes/ingress-nginx>
+> <https://github.com/kubernetes/ingress-nginx>  
 > 위치는 가끔 업데이트 되지만 baremetal 디렉토리에서 아래와 같은 파일을 찾으면 된다.  
 > `deploy/static/provider/baremetal/deploy.yaml`
 

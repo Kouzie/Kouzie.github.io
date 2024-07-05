@@ -302,12 +302,13 @@ OpenTelemetryAppender.install(openTelemetry);
 ## io.micrometer
 
 위에서 느꼈겠지만 `io.opentelemetry` 는 자동계측은 지원하지 않는다,  
+
 사용자가 코드 사이사이에 `[Meter, Tracer]` 를 사용해 수기로 관측데이터를 생성 및 지정해줘야 한다.  
 
-그렇기 때문에 단독으로 사용하지 않고 `io.micrometer` 와 같은 자동계측을 지원하는 라이브러리와 같이 사용한다.  
+대부분의 사용자가 운영코드 사이사이에 계측관련 코드를 넣고싶지 않을것이기에 `io.micrometer` 와 같은 자동계측을 지원하는 라이브러리와 같이 사용한다.  
 
 `io.micrometer` 는 자동계측 뿐만 아니라 동일한 코드로 다양한 관측 백엔드 서비스를 사용할 수 있도록 도와준다.  
-메트릭, 추적 데이터를 수집하는 어플리케이션은 OpenTelemetry 말고도 굉장히 많은데,  
+메트릭, 추적 데이터를 수집하는 어플리케이션은 `OpenTelemetry` 말고도 굉장히 많은데,  
 
 - OpenTelemetry  
 - Prometheus  
@@ -315,10 +316,9 @@ OpenTelemetryAppender.install(openTelemetry);
 - Jaeger  
 
 대부분 관측백엔드에서 제공하는 라이브러리의 사용방식이 비슷하다.  
+메트릭에선 `[Counter, Gauage, Summary]` 를 정의하고 추적에선 `Span` 을 정의한다.  
 
 `io.micrometer` 를 사용하면 여러가지 백엔드 서비스 라이브러리를 주입받아 동일한 코드로 관측데이터 계측을 지원한다.  
-
-메트릭에선 `[Counter, Gauage, Summary]` 를 정의하고 추적에선 `Span` 을 정의한다.  
 
 ### Metric  
 
@@ -498,6 +498,7 @@ management.prometheus.metrics.export.pushgateway.base-url=${METRIC_URL:http://lo
 > <https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html#actuator.metrics.export.prometheus>  
 > `--management.prometheus.metrics.export.pushgateway.enabled=true` 커맨드 실행명령으로 전달시 동작한다.  
 
+
 ### Trace
 
 `SpringBoot2` 에서는 `zipkin`, `jaeger` 등의 추적 백엔드 서비스를 사용하기 위해 `Slueth` 자동계측 라이브러리를 사용했다.  
@@ -517,6 +518,12 @@ implementation "io.opentelemetry:opentelemetry-sdk"
 implementation "io.opentelemetry:opentelemetry-exporter-otlp"
 ```
 
+`application.properties` 에도 아래와 같이 `OTEL 컬렉터` 주소를 설정한다.  
+
+```
+management.otlp.tracing.endpoint=http://localhost:4318/v1/tracing
+```
+
 ```java
 package io.micrometer.tracing.otel.bridge;
 
@@ -532,7 +539,33 @@ public class OtelTracer implements Tracer {
 }
 ```
 
-이제 모든 HTTP 요청에 자동으로 추적 데이터가 설정되어 로그에도 관련 mdc 정보가 출력되고 `OTEL 컬렉터` 로도 추적 데이터가 Push 된다.  
+이제 모든 HTTP 요청에 자동으로 추적 데이터가 설정되며 로그에도 관련 mdc 정보가 출력되고 `OTEL 컬렉터` 로도 추적 데이터가 Push 된다. 
+
+아래와 같이 `micrometer-tracing` 라이브러리에서 제공하는 어노테이션을 사용해서 새로운 Span 을 메서드마다 생성할 수 있다.  
+
+> `Controller` 는 자동계측되기 때문에 `Span` 태그가 의미 없지만 `Service` 나 다른 메서드에는 의미있는 `Span` 생성이 가능  
+
+```java
+@GetMapping("/{num1}/{num2}")
+@ContinueSpan("calculate")
+public String calculate(@SpanTag("num1") @PathVariable Long num1, @SpanTag("num2") @PathVariable Long num2) {
+    log.info("calculate invoked, num1:{}, num2:{}", num1, num2);
+    Long addResult = calculatingClient.addNumbers(num1, num2);
+    // 결과 값을 저장할 AtomicInteger 생성
+    result.set(addResult);
+    summary.record(num1);
+    summary.record(num2);
+    return result.toString();
+}
+```
+
+#### Feign Client Trace
+
+```groovy
+implementation 'io.github.openfeign:feign-micrometer:12.3'
+```
+
+위와같은 라이브러리를 추가하면 모든 Feign Client 의 HTTP 요청에 대해 Trace Id 를 연계할 수 있다.  
 
 ## 데모코드  
 

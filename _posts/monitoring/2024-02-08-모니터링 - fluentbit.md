@@ -279,6 +279,7 @@ docker 컨테이너가 출력하는 `/var/log/containers/*.log` 로그파일을 
 #### INPUT, OUTPUT, FILTER
 
 위에서 정의한 `PARSER` 를 `INPUT`, `FILTER` 에서 적저히 사용하고 `OUPUT` 으로 내보내야 한다.  
+그리고 태그에 `docker.spring` 를 설정해서 하나의 파이프라인으로 처리되도록 설정.  
 
 ```conf
 [INPUT]

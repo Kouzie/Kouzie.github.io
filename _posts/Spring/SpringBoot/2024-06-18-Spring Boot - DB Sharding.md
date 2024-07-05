@@ -16,8 +16,17 @@ categories:
 
 ![1](/assets/springboot/springboot_sharding1.png)  
 
+그림처럼 테이블을 분할하여 물리적으로 떨어진 노드에서 동작시켜 분산처리가 가능토록 하는 방법.
+샤딩을 이야기 할 때 대부분 수평샤딩을 뜻함.  
+
+물리적으로 분할되어 있기 떄문에 어플리케이션에서 모든 물리적 분할되어 있는 DB 노드에 접속하 수 있도록 구성하거나 proxy 를 통해 접근할 수 있음.  
+
+1. sharing 은 어플리케이션이 직접하고 fialover 만 db proxy 아래에서 처리  
 1. db proxy 를 구성하고 샤딩과 failover 모두 proxy 아래에서 처리  
-2. sharing 은 어플리케이션이 직접하고 fialover 만 db proxy 아래에서 처리  
+
+개인적인 생가으로는 1번 과정을 사용하고 아래 그림과 같이 proxy-sql 과 같은 서드파티를 사용하는것이 백엔드 개발자 관점에선 가장 트레이드 오프가 좋아보인다.  
+
+![1](/assets/springboot/springboot_sharding3.png)  
 
 ## AbstractRoutingDataSource
 
