@@ -17,24 +17,32 @@ categories:
 ## Plugin
 
 지금까지 `gradle` 을 보면 단순 쉘스크립트인데 언어가 `groovy` 인 것 같은 느낌이다.  
-`Plugin` 을 사용하면 유용한 기능들을 가져올 수 있다.  
+그리고 `task` 에 이런 `groovy script` 를 등록하고 실행시키는 방식이다.  
+
+하지만 `Sprinb Boot` 와 같이 `gradle` 를 사용하는 프로젝트들을 `build` 할 때 실행되는 `task` 들을 보면 각 `task` 내부에 복잡한 `groovy script` 가 실행되는데,  
+이런 스크립트가 각종 `Plugin` 을 통해 이미 저장되어 있다.  
 
 **plugin 은 유용한 기능을 가진 task 의 집합**이라 할 수 있다.  
 `gradle` 에선 `JavaPlugin` 과 같은 `core plugins` 들을 제공하며  
 `Plugin` 인터페이스를 구현해서 작성하거나 `gradle DSL(groovy, kotlin)` 을 사용해 작성할 수 있다.  
 
-Plugin 을 직접 구현한다면 2가지 방식으로 구현할 수 있다.  
+`Plugin` 을 직접 구현한다면 2가지 방식으로 구현할 수 있다.  
 
-**Script Plugin**  
-build 스크립트에서 선언방식으로 Plugin 을 구성하고 빌드에 관여하는 방식.  
+- **Script Plugin**  
+  build 스크립트에서 선언방식으로 Plugin 을 구성하고 빌드에 관여하는 방식  
+- **Binary Plugin**  
+  jar 형태로 배포되고 build 스크립트에 사용되는 형식  
 
-**Binary Plugin**  
-jar 형태로 배포되고 build 스크립트에 사용되는 형식
-
-일반적으로 초기에 `script plugin` 으로 구성되어 개발되다가 조직간 공유할 수 있는 `binary plugin` 으로 마이그레이션 된다.  
-
+일반적으로 초기에 `Script Plugin` 으로 구성되어 개발되다가 조직간 공유할 수 있는 `Binary Plugin` 으로 마이그레이션 된다.  
 
 ### Core Plugin, Community Plugin
+
+```groovy
+plugins {
+    id «plugin id» // core
+    id «plugin id» version «plugin version» [apply «false»] // community
+}
+```
 
 `Core Plugin` 는 배포된 `gradle` 에 자체적으로 저장되어 있는 `plugin` 으로 별도의 `version number` 없이 사용한다, `org.gradle` 네임스페이스를 사용하며 생략 가능하다.  
 
@@ -69,20 +77,27 @@ plugins {
 
 `Plugin` 을 `encapsulated` 하여 빌드구성에 적용시키고 싶으면 아래 2가지 과정을 거쳐야한다.  
 
-**1. resolve the plugin**  
-올바른 버전의 `plugin` 을 찾아 `script classpath` 에 적용시키는 것.  
-url, 특정 경로를 통해 `plugin` 을 가져와 `resolve` 하여 빌드에 참여시킬 수 있다.  
-
-**2. apply the plugin to the target**
-`Plugin.apply(T)` 메서드를 사용해 `target` 에 `plugin` 을 적용시키는 것.  
-대부분 `target` 은 `Project` 이다.  
+1. **resolve the plugin**  
+  올바른 버전의 `plugin` 을 찾아 `script classpath` 에 적용시키는 것.  
+  url, 특정 경로를 통해 `plugin` 을 가져와 `resolve` 하여 빌드에 참여시킬 수 있다.  
+2. **apply the plugin to the target**  
+  `Plugin.apply(T)` 메서드를 사용해 `target` 에 `plugin` 을 적용시키는 것.  
+  대부분 `target` 은 `Project` 이다.  
 
 아래와 같이 `plugins` 블록을 사용해 `Project` 객체에 `Plugin` 을 적용할 수 있다.  
+실제 하위 프로젝트에 `plugin` 적요을 위해 `subprojects` 같은 블럭 안에 `apply plugin` 함수를 사용할 수 있다.  
 
 ```groovy
+// 1. resolve the plugin
 plugins {
-    id «plugin id» // core
-    id «plugin id» version «plugin version» [apply «false»] // community
+    id 'org.springframework.boot' version '2.7.9' apply false
+}
+
+// 2. apply the plugin to the target
+subprojects {
+    if (name.startsWith('app')) {
+        apply plugin: 'org.springframework.boot'
+    }
 }
 ```
 
@@ -113,24 +128,14 @@ plugins {
 }
 ```
 
-만약 `subprojects` 와 같은 블럭 안에 `Plugin` 설정을 해야 한다면 `apply plugin` 함수를 사용할 수 있다.  
-
-```groovy
-plugins {
-    id 'org.springframework.boot' version '2.7.9' apply false
-}
-
-subprojects {
-    if (name.startsWith('app')) {
-        apply plugin: 'org.springframework.boot'
-    }
-}
-```
-
-
 #### pluginManagement 블록  
 
 아래와 같이 `setting.gradle` 파일에 `pluginManagement` 블록을 정의하여 `Plugin` 의 관리를 할 수 있다.  
+
+```groovy
+// gradle.properties
+springBootVersion=2.7.9
+```
 
 ```groovy
 // setting.gradle
@@ -141,13 +146,7 @@ pluginManagement {
 }
 
 rootProject.name = 'basic'
-
 include "project-a"
-```
-
-```groovy
-// gradle.properties
-springBootVersion=2.7.9
 ```
 
 ```groovy
@@ -176,7 +175,6 @@ pluginManagement {
     }
 }
 ```
-
 
 ## buildSrc
 
