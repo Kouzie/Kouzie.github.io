@@ -1,5 +1,5 @@
 ---
-title:  "Spring Boot - Observability!"
+title:  "Spring Boot - OpenTelemetry!"
 
 read_time: false
 share: false
@@ -30,9 +30,12 @@ categories:
 - 추적
 - 메트릭
 
-`Spring` 에서 `OpenTelemetry` 를 사용하는 여러가지 방법이 있지만, 여기선 가장 쉽고, 보편적인 `Micrometer` 를 사용한다.  
+`Spring` 에서 `OpenTelemetry` 를 사용하는 여러가지 방법이 있지만, 여기선 Java 를 지원하는 2가지 library 사용방법을 알아본다.  
 
-테스트를 위해 `OTEL 컬렉터`를 실행
+- `io.openTelemetry`
+- `io.micrometer`
+
+먼저 테스트를 위해 `OTEL 컬렉터`를 실행
 
 ```yaml
 # docker-compose.yaml
@@ -66,7 +69,7 @@ services:
 
 > <https://mvnrepository.com/artifact/io.opentelemetry>  
 
-`OpenTelemetry` 에서 제공하는 라이브러리로 `[로그, 추적, 메트릭]` 관측데이터를 `OTEL 컬렉터` 로 전달 할 수 있다.  
+`io.opentelemetry` 는 `OpenTelemetry` 에서 제공하는 라이브러리로 `[로그, 추적, 메트릭]` 관측데이터를 `OTEL 컬렉터` 로 전달 할 수 있다.  
 
 `io.opentelemetry` 패키지에서 주로 사용하는 라이브러리는 아래 3가지  
 
@@ -75,6 +78,7 @@ services:
 - **opentelemetry-exporter-otlp**: 측정데이터 exporter 의 구현체, `OTEL HTTP`, `OTEL GRPC` 프로토콜을 사용 가능.  
 
 > `opentelemetry-sdk` 안에 이미 `opentelemetry-api` 가 포함되어 있지만 비즈니스 로직에서는 `opentelemetry-api` 의존성 주입 받아 사용하는것을 권장.  
+> `opentelemetry-sdk` 는 별도의 모듈로 구성해서 비즈니스 로직이 담겨있는 모듈의 의준성 주입하는것을 권장한다.  
 
 ```groovy
 dependencyManagement {
@@ -98,6 +102,8 @@ dependencies {
   implementation "io.opentelemetry.instrumentation:opentelemetry-logback-mdc-1.0:$OPENTELEMETRY_VERSION"
 }
 ```
+
+`logback` 에서도 `OpenTelemetry exporter` 를 통해 컬렉터로 로그데이터를 전송하고  `OpenTelemetry appender` 를 통해 관측데이터가 포함된 형태로 로그를 출력하도록 설정한다.  
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -196,7 +202,7 @@ public Meter customMeter(OpenTelemetry openTelemetry) {
 @Bean
 public Tracer customTracer(OpenTelemetry openTelemetry) {
     return openTelemetry.tracerBuilder("exampleTracer")
-            .setInstrumentationVersion( "1.0.0")
+            .setInstrumentationVersion("1.0.0")
             .build();
 }
 
@@ -404,7 +410,7 @@ public class GreetingController {
 
 `OTEL 컬렉터` 에서 `Pull Prometheus Metric` 방식도 지원하기에 같이 소개한다.  
 
-보통 모든 `Pod` 의 `Pull Prometheus Metric` 수집 시 `ServiceMonitor k8s CRD` 사이드카 방식을 사용하지만, 이번 포스팅에선 `OTEL 사이드카 컬렉터` 를 사용해보기로 한다.  
+보통 `Pod` 의 `Pull Prometheus Metric` 수집 시 `ServiceMonitor k8s CRD` 사이드카 방식을 사용하지만, 이번 포스팅에선 `OTEL 사이드카 컬렉터` 를 사용해보기로 한다.  
 
 `Prometheus Metric` 노출을 위해 `[actuator, micrometer]` 라이브러리 사용.  
 
@@ -488,8 +494,8 @@ spec:
 
 #### Prometheus Metric Push Base
 
-참고로 `OTEL 컬렉터` receivers 에서 `Prometheus` 의 `push base` 를 지원하지 않는다.  
-`push base` 를 사용하고 싶다면 아래와 같이 `SpringBoot` 서버에서 `Prometheus` 서버에 직접 `Metric` 을 전달해야한다.  
+참고로 `OTEL 컬렉터` 에서 `Pushbase Prometheus Metric` 방식을 지원하지 않는다.  
+`pushbase` 를 사용하고 싶다면 아래와 같이 `SpringBoot` 서버에서 `Prometheus` 서버에 직접 `Metric` 을 전달해야한다.  
 
 ```conf
 management.prometheus.metrics.export.pushgateway.base-url=${METRIC_URL:http://localhost:9091}
