@@ -14,7 +14,21 @@ categories:
 
 ## 스프링 코어 for Reactive
 
-스프링 5.0 에서부터 리액티브 코드를 위한 여러가지 클래스들이 수정, 추가되었다.  
+기존 스프링 MVC 에선 tomcat 기반으로 웹서버를 실행해 왔다.  
+tomcat 의 경우 기본설정된 thread 개수가 200개 정도인데, 이는 동시요청이 200개가 들어오면 http 요청이 block 된다는 뜻이다.  
+
+최근 웹 어플리케이션은 외부API 요청, DB로부터의 CRUD 가 전부인 경우가 많다, 복잡한 `CPU Bound Job` 보다는 외부의존성과 연결을 통해 `IO Bound Job` 이 더 많다는 뜻이다.  
+때문에 `멀티스레드 & blocking` 기반으로 동작하는 `tomcat` 은 요청이 몰렸을 때 외부 의존성(DB, API서버) 에 의해 `blocking` 되어 아무런 동작도 하지 않는상태로 대기중인 경우가 많아진다.  
+CPU 사용률을 0% 에 가까워지고 요청이 완료되어 인터럽트가 발생하기만을 기다리게 되버린다.  
+
+이는 파일처리에 대해서도 동일한 문제였기 때문에 1990 년쯤 linux 에서 NIO 기능을 지원하기 시작했고,  
+위와같은 문제를 알고있는 개발자들도 프레임워크에 NIO 기능을 넣어 멀티스레드의 문제점을 해결해줬다.  
+
+- 2004 년 netty 가 개발되어 NIO 웹서버를 쓸 수 있게 되었다.  
+- 2009 년 Nodejs 역시 NIO 기반으로 동작할 수 있는 프레임워크를 만들어주었다.  
+- 2009 년 비동기 서블릿(servlet 3.0) 이 출시했다.  
+
+`Spring WebFlux` 는 NIO 웹서버인 `Netty` 를 기반으로 2017년 `Spring Framework 5.0` 에 처음 도입되었다.  
 
 ### ReactiveAdapter, ReactiveAdapterRegistry
 
@@ -368,7 +382,6 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
         Map<String, Object> map = new HashMap<>();
         map.put("code", UNKNOWN_ERROR_CODE);
         map.put("error", UNKNOWN_ERROR_TYPE);
-        // map.put("description", messageSource.getMessage("fms.error.unknown_server_error", null, locale));
         return map;
     }
 }

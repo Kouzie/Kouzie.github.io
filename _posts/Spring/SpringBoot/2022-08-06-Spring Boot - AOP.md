@@ -38,6 +38,8 @@ AOP 기법을 위한 대표적인 라이브러리는 아래 2개
 `Spring AOP` 를 사용하게되면 자동으로 생성되는 코드로 인해 `AspectJ` 보다 훨씬 성능이 느리지만  
 간단한 사용방법과 설정으로 인해 `Spring AOP` 를 주로 사용한다.  
 
+> 두 라이브러리가 아예 분리되어있진 않고 `Spring AOP` 코드에서 `AOP` 개념을 가져오기 위해 `AspectJ` 라이브러리에 의존중임. 
+
 ### AOP 주요 용어
 
 용어 | 의미  
@@ -68,7 +70,7 @@ AOP 기법을 위한 대표적인 라이브러리는 아래 2개
 2. 클래스 로딩시  
 3. 런타임시  
 
-`Spring AOP` 에선 3번째 방법인 런타임시에 `Weaving`할 수 있는데 **Proxy기반의 AOP**이다.  
+> `Spring AOP` 에선 3번째 방법인 런타임시에 `Weaving`할 수 있는데 **Proxy기반의 AOP**이다.  
 
 ![image4](/assets/springboot/springboot_aop2.png)  
 
@@ -170,7 +172,7 @@ public static void main(String[] args) {
 
 로그출력같은 **공통적인 보조업무**를 빼서 AOP 기능수행을 하는 **Proxy 클래스**를 생성  
 
-`InvocationHandler` 인터페이스를 상속한 `LogPrintHandler`클래스를 정의  
+`java.lang.reflect.InvocationHandler` 인터페이스를 상속한 `LogPrintHandler`클래스를 정의  
 공통 기능을 구현한 보조클래스와 핵심 기능이 합쳐진 **proxy 클래스** 이다.  
 
 ```java
@@ -181,11 +183,13 @@ public class LogPrintHandler implements InvocationHandler {
     } 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        // 보조 기능1
         Log log = LogFactory.getLog(this.getClass());
         StopWatch sw = new StopWatch();
         log.info(method.getName() + "() start"); //method 이름을 가져오는 메서드
         sw.start();
-        int result = (int) method.invoke(target, args);
+        int result = (int) method.invoke(target, args); // 핵심기능 수행
+        // 보조 기능2
         sw.stop();
         log.info(method.getName() + "() stop");
         log.info(method.getName() + "() 처리시간: " + sw.getTotalTimeMillis());
@@ -194,7 +198,7 @@ public class LogPrintHandler implements InvocationHandler {
 }
 ```
 
-`AOP`과정에서 위와같은 `LogPrintHandler`와 같은 **Proxy클래스**가 생기게 된다 보면 된다.  
+`AOP`과정에서 위와같은 `LogPrintHandler`와 같은 **java.lang.reflect.Proxy** 인스턴스가 생기게 된다 보면 된다.  
 
 ```java
 public static void main(String[] args) {
@@ -207,19 +211,51 @@ public static void main(String[] args) {
 }
 ```
 
-### 스프링 라이브러리를 사용해 Proxy객체 생성
+## Spring AOP
 
-스프링의 AOP기능을 사용하기 위해 먼저 다음 jar파일을 `build path`에 추가하자.  
-`C:\Class\SpringClass\spring-framework-3.0.2.RELEASE-dependencies\org.aopalliance\com.springsource.org.aopalliance\1.0.0\com.springsource.org.aopalliance-1.0.0.jar`  
+`런타임 AOP` 에서 사용하는 방법은 아래 2가지  
 
-목표는 `add`메서드 **실행 전** 로그기록, **실행 후** 로그기록, 소요시간 로그 기록이다.  
-즉 **핵심 기능 전 후** 에 실행되는 공통 기능인 `Around Advice`클래스를 만들자.
+- `JDK Dynamic Proxy`
+- `cglib(Code Generator Library) Proxy`
+
+`JDK Dynamic Proxy` 는 위에서 살펴보았던 reflect 패키지의 클래스를 사용하는 방법이다.  
+
+- `java.lang.reflect.Proxy`  
+- `java.lang.reflect.InvocationHandler`  
+
+`cglib` 는 바이트코드 조작을 통해 프록시 객체를 생성하기때문에 `reflect` 패키지의 인터페이스 구현 등의 별도의 추가작업을 하지 않아도 Proxy 패턴 구현이 가능하다.  
+
+- `org.springframework.cglib.proxy.Enhancer`  
+- `org.springframework.cglib.proxy.MethodInterceptor`  
+
+`Spring AOP` 에선 `cglib Proxy` 를 사용한다.  
+런타임시에 각종 어노테이션이 설정된 클래스들을 `classpath` 에서 찾은 뒤 `cglib` 클래스를 사용하여 동적으로 프록시 관련 코드를 생성 후 로직 사이사이에 삽입하는 과정을 거친다.  
+
+### cglib Proxy 객체 생성
+
+Spring AOP 를 사용하면 지금부터 소개할 `cglib` 클래스들이 자동으로 런타임시 생성된다고 보면 된다.  
+
+하지만 여기선 Spring AOP 를 사용하기 전에 직접 `cglib` 를 클래스를 생성하고 Bean 으로 등록하는 과정을 수행한다.  
+
+`cglib` 클래스를 사용하기 위해 아래 `dependency` 를 삽입.  
+
+```groovy
+implementation 'org.springframework.boot:spring-boot-starter-aop'
+```
+
+`add` 라는 **핵심 기능 전 후** 에 아래 3가지 AOP 작업을 수행하도록 설정한다.  
+
+- 실행 전 로그기록  
+- 실행 후 로그기록  
+- 소요시간 로그 기록   
+
+공통 기능인 `Around Advice` 역할을 수행할 `cglib Proxy` 클래스로 생성한다.  
 
 **`Around Advice`기능을 가진 Proxy클래스를 정의하려면** 먼저 공통기능 클래스를 정의하기 위한 **`MethodInterceptor` 인터페이스를 구현**해야한다.  
 
 ```java
 @Component
-public class LogPrintAroundAdvice implements MethodInterceptor{
+public class LogPrintAroundAdvice implements MethodInterceptor {
     @Override
     public Object invoke(MethodInvocation method) throws Throwable {
         String m_name = method.getMethod().getName();
@@ -244,22 +280,115 @@ public class LogPrintAroundAdvice implements MethodInterceptor{
 `Before Advice` 역할을 하는 `MethodBeforeAdvice` 인터페이스를 구현,  
 `After Returning Advice`역할을 하는 `AfterReturningAdvice` 인터페이스를 구현한 공통 기능 클래스를 정의해야 한다.  
 
-```java
-@Component
-public class LogPrintBeforeAdvice implements MethodBeforeAdvice {
+그냥 Spring 프레임워크를 사용하게 될 경우 
 
-    @Override
-    public void before(Method method, Object[] args, Object target) throws Throwable {
-        String m_name = method.getName();
-        Log log = LogFactory.getLog(this.getClass());
-        log.info(">>>  " + m_name + "() : BeforAdvice called...");
+위와 같이 AOP 기법을 사용한 공통 기능 클래스를 모두 정의하였으면 **핵심기능 클래스와 공통기능 클래스를 하나의 Proxy클래스**로 만들어주면 된다.  
+
+### Spring AOP 라이브러리
+
+
+`cglib` 클래스를 사용하여 `AOP` 를 사용하는 방법을 알아보았는데 스프링에선 대부분 어노테이션을 사용해서 `AOP` 를 수행한다.  
+
+```java
+@Aspect
+@Configuration
+@RequiredArgsConstructor
+public class LoggingAspect {
+
+    /**
+     * Retrieves the {@link Logger} associated to the given {@link JoinPoint}.
+     *
+     * @param joinPoint join point we want the logger for.
+     * @return {@link Logger} associated to the given {@link JoinPoint}.
+     */
+    private Logger logger(JoinPoint joinPoint) {
+        return LoggerFactory.getLogger(joinPoint.getSignature().getDeclaringTypeName());
     }
+
+    /**
+     * Pointcut that matches all repositories, services and Web REST endpoints.
+     */
+    @Pointcut("within(@org.springframework.stereotype.Service *)" +
+            " || within(@org.springframework.web.bind.annotation.RestController *)")
+    public void springBeanPointcut() {
+        // Method is empty as this is just a Pointcut, the implementations are in the advices.
+    }
+
+    /**
+     * Advice that logs when a method is entered and exited.
+     *
+     * @param joinPoint join point for advice.
+     * @return result.
+     * @throws Throwable throws {@link IllegalArgumentException}.
+     */
+    @Before("springBeanPointcut()")
+    public void logBefore(JoinPoint joinPoint) throws Throwable {
+        Logger log = logger(joinPoint);
+        log.info("Enter: {}() with argument[s] = {}", joinPoint.getSignature().getName(), Arrays.toString(joinPoint.getArgs()));
+    }
+
 }
 ```
 
+#### AOP Advice annotation
+
+AOP Advice 를 설정할 수 있는 어노테이션은 아래 5가지
+
+
+**@Before**  
+
 ```java
+@Before("execution(* com.example.service.*.*(..))")
+public void beforeAdvice(JoinPoint joinPoint) {
+    // 로직
+}
+```
+
+**@After**
+
+```java
+@After("execution(* com.example.service.*.*(..))")
+public void afterAdvice(JoinPoint joinPoint) {
+    // 로직
+}
+```
+
+**@AfterReturning**
+
+```java
+@AfterReturning(pointcut = "execution(* com.example.service.*.*(..))", returning = "result")
+public void afterReturningAdvice(JoinPoint joinPoint, Object result) {
+    // 로직
+}
+```
+
+**@AfterThrowing**
+
+```java
+@AfterThrowing(pointcut = "execution(* com.example.service.*.*(..))", throwing = "error")
+public void afterThrowingAdvice(JoinPoint joinPoint, Throwable error) {
+    // 로직
+}
+```
+
+**@Around**
+
+```java
+@Around("execution(* com.example.service.*.*(..))")
+public Object aroundAdvice(ProceedingJoinPoint joinPoint) throws Throwable {
+    // 메서드 호출 전 로직
+    Object result = joinPoint.proceed();
+    // 메서드 호출 후 로직
+    return result;
+}
+```
+
+
+
+```java
+// org.springframework.aop.AfterReturningAdvice 클래스 상속
 @Component
-public class LogPrintAfterReturningAdvice implements AfterReturningAdvice{
+public class LogPrintAfterReturningAdvice implements AfterReturningAdvice {
 
     @Override
     public void afterReturning(Object returnValue, Method method, Object[] args, Object target) throws Throwable {
@@ -271,11 +400,7 @@ public class LogPrintAfterReturningAdvice implements AfterReturningAdvice{
 }
 ```
 
-위와 같이 AOP 기법을 사용한 공통 기능 클래스를 모두 정의하였으면 **xml을 통해 핵심기능 클래스와 공통기능 클래스를 하나의 Proxy클래스**로 만들어주면 된다.  
-
-## Spring Boot AOP
-
-위에서 AOP 개념와 Spring Framework 에서 AOP 를 사용하는 방법을 알아보았는데  
+#### 직접 어노테이션 생성  
 
 ```java
 @Inherited // 자식 클래스에도 상속
@@ -285,6 +410,8 @@ public @interface CheckApiKey {
 }
 ```
 
-### 생성된 어노테이션 PointCut 에 등록
+### Spring AOP 의 문제점
 
-### 생성된 어노테이션을 Filter 에 등록
+Proxy 객체의 외부 호출을 래핑하는 방식이기 때문에 내부 함수호출시에는 AOP 과정이 일어나지 않는다.  
+추가적인 클래스를 다량 작성해야한다.  
+(어노테이션, 컨피그클래스)

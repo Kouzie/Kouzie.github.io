@@ -22,9 +22,10 @@ categories:
 
 이때 클러스터 내부 `pod` 간의 연결구성이 `Service` 라 할 수 있다.
 
-`Service` 관련 `yaml` 을 작성하면, 모든 노드의 `kube-proxy` 는 `[userspace, iptables, IPVS]` 등을 기능을 사용해 패킷 라우팅을 구현한다.  
+각 노드별로 `kube-proxy` 를 가지고 있으며 `Service` 관련 `yaml` 을 작성하면, 각 노드의 `kube-proxy` 는 `[userspace, iptables, IPVS]` 등을 기능을 사용해 패킷 라우팅을 구현한다.  
 
 > IPVS (IP Virtual Server) 는 리눅스 L4 로드밸런싱 기능,  
+
 
 ### Service 타입  
 
