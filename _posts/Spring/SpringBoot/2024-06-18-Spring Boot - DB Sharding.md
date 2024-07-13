@@ -438,6 +438,132 @@ rules:
 - **HINT_INLINE**
   Hint inline sharding algorithm  
 
+직접 샤딩 로직을 구현하고 싶다면 `CLASS_BASED` 를 사용할 수 있도록 `StandardShardingAlgorithm` 를 구현한 클래스를 정의하고 yaml 에 등록하면 된다.  
+
+```java
+// 커스텀 샤딩 로직을 구현.
+public class SnowflakeShardingAlgorithm implements StandardShardingAlgorithm<Long> {
+
+    private static final int DATACENTER_ID_BITS = 5;
+    private static final int WORKER_ID_BITS = 5;
+    private static final int SEQUENCE_BITS = 12;
+
+    private static long toDatacenterId(long id) {
+        long maskDatacenterId = ((1L << DATACENTER_ID_BITS) - 1) << (WORKER_ID_BITS + SEQUENCE_BITS);
+        long datacenterId = (id & maskDatacenterId) >> (WORKER_ID_BITS + SEQUENCE_BITS);
+        return datacenterId;
+    }
+
+    @Override
+    public String doSharding(Collection<String> availableTargetNames, PreciseShardingValue<Long> shardingValue) {
+        Long datacenterId = toDatacenterId(shardingValue.getValue());
+        for (String targetName : availableTargetNames) {
+            if (targetName.endsWith(String.valueOf(datacenterId))) {
+                return targetName;
+            }
+        }
+        throw new UnsupportedOperationException("No target found for value: " + datacenterId);
+    }
+    @Override
+    public Collection<String> doSharding(Collection<String> availableTargetNames, RangeShardingValue<Long> shardingValue) {
+        Set<String> result = new HashSet<>();
+        Range<Long> valueRange = shardingValue.getValueRange();
+        Long lowerEndpoint = valueRange.lowerEndpoint();
+        Long upperEndpoint = valueRange.upperEndpoint();
+
+        Long lowerDatacenterId = toDatacenterId(lowerEndpoint);
+        Long upperDatacenterId = toDatacenterId(upperEndpoint);
+
+        for (String targetName : availableTargetNames) {
+            for (Long datacenterId = lowerDatacenterId; datacenterId <= upperDatacenterId; datacenterId++) {
+                if (targetName.endsWith(String.valueOf(datacenterId))) {
+                    result.add(targetName);
+                }
+            }
+        }
+
+        if (result.isEmpty()) {
+            throw new UnsupportedOperationException("No target found for range: " + lowerDatacenterId + " to " + upperDatacenterId);
+        }
+
+        return result;
+    }
+}
+```
+
+```yaml
+dataSources:
+  ds_0:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.jdbc.Driver
+    jdbcUrl: jdbc:mysql://localhost:3306/demo_ds_0?serverTimezone=UTC&useSSL=false&useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: root
+  ds_1:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.jdbc.Driver
+    jdbcUrl: jdbc:mysql://localhost:3307/demo_ds_1?serverTimezone=UTC&useSSL=false&useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: root
+
+rules:
+  - !SHARDING
+    tables:
+      t_order:
+        actualDataNodes: ds_${0..1}.t_order_${0..1}
+        tableStrategy:
+          standard:
+            shardingColumn: order_id
+            shardingAlgorithmName: t_order_inline
+        auditStrategy:
+          auditorNames:
+            - sharding_key_required_auditor
+          allowHintDisable: true
+      t_order_item:
+        actualDataNodes: ds_${0..1}.t_order_item_${0..1}
+        tableStrategy:
+          standard:
+            shardingColumn: order_id
+            shardingAlgorithmName: t_order_item_inline
+      t_account:
+        actualDataNodes: ds_${0..1}.t_account
+        tableStrategy:
+          none:
+    defaultShardingColumn: account_id
+    bindingTables:
+      - t_order,t_order_item
+    defaultDatabaseStrategy:
+      standard:
+        shardingColumn: account_id
+        shardingAlgorithmName: database_inline
+    defaultTableStrategy:
+      none:
+
+    shardingAlgorithms:
+      database_inline:
+        type: CLASS_BASED
+        props:
+          strategy: STANDARD
+          algorithmClassName: 'com.example.sharding.sphere.demo.config.SnowflakeShardingAlgorithm'
+      t_order_inline:
+        type: INLINE
+        props:
+          algorithm-expression: t_order_${order_id % 2}
+      t_order_item_inline:
+        type: INLINE
+        props:
+          algorithm-expression: t_order_item_${order_id % 2}
+    auditors:
+      sharding_key_required_auditor:
+        type: DML_SHARDING_CONDITIONS
+  - !BROADCAST
+    tables: # Broadcast tables
+      - t_address
+
+props:
+  sql-show: true
+```
+
 #### keyGenerators
 
 > keyGenerators: <https://shardingsphere.apache.org/document/current/en/dev-manual/infra-algorithm/#keygeneratealgorithm>  
@@ -453,7 +579,8 @@ rules:
 
 ```java
 @Getter
-@Entity(name = "t_account")
+@Entity
+@Table(name = "t_account")
 public class AccountEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

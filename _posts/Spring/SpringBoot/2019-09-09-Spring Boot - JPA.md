@@ -1507,7 +1507,96 @@ create table image
 
 ### @Access
 
-DB데이터 매핑시 `getter`, `setter` 없이도 매핑할 수 있도록 `@Access` 어노테이션 사용  
+`@Access` 어노테이션 사용하면 DB데이터 매핑전력을 지정할 수 있다.  
+필드에 접근시킬 지 `getter` 를 통해 접근시킬 지 지정할 수 있다.  
+
+- `@Access(AccessType.FIELD)`  
+  필드에 직접 접근, Class 위에 선언, private field 접근 가능    
+- `@Access(AccessType.PROPERTY)`  
+  getter 를 통해 접근
+
+별도로 정의하지 않았을 경우 `@Id` 어노테이션이 필드에 정의되어 있는지, getter 메서드에 정의되어 있는지에 따라 매핑전략이 결정된다.  
+
+대부분 필드에 `@Id` 를 지정하기에 `@Access(AccessType.FIELD)` 를 사용한다.  
+
+
+```java
+@Entity
+public class Member {
+    // 기본적으로 @Access(AccessType.FIELD) 전략 사용
+    @Id  
+    private String id;
+
+    @Transient
+    private String firstName;
+
+    @Transient
+    private String lastName;
+
+    @Access(AccessType.PROPERTY)
+    public String getFullName() {
+        return firstName + lastName;
+    }
+}
+```
+
+`getFullName` 에 의해 DB 에 `fulle_name` 칼럼이 생성되고 매핑된다.  
+
+### @Id, @GeneratedValue, @GenericGenerator
+
+보통 `@GeneratedValue(strategy = GenerationType.IDENTITY)` 를 사용하여 `Id` 생성전략을 `DataSource` 에 맡긴다.  
+
+```java
+@Getter
+@Entity(name = "t_account")
+public class AccountEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  
+    @Column(name = "account_id")
+    private Long accountId;
+    private String userName;
+    private OffsetDateTime createTime;
+}
+```
+
+이외에도 `@GeneratedValue` 를 사용해서 `UUID`, `Sequence ID` 등을 사용할 수다.  
+
+하지만 직접 커스텀한 ID 생성방식이 있다면 아래와 같이 `@GenericGenerator` 를 사용하면 된다.  
+
+```java
+@Getter
+@Entity(name = "t_account")
+public class AccountEntity {
+    @Id
+    @GeneratedValue(generator = "customIdGenerator") // @GenericGenerator의 name modifier 에 지정한 이름
+    @GenericGenerator(name = "customIdGenerator",
+            type = CustomIdGenerator.class)
+    @Column(name = "account_id")
+    private Long accountId;
+    private String userName;
+    private OffsetDateTime createTime;
+}
+```
+
+```java
+public class CustomIdGenerator implements IdentifierGenerator {
+
+    // snowflake 는 @Bean 으로 등록
+    private final Snowflake snowflake;
+
+    public CustomIdGenerator(Snowflake snowflake) {
+        this.snowflake = snowflake;
+    }
+
+    @Override
+    public Serializable generate(SharedSessionContractImplementor session, Object object) {
+        // 원하는 ID 생성 로직을 구현합니다.
+        // 여기서는 UUID를 예로 사용합니다.
+        return snowflake.nextId();
+    }
+}
+```
+
 
 ## 트랜잭션
 
