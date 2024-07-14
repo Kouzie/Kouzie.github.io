@@ -149,7 +149,7 @@ public class DemoDataSourceRouter extends AbstractRoutingDataSource {
 
 `JPA` 와 `AbstractRoutingDataSource` 를 같이 사용할 경우 `JpaTransactionManager` 의 호환 문제로 인해 추가 설정 없이 `read replica` 분리는 어려우 수 있다.  
 
-아래는 `JpaTransactionManager` 의 doBegin 함수인데 `Datasource` 를 가져오는 `beginTransaction` 코드가 `TransactionSynchronizationManager` 의 `ThreadLocal` `readOnly` 값을 수정하는 코드보다 먼저 와있다.  
+아래는 `JpaTransactionManager` 의 `doBegin` 함수인데 `Datasource` 를 가져오는 `beginTransaction` 코드가 `TransactionSynchronizationManager` 의 `ThreadLocal` `readOnly` 값을 수정하는 코드보다 먼저 와있다.  
 
 ```java
 // JpaTransactionManager.class
@@ -165,6 +165,7 @@ protected void doBegin(Object transaction, TransactionDefinition definition) {
   Object transactionData = getJpaDialect().beginTransaction(em,
       new JpaTransactionDefinition(definition, timeoutToUse, txObject.isNewEntityManagerHolder()));
   txObject.setTransactionData(transactionData);
+  // readOnly 가 여기서 설정됨
   txObject.setReadOnly(definition.isReadOnly());
   ...
 }
