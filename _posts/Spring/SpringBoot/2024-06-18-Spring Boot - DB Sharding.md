@@ -149,7 +149,8 @@ public class DemoDataSourceRouter extends AbstractRoutingDataSource {
 
 `JPA` 와 `AbstractRoutingDataSource` 를 같이 사용할 경우 `JpaTransactionManager` 의 호환 문제로 인해 추가 설정 없이 `read replica` 분리는 어려우 수 있다.  
 
-아래는 `JpaTransactionManager` 의 `doBegin` 함수인데 `Datasource` 를 가져오는 `beginTransaction` 코드가 `TransactionSynchronizationManager` 의 `ThreadLocal` `readOnly` 값을 수정하는 코드보다 먼저 와있다.  
+`DataSource` 를 가져오는 과정은 `@Transaction` 으로 인한 AOP 로 인하여 정의 함수 실행 전 인터셉터되어 수행된다.  
+아래는 AOP로 수행되는 `JpaTransactionManager` 의 `doBegin` 함수인데 `Datasource` 를 가져오는 `beginTransaction` 코드가 먼저 실행되고, 
 
 ```java
 // JpaTransactionManager.class
@@ -165,13 +166,28 @@ protected void doBegin(Object transaction, TransactionDefinition definition) {
   Object transactionData = getJpaDialect().beginTransaction(em,
       new JpaTransactionDefinition(definition, timeoutToUse, txObject.isNewEntityManagerHolder()));
   txObject.setTransactionData(transactionData);
-  // readOnly 가 여기서 설정됨
-  txObject.setReadOnly(definition.isReadOnly());
   ...
 }
 ```
 
-따라서 `AbstractRoutingDataSource` 에서 `TransactionSynchronizationManager.isCurrentTransactionReadOnly` 메서드를 호출해도 항상 `false` 가 반환된다.  
+`Datasource` 를 가져오고 난 뒤 한참 뒤에 SQL 문을 실행하기 직전 `prepareSynchronization` 를 통해 `readOnly` 를 `true` 로 변경한다.  
+
+```java
+private void prepareSynchronization(DefaultTransactionStatus status, TransactionDefinition definition) {
+  if (status.isNewSynchronization()) {
+    TransactionSynchronizationManager.setActualTransactionActive(status.hasTransaction());
+    TransactionSynchronizationManager.setCurrentTransactionIsolationLevel(
+        definition.getIsolationLevel() != TransactionDefinition.ISOLATION_DEFAULT ?
+            definition.getIsolationLevel() : null);
+    // 여기서 TransactionSynchronizationManager 의 readOnly 를 True 로 설정함
+    TransactionSynchronizationManager.setCurrentTransactionReadOnly(definition.isReadOnly());
+    TransactionSynchronizationManager.setCurrentTransactionName(definition.getName());
+    TransactionSynchronizationManager.initSynchronization();
+  }
+}
+```
+
+JPA 에선 트랜잭션 진입과 동시에 `DataSource` 를 가져오기 위해 `determineCurrentLookupKey` 를 호출하였기 때문에 `TransactionSynchronizationManager.isCurrentTransactionReadOnly()` 는 항상 `false` 로 출력된다.  
 
 이를 해결하기 위한 방법은 아래 3가지.  
 
@@ -179,38 +195,37 @@ protected void doBegin(Object transaction, TransactionDefinition definition) {
 2. `LazyConnectionDataSourceProxy` 사용하기  
    `AbstractRoutingDataSource` 로직을 `@Transaction` 으로 인한 AOP 뒤에 실행되도록 설정하는 방법.  
 3. `JPA` 를 버리고 `JDBC` 사용하기  
-   `JDBC` 에서 사용하는 `DatasourceTransactionManager` 의 경우 위와같은 문제가 발생하지 않음  
+   `JpaTransactionManager` 를 사용하지 않고 `JDBC` 가 사용하는 `DatasourceTransactionManager` 의 경우 실행 직전에 다시 Connection 을 가져옴으로 위와같은 문제가 발생하지 않음.  
 
 ### LazyConnectionDataSourceProxy
 
-`DataSource` 를 가져오는 과정은 `@Transaction` 으로 인한 AOP 로 인하여 정의 함수 실행 전 인터셉터되어 수행된다.  
-
-`@Transcational` 함수 실행 전에 `TransactionManager` 가 해당 메서드를 인터셉터하기 때문에 아래와 같이 함수 내부에서 `ThreadLocal` 에 `DataSource Key` 값을 변경해도 사용할 `DataSource` 가 바뀌지 않는다.  
-
 ```java
-@Transactional // 이미 Routing 과정이 인터셉터로 인해 끝난 상태
-public AccountDto addRandomAccount() {
-    long accountId = System.currentTimeMillis();
-    ThreadLocalDatabaseContextHolder.setById(accountId);
-    AccountEntity accountEntity = new AccountEntity(accountId, RandomTestUtil.generateRandomString(10));
-    accountEntity = accountRepository.save(accountEntity);
-    return toDto(accountEntity);
+@Bean
+@Primary
+public DataSource lazyDataSource(DataSource routingDataSource) {
+    LazyConnectionDataSourceProxy lazyConnectionDataSourceProxy =
+            new LazyConnectionDataSourceProxy(routingDataSource);
+    return lazyConnectionDataSourceProxy;
 }
 ```
 
-정의 함수 실행 전에 `AbstractRoutingDataSource` 로직이 수행되기에 `@Transactional` 진입 전에 `DataSource Key` 선택을 진행해야 한다.  
+`Proxy Connection` 객체를 사용해 실제 `Connection` 을 사용시 `AbstractRoutingDataSource` 를 통해 진짜 `Connection` 객체를 가져오도록 하는 방법이다.  
 
-하지만 컨트롤러 코드에 `ThreadLocalDatabaseContextHolder` 관련 코드가 들어가는것이 부담스러울 수 있고, 위에서 설명했던 `JpaTransactionManager` 호환 문제 떄문에 `AbstractRoutingDataSource` 로직을 정의 함수 안에서 가져오게 설정하고 싶을 수 있다.  
+```java
+// org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy
+@Override
+public Connection getConnection(String username, String password) throws SQLException {
+  checkDefaultConnectionProperties();
+  return (Connection) Proxy.newProxyInstance(
+      ConnectionProxy.class.getClassLoader(),
+      new Class<?>[] {ConnectionProxy.class},
+      new LazyConnectionInvocationHandler(username, password));
+}
+```
 
-이때 `LazyConnectionDataSourceProxy` 한다.  
-
-`TransactionManager` 가 가져가는 `Connection` 객체를 `LazyConnectionDataSourceProxy` 가 생성한 `Proxy Connection` 객체로 대채시켜 반환 시키고,  
-향후 DB SQL 쿼리 요청시 해당 `Connection` 객체를 실제 사용할 때 `DataSource` 에서 진짜 `Connection` 객체를 가져오는 방식을 사용한다.  
-
-그럼 `Proxy Connection` 객체로 인해 실제 `Connection` 을 사용하는 `accountRepository.save` 을 실행할 때 `AbstractRoutingDataSource` 를 통해 진짜 `Connection` 객체를 가져온다.  
-
-대신 `JpaTransactionManager` 는 `Proxy Connection` 객체를 진짜 `Connection` 으로 알고 있기 때문에,  
-이를 `ThreadLocal` 에서 가져다 사용하는 `repository` 메서드들은 계속 `Proxy Connection` 객체를 통해 `Connection` 객체를 가져오게 된다.  
+`JpaTransactionManager` 는 `LazyConnectionDataSourceProxy` 가 만든 `Proxy Connection` 객체를 진짜 `Connection` 으로 알고 있기 때문에 트랜잭션 진입 시점에 전처리 과정을 문제없이 수행하고,  
+향후 `ThreadLocal` 에서 `Connection` 객체를 가져다 사용하는 `repository` 메서드들은 `Proxy Connection` 객체를 통해 실제 `Connection` 객체를 가져오게 된다.  
+이때 `AbstractRoutingDataSource` 로직이 수행되기에 `prepareSynchronization` 가 실행 뒨 후 `AbstractRoutingDataSource` 의 `determineCurrentLookupKey` 메서드가 실행된다.  
 
 ### 데모코드  
 
