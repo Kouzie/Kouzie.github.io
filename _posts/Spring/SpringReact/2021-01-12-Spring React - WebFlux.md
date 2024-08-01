@@ -15,11 +15,24 @@ categories:
 ## 스프링 코어 for Reactive
 
 기존 스프링 MVC 에선 tomcat 기반으로 웹서버를 실행해 왔다.  
-tomcat 의 경우 기본설정된 thread 개수가 200개 정도인데, 이는 동시요청이 200개가 들어오면 http 요청이 block 된다는 뜻이다.  
+
+![springboot_react2](/assets/springboot/springboot_react5.png)  
+
+```conf
+# thread pool 개수
+server.tomcat.threads.max=200
+# connection 큐 개수(사실상 작업 분배용 큐)
+server.tomcat.max-connections=8192
+# request 요청 큐 개수
+server.tomcat.accept-count=100
+```
+
+`Spring Boot embedded tomcat` 의 경우 `default thread` 수가 200개, 이는 동시요청이 200개가 들어오면 http 요청이 block 된다는 뜻이다.  
 
 최근 웹 어플리케이션은 외부API 요청, DB로부터의 CRUD 가 전부인 경우가 많다, 복잡한 `CPU Bound Job` 보다는 외부의존성과 연결을 통해 `IO Bound Job` 이 더 많다는 뜻이다.  
+
 때문에 `멀티스레드 & blocking` 기반으로 동작하는 `tomcat` 은 요청이 몰렸을 때 외부 의존성(DB, API서버) 에 의해 `blocking` 되어 아무런 동작도 하지 않는상태로 대기중인 경우가 많아진다.  
-CPU 사용률을 0% 에 가까워지고 요청이 완료되어 인터럽트가 발생하기만을 기다리게 되버린다.  
+CPU 사용률을 0% 에 가까워지고 요청이 완료되어 콜백 인터럽트가 발생하기만을 기다리게 되버린다.  
 
 이는 파일처리에 대해서도 동일한 문제였기 때문에 1990 년쯤 linux 에서 NIO 기능을 지원하기 시작했고,  
 위와같은 문제를 알고있는 개발자들도 프레임워크에 NIO 기능을 넣어 멀티스레드의 문제점을 해결해줬다.  
@@ -30,11 +43,24 @@ CPU 사용률을 0% 에 가까워지고 요청이 완료되어 인터럽트가 �
 
 `Spring WebFlux` 는 NIO 웹서버인 `Netty` 를 기반으로 2017년 `Spring Framework 5.0` 에 처음 도입되었다.  
 
+Netty 의 경우 이벤트 루프를 처리하는 스레드 풀(CPU core * 2)
+
+```java
+@Bean
+public HttpServer httpServer() {
+    return HttpServer.create()
+            .option(ChannelOption.SO_BACKLOG, 1024) // 동시연결요청 수 default 128, accept-count 역할
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1000 * 10)
+            .requestTimeout(Duration.ofMillis(5000))
+            .runOn(LoopResources.create("custom-loop", 32, true));
+}
+```
+
 ### ReactiveAdapter, ReactiveAdapterRegistry
 
 `RxJava, Reactor` 에서 사용하는 발행자 클래스를 `Publihser` 로 변환해주는 `Adapter` 가 `springframework.core` 에 추가되어 사용 가능해졌다.  
 
-아래처럼 `ReactiveAdapter` 를 상속받아 RxJava Maybe 와 Publisher 간의 변환 작업을 해주는 Adapter 를 작성해서 사용하거나  
+아래처럼 `ReactiveAdapter` 를 상속받아 RxJava `Maybe` 와 `Publisher` 간의 변환 작업을 해주는 Adapter 를 작성해서 사용하거나  
 
 ```java
 @Component
@@ -88,7 +114,7 @@ Flux<DataBuffer> reactiveHamlet = DataBufferUtils.read(
 
 ## WebFlux
 
-`Sprinb Boot 2` 에 리액티브 웹서버를 위한 `WebFlux` 모델을 사용할 수 있도록 `spring-boot-starter-webflux` 라는 새로운 패키지를 추가할 수 있게 되었다.  
+`Sprinb Boot` 에 리액티브 웹서버를 위한 `WebFlux` 모델을 사용할 수 있도록 `spring-boot-starter-webflux` 라는 새로운 패키지를 추가할 수 있게 되었다.  
 
 해당 모듈은 `Reactive Stream Adapter` 위에 구축된며 `Servlet 3.1+ 지원서버(Tomcat, Jetty 등)`, `Netty`, `Undertow` 서버엔진에서 모두 지원한다.  
 
@@ -260,8 +286,6 @@ public class MemberController {
 }
 ```
 
-`Flux` 는 배열, `Mono` 는 객체로 반환된다.  
-
 ### WebFlux - Filter
 
 더이상 서블릿의 `javax.servlet.Filter` 을 사용하지 못한다.  
@@ -269,6 +293,8 @@ public class MemberController {
 필터기능을 하는 방법은 여러가지다.  
 
 #### RouterFunctions  
+
+라우터 기반 구현에서만 동작하는 필터 등록 - `HandlerFilterFunction`
 
 ```java
 @SpringBootApplication
@@ -290,10 +316,24 @@ public class ReactApplication {
 @RequiredArgsConstructor
 class MemberComponent {
     private final MemberRepository memberRepository;
+
     public Mono<ServerResponse> getById(ServerRequest request) {
         return ServerResponse.ok().contentType(MediaType.TEXT_PLAIN)
                 .body(BodyInserters.fromValue(
                        memberRepository.findById(Long.valueOf(request.pathVariable("memberId")))));
+    }
+}
+```
+
+```java
+public class ExampleHandlerFilterFunction implements HandlerFilterFunction<ServerResponse, ServerResponse> {
+
+    @Override
+    public Mono<ServerResponse> filter(ServerRequest request, HandlerFunction<ServerResponse> handlerFunction) {
+        if (request.pathVariable("name").equalsIgnoreCase("test")) {
+            return ServerResponse.status(HttpStatus.FORBIDDEN).build();
+        }
+        return handlerFunction.handle(request);
     }
 }
 ```
@@ -307,27 +347,9 @@ class MemberComponent {
 public class ExampleWebFilter implements WebFilter {
   
     @Override
-    public Mono<Void> filter(ServerWebExchange serverWebExchange, 
-      WebFilterChain webFilterChain) {
-        serverWebExchange.getResponse().getHeaders().add("web-filter", "web-filter-test");
-        return webFilterChain.filter(serverWebExchange);
-    }
-}
-```
-
-#### HandlerFilterFunction
-
-라우터 기반 구현에서만 동작하는 필터 등록
-
-```java
-public class ExampleHandlerFilterFunction implements HandlerFilterFunction<ServerResponse, ServerResponse> {
-
-    @Override
-    public Mono<ServerResponse> filter(ServerRequest request, HandlerFunction<ServerResponse> handlerFunction) {
-        if (request.pathVariable("name").equalsIgnoreCase("test")) {
-            return ServerResponse.status(HttpStatus.FORBIDDEN).build();
-        }
-        return handlerFunction.handle(request);
+    public Mono<Void> filter(ServerWebExchange swe, WebFilterChain chain) {
+        swe.getResponse().getHeaders().add("web-filter", "web-filter-test");
+        return chain.filter(swe);
     }
 }
 ```
@@ -405,7 +427,7 @@ public class GlobalErrorAttributes extends DefaultErrorAttributes {
 해당 핸들러보다 더 높은 우선순위를 가진 핸들러로 에러처리하도록 설정  
 
 ```java
-@Order(-2) // 기본 에러처리는 -1, 보다 빠르게 설정한다.
+@Order(-2) // 기본 에러처리는 -1, 보다 빠르게 설정한다. 404 와 같은 에러도 필터링 가능
 @Component
 public class GlobalErrorWebExceptionHandler extends AbstractErrorWebExceptionHandler {
     // constructors
@@ -433,8 +455,17 @@ public class GlobalErrorWebExceptionHandler extends AbstractErrorWebExceptionHan
 
 ### WebClient  
 
-논블록킹 `Http Client`로 기존 스프링 부트에서 대표적인 `Http Client` 로 `RestTemplate`(블록킹) 이 있다.  
-내부에 `Flux, Mono` 리액터 객체를 지원하는 매핑이 내장되어 있어 리액티브 서버에 잘 어울린다.  
+`WebClient` 는 `reactor.netty.http.client.HttpClient` 를 기반으로 한다.  
+각종 추가설정을 할 수 있으니 참고  
+
+```java
+HttpClient httpClient = HttpClient.create()
+    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000) // 연결 타임아웃
+    .responseTimeout(Duration.ofSeconds(20)); // 응답 타임아웃
+
+return WebClient.builder()
+    .clientConnector(new ReactorClientHttpConnector(httpClient))
+```
 
 `http://localhost:8080/api/user/{id}` url 을 지원하는 간단한 웹서버 생성  
 
@@ -547,6 +578,7 @@ urlBuilder.append("&" + URLEncoder.encode("ny", "UTF-8") + "=" + URLEncoder.enco
 URI uri = new URL(urlBuilder.toString()).toURI();
 ```
 
+
 ## 기타  
 
 ### ListenableFuture
@@ -613,26 +645,12 @@ public final class AsyncAdapters {
 }
 ```
 
-### AsyncRestTemplate  
-
-스프링 리액티브에선 동기방식인 일반 `RestTemplate` 을 사용하지 않고 `AsyncRestTemplate` 를 사용한다.  
-흔히사용하는 `execute` 메서드의 반환값이 `ListenableFuture` 객체이다. 
-
-```java
-@Override
-public <T> ListenableFuture<T> execute(String url, HttpMethod method, AsyncRequestCallback requestCallback,
-        ResponseExtractor<T> responseExtractor, Object... uriVariables) throws RestClientException {
-
-    URI expanded = getUriTemplateHandler().expand(url, uriVariables);
-    return doExecute(expanded, method, requestCallback, responseExtractor);
-}
-```
-
 ### Hooks.onOperatorDebug
 
 디버깅 하기 힘든 Reactive 환경에서 `Hooks.onOperatorDebug()` 를 호출해서 **리액터의 백트레이싱**을 활성화한다.  
 
-아래와 같이 완벽히 동일한 코드에 `Hooks.onOperatorDebug()` 함수만 호출설정한다.  
+아래와 같이 완벽히 동일한 코드에 `elementAt(5)` 를 통해 고의로 `IndexOutOfBoundsException` 예외를 발생시키고 
+첫번째 예제코드에서만 `Hooks.onOperatorDebug()` 호출설정한다.
 
 ```java
 public class ReactorDebuggingExample {
@@ -656,7 +674,6 @@ public class ReactorExample {
         } else {
             source = Flux.just(1, 2, 3, 4).elementAt(5);
         }
-
         source.subscribeOn(Schedulers.parallel()).block(); // lint 18
     }
 }

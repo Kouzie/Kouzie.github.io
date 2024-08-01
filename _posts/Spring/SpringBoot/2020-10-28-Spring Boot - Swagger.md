@@ -141,16 +141,20 @@ public class SpringDocConfig {
                 .title("demo swagger title")
                 .version("demo swagger version")
                 .description("demo swagger description");
+        SecurityScheme apiKey = new SecurityScheme()
+                .type(SecurityScheme.Type.HTTP)
+                .in(SecurityScheme.In.HEADER)
+                .name("Authorization")
+                .scheme("bearer")
+                .bearerFormat("JWT");
+        SecurityRequirement securityRequirement = new SecurityRequirement()
+                .addList("Bearer Token");
+
         return new OpenAPI()
-                .components(new Components())
+                .components(new Components().addSecuritySchemes("Bearer Token", apiKey))
+                .addSecurityItem(securityRequirement)
                 .info(info)
-                .components(new Components().addSecuritySchemes("bearerAuth", new SecurityScheme()
-                        .name("bearerAuth")
-                        .type(SecurityScheme.Type.HTTP)
-                        .scheme("bearer")
-                        .bearerFormat("JWT")))
-                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
-                ;
+                .addSecurityItem(securityRequirement);
     }
 }
 ```

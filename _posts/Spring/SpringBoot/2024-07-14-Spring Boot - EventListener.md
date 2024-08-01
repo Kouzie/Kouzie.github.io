@@ -65,6 +65,7 @@ public class AccountService {
         entity = repository.save(entity);
         log.info("account save end");
         AccountDto result = toDto(entity);
+        // 해당 부분에서 aop 를 통해 handleAccountCreateEvent 메서드가 호출되게됨
         eventPublisher.publishEvent(new AccountCreateEvent(result));
         // if (new Random().nextInt() % 2 == 0)
         //     throw new IllegalArgumentException("temp exception");
@@ -74,7 +75,7 @@ public class AccountService {
 }
 ```
 
-아무리 비동기로 이벤트 처리 스레드를 나누었다 하더라도 `queueCapacity` 를 넘어가는 이벤트가 발생하게되면 결국 `RejectedExecutionException` 이 발생하게된다.  
+아무리 비동기로 이벤트 처리 스레드를 나누었다 하더라도 `theradPool` 의 `queueCapacity` 를 넘어가는 이벤트가 발생하게되면 결국 `RejectedExecutionException` 이 발생하게된다.  
 
 적절한 백프레셔 제한처리나 모니터링/알림 처리를 진행해야한다.  
 

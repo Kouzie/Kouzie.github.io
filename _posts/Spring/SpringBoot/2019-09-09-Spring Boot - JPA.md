@@ -1699,22 +1699,11 @@ public abstract class AbstractPlatformTransactionManager
    `TransactionAspectSupport.cleanupTransactionInfo`
 5. `DataSource` 에 `Connection` 반환  
 
-`@Transactional(readOnly = true)` 설정시 수정요청시 에러를 발생시키도록 하거나 `Hibernate` 의 영속성 플러시 작업을 추가적으로 하지않아 성능을 최적화 할 수 있다.  
-
-의 동작 방식을 최적화하여 성능을 향상시키는 데 도움이 됩니다. 특별한 유형의 연결을 생성하지는 않지만, 읽기 전용 트랜잭션의 이점을 활용하여 데이터베이스와 ORM의 성능을 최적화할 수 있습니다. 이를 통해 데이터 일관성을 보장하고, 읽기 전용 작업의 성능을 극대화할 수 있습니다.
+`readOnly = true` 가 특별한 유형의 연결을 생성하지는 않지만, 읽기 전용 트랜잭션의 이점을 활용하여 ORM의 성능을 최적화할 수 있다.  
+수정요청시 에러를 발생시키도록 하거나 `Hibernate` 의 영속성 플러시 작업을 추가적으로 하지않아 성능을 최적화 할 수 있다.  
+이를 통해 데이터 일관성을 보장하고, 읽기 전용 작업의 성능을 극대화할 수 있다.
 
 `DataSourceTransactionManager` 를 JPA 에서 사용하면 간단한 쿼리는 정상동작 하겠지만 영속성 관리, Lazy loading 등에서 문제가 발생할 수 있음으로 `JpaTransactionManager` 사용을 권장한다.  
-
-#### 지연로딩 with @Transactional
-
-JPA 에선 트랜잭션 내에서 `영속성 컨텍스트`를 유지시킨다.  
-
-보통 `Service` 에서 `@Transactional` 을 사용해 `영속성 컨텍스트`를 생성하고  
-`Controller` 나 외부 컴포넌트에선 `준영속 컨텍스트`가 된다.  
-
-`준영속 컨텍스트`에선 `지연로딩` 사용이 불가능하다.  
-
-지연로딩 기법을 자주 사용한다면 `@Transactional` 사용을 자세하게 설계해야 한다.
 
 #### @Lock, @Version
 
@@ -1976,8 +1965,13 @@ SELECT * FROM performance_schema.metadata_locks;
 spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
 ```
 
-true 의 경우 영속성 컨텍스트의 생존 법위가 스레드의 종료까지 이어진다(REST API 의 Response 완료까지)
+보통 `Service` 에서 `@Transactional` 을 사용해 `영속성 컨텍스트`를 생성하고  
+`Controller` 나 외부 컴포넌트에선 `준영속 컨텍스트`가 될거라 새각하지만  
 
-default true 이기 떄문에 컨트롤러에서 Lazy Loading 을 통해 엔티티를 통해 객체를 찾고 DB 에서 가져올 수 있다.  
+`open-in-view=true` 의 경우 영속성 컨텍스트의 생존 법위가 스레드의 종료까지 이어진다  
+(REST API 의 Response 완료까지)
+`default true` 이기 떄문에 컨트롤러에서 `Lazy Loading` 을 통해 엔티티를 통해 객체를 찾고 DB 에서 가져올 수 있다.  
 
-default false 로 설정하게 되면 Transaction 안에서만 Lazy Loading 을 수행할 수 있고, 컨트롤러 코드에서 접근시 no session 에러가 발생하게 된다.  
+`open-in-view=false` 일 경우 `준영속 컨텍스트`에선 `지연로딩` 사용이 불가능하다.  
+지연로딩 기법을 사용한다면 `@Transactional` 외부에서 영속공간에 접근하는 내용을 제거해야한다.  
+Transaction 안에서만 Lazy Loading 을 수행할 수 있고, 컨트롤러 코드에서 접근시 no session 에러가 발생하게 된다.  
