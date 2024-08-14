@@ -17,6 +17,8 @@ categories:
 > Spring doc : <https://spring.io/projects/spring-security>  
 > <https://spring.io/guides/topicals/spring-security-architecture/>
 
+`Spring Security` 에서 보편적으로 사용하는 설정에 대해 학습한다.  
+
 ![security6](/assets/springboot/springboot_security6.png)
 
 - **AuthenticationFilter(인증 필터)**  
@@ -49,10 +51,6 @@ categories:
 로그인하면 `security session` 을 위한 쿠키가 설정된다.  
 
 ![springboot_security1](/assets/springboot/springboot_security1.png)
-
-## 기본 사용법
-
-`Spring Security` 에서 보편적으로 사용하는 설정에 대해 학습
 
 먼저 간단히 사용할 사용자 클래스 정의
 
@@ -130,8 +128,66 @@ public PasswordEncoder passwordEncoder () {
 }
 ```
 
-`Spring Security` 의 필수 `Bean` 임으로 반드시 생성해야함  
 `BCryptPasswordEncoder` 가 가장 무난하게 사용 가능  
+
+`BCryptPasswordEncoder` 의 경우 자동으로 랜덤한 솔트값을 생성하고 해시값 앞에 salt 값을 붙여 관리한다.  
+
+```txt
+$2a$cost$salt$hash
+cost: 해시 반복 횟수
+salt: 솔트값
+hash: 해시값
+```
+
+#### 해시와 솔트
+
+솔트값 없이 단순 해시함수를 통과한 값을 사용하면 사전에 사용할 수 있는 문자열들을 해시화해 놓고, 그 해시 값을 실제 해시 값과 비교하여 비밀번호를 알아내는 공격인 `레인보우 테이블 공격(Rainbow Table Attack)`에 취약하다.  
+
+솔트값을 사용하더라도 `$2a$cost$salt$hash` 값이 전부 유출되면 `레인보우 테이블` 에 있는 값들은 시간이 걸릴뿐 결국 복호화될 수 있다.  
+
+외부 인증용(서명)으로 해시를 제공하고 솔트값은 내부에서 안전하게 관리하는것을 권장한다.  
+
+솔트값과 해시값을 따로 수동으로 관리하고 싶다면 `Pbkdf2PasswordEncoder` 를 사용해야한다.  
+
+```java
+public class PasswordUtil {
+
+    private static final SecureRandom random = new SecureRandom();
+    // 10,000 iterations, 256-bit hash length
+    private static final int ITERATIONS = 10000;
+    private static final int HASH_LENGTH = 256;
+
+    public static String generateSalt() {
+        byte[] salt = new byte[16];
+        random.nextBytes(salt);
+        return Base64.getEncoder().encodeToString(salt);
+    }
+
+    public static String hashPassword(String rawPassword, String salt) {
+        Pbkdf2PasswordEncoder encoder = new Pbkdf2PasswordEncoder(salt, ITERATIONS, HASH_LENGTH);
+        return encoder.encode(rawPassword);
+    }
+
+    // 비밀번호 검증
+    public static boolean checkPassword(String rawPassword, String encodedPassword, String salt) {
+        Pbkdf2PasswordEncoder encoder = new Pbkdf2PasswordEncoder(salt, ITERATIONS, HASH_LENGTH);
+        return encoder.matches(rawPassword, encodedPassword);
+    }
+}
+
+...
+
+public static void main(String[] args) {
+    String password = "mySecurePassword";
+    // 솔트 생성
+    String salt = SaltUtil.generateSalt();
+    // 비밀번호 해싱
+    String hashedPassword = PasswordUtil.hashPassword(password, salt);
+    // 비밀번호 검증
+    boolean isPasswordValid = PasswordUtil.checkPassword(password, hashedPassword, salt);
+    System.out.println("Is Password Valid: " + isPasswordValid);
+}
+```
 
 ### AuthenticationManager
 
