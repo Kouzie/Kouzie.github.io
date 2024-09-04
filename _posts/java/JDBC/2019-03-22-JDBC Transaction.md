@@ -1,5 +1,5 @@
 ---
-title:  "Java - JDBC Transaction!"
+title:  "Java - JDBC Transaction, ConnectionPool!"
 
 read_time: false
 share: false
@@ -48,8 +48,8 @@ END;
 
 ```
 10    ACCOUNTING    NEW YORK
-20    RESEARCH    DALLAS
-30    SALES    CHICAGO
+20    RESEARCH      DALLAS
+30    SALES         CHICAGO
 40    OPERATIONS    BOSTON
 ```
 
@@ -104,7 +104,7 @@ ORA-06512: at line 1
 첫번째 레코드를 넣을땐 성공적으로 `executeUpdate`가 실행된다.  
 똑같은 기본키를 가진 두번째 레코드를 넣으면 다음과 같이 에러가 발생하게 되고  
 
-당연히 try..catch블럭의 `connection.rollback();`이 수행되면서 들어갔던 첫번째 레코드 또한 취소된다.  
+당연히 `try catch` 블럭의 `connection.rollback();`이 수행되면서 들어갔던 첫번째 레코드 또한 취소된다.  
 
 트랜잭션에서 중요한 코드는 `connection.setAutoCommit(false);`!  
 
@@ -269,11 +269,11 @@ DEPTNO   NUMBER(2)
 
 ## JDBC Connection Pooling, Connection Factory 
 
-데이터베이스의 처리에서 가장 많은 시간을 필요로 하는 부분은 데이터베이스의 로그인 부분이다.  
+데이터베이스의 처리에서 가장 많은 시간을 필요로 하는 부분은 데이터베이스의 연결 부분이다.  
 jdbc 프로그래밍 하다보면 가장 오래걸리는 부분이 `DBConn.getConnection`함수 호출부분이란걸 알 수 있다..  
 
-컨넥션 풀링을 사용하면 미리 연결 해놓고 기다릴 필요 없다.  
-프로그래밍 시작할 때 미리 컨넥션(`Connection`)을 여러 개 개설한 뒤 필요할 때 만들어 둔 컨넥션을 사용하는 기법을 컨넥션 풀링이라 한다.  
+`Connection Pooling` 을 사용하여 미리 연결객체를 만들어놓으면 SQL 쿼리실할때마다 연결할때마다 걸리는 시간을 기다릴 필요 없다.  
+프로그래밍 시작할 때 미리 컨넥션(`Connection`)을 여러 개 개설한 뒤 필요할 때 만들어 둔 컨넥션을 사용하는 기법을 `Connection Polling` 이라 한다.  
 
 빠른 연결을 위한 `Connection Pooling`과 `Connection Factory`를 알아보자.  
 
@@ -321,7 +321,7 @@ MaxConn=10
 앞으로 `~Factory` 라는 클래스가 많은데 대부분 앞에 붙은 객체를 생성해서 반환해주는 클래스이다.  
 
 ```java
-public class PracticeConnFactpry {
+public class PracticeConnFactory {
     public static void main(String[] args) {
         ConnFactory factory = ConnFactory.getDefaultFactory();
         Connection conn = factory.createConnection();
@@ -355,6 +355,13 @@ class ConnFactory{
         }
     }
     private ConnFactory() {}; //싱글톤
+
+    public static ConnFactory getDefaultFactory() {
+        if(connFactory == null)
+            connFactory = new ConnFactory();
+        return connFactory;
+    }
+    
     public Connection createConnection() {
         Connection conn = null;
         try {
@@ -365,11 +372,6 @@ class ConnFactory{
             e.printStackTrace();
         }
         return conn;
-    }
-    public static ConnFactory getDefaultFactory() {
-        if(connFactory == null)
-            connFactory = new ConnFactory();
-        return connFactory;
     }
     private static void loadProperties(String fileName) throws IOException {
         Properties p = new Properties();

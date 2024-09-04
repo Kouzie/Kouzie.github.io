@@ -328,33 +328,33 @@ public static void getAllDeptInfo() throws SQLException
 ```java
 private static void addDept() throws SQLException {
 
-        Statement stmt = null;
-        do {
-            System.out.print("부서명 입력: ");
-            String dname = sc.next(); //부서명 입력
-            System.out.print("지역 입력: ");
-            String loc = sc.next(); //지역 입력
+    Statement stmt = null;
+    do {
+        System.out.print("부서명 입력: ");
+        String dname = sc.next(); //부서명 입력
+        System.out.print("지역 입력: ");
+        String loc = sc.next(); //지역 입력
 
-            sql.append(" INSERT INTO tbl_dept(deptno, dname, loc) ");
-            sql.append(String.format(" VALUES(seq_dept.nextval, '%s', '%s') ", dname, loc));
-            
-            System.out.println(sql.toString());
-            stmt = conn.createStatement();
-            int num = stmt.executeUpdate(sql.toString()); 
+        sql.append(" INSERT INTO tbl_dept(deptno, dname, loc) ");
+        sql.append(String.format(" VALUES(seq_dept.nextval, '%s', '%s') ", dname, loc));
+        
+        System.out.println(sql.toString());
+        stmt = conn.createStatement();
+        int num = stmt.executeUpdate(sql.toString()); 
 
-            System.out.println(num + "개부서 입력 완료!");
-            System.out.println("계속 하시겠습니까? Y/N");
-            try {
-                _conntinue = (char) System.in.read();
-                System.in.skip(System.in.available());
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            sql.setLength(0);
-        } while (Character.toUpperCase(_conntinue) == 'Y');
-        stmt.close();
-    }
+        System.out.println(num + "개부서 입력 완료!");
+        System.out.println("계속 하시겠습니까? Y/N");
+        try {
+            _conntinue = (char) System.in.read();
+            System.in.skip(System.in.available());
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        sql.setLength(0);
+    } while (Character.toUpperCase(_conntinue) == 'Y');
+    stmt.close();
+}
 ```
 
 입출력값  

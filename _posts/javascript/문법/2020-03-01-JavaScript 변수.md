@@ -211,6 +211,8 @@ console.log(z); // ReferenceError: z is not defined
 - `dynamic scope`: 함수 호출시점에 상위 스코프 결정  
 - `lexical scope`: `static scope` 라 하기도 하며 함수 정의 위치에 따라 상위 스코프 결정  
 
+JS 는 `lexical scope` 이고 대부분의 언어가 `lexical scope` 이다.  
+
 ```js
 var x = 1;
 
@@ -227,9 +229,7 @@ foo() // 1
 bar() // 1
 ```
 
-`bar` 는 `foo` 의 중첩함수가 아니기에 상위 스코프는 `global scope`  
-JS 는 `lexical scope` 임으로 `global scope` 의 x 를 참조한다.  
-
+`bar` 의 정의위치가 `foo` 의 내부(중첩함수)가 아니기에 상위 스코프는 `global scope`, 가장 외부의 x 를 참조한다.  
 
 ## 변수 키워드
 
