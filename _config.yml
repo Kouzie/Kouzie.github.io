@@ -96,14 +96,14 @@ author:
   name             : "Kouzie"
   avatar           : # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
   bio              : "배운것들 정리하는 블로그"
-  location         : "Pangyo"
+  location         : 
   email            :
   links:
     - label: "Email"
       icon: "fas fa-fw fa-envelope-square"
       url: mailto:rhwldyd1996@gmail.com
     - label: "GitHub"
-      icon: "fab fa-fw fa-github"
+      icon: "fab fa-fw fa-github" 
       url: "https://github.com/Kouzie/"
 
 # Site Footer

@@ -23,15 +23,19 @@ categories:
 
 - **AuthenticationFilter(인증 필터)**  
   Spring Security 백본, 전반적인 HTTP 요청을 처리, 하위 Security 객체들과 협력하여 인증처리를 진행한다.  
+  최종적으로 `Authentication` 인증객체를 수신받아 관리하고 `UsernamePasswordAuthenticationToken` 도 그중 하나.  
   아래 SecurityFilterChain 그림에서 Filter Chain 확인  
 - **AuthenticationManager(인증 매니저)**  
   사용자 신원 확인하는 핵심 구성요소.  
+  `providerManager` 는 `AuthenticationManager` 의 구현체  
 - **AuthenticationProvider(인증 제공자)**  
-  AuthenticationManager 의 요청을 수행하는 클래스들, `[DB, LDAP, JWT]` 등 여러 `AuthenticationProvider` 정의가 가능하다.  
+  `AuthenticationManager` 의 요청을 수행하는 클래스, `AuthenticationManager` 에 등록되어 인증을 수행한다.  
+  `[DB, LDAP, JWT]` 등 여러 `AuthenticationProvider` 정의가 가능하다.  
 - **UserDetailsService**
-  인증자의 세부정보를 검색하는 인터페이스, AuthenticationProvider 와 협력하여 인증자의 세부정보 DB 등으로부터 가져옴.  
-- **UserDetails, User**
-  인증자의 신원객체
+  인증자의 세부정보를 검색하는 인터페이스, 빈 객체로 존재할 경우 `DaoAuthenticationProvider` 가 조건에 의해 생성됨.  
+  `DaoAuthenticationProvider` 가 `UserDetailsService` 를 통해 사용자 검색 및 `Authentication` 인증객체를 생성.  
+  - **UserDetails, User**
+    인증자의 신원객체
 
 
 ```xml
@@ -51,6 +55,473 @@ categories:
 로그인하면 `security session` 을 위한 쿠키가 설정된다.  
 
 ![springboot_security1](/assets/springboot/springboot_security1.png)
+
+
+### PasswordEncoder
+
+`PasswordEncoder`를 통해 해시 인코딩 후 비교  
+
+```java
+@Bean
+public PasswordEncoder passwordEncoder () {
+    return new BCryptPasswordEncoder();
+}
+```
+
+`BCryptPasswordEncoder` 가 가장 무난하게 사용 가능, 특징은 아래와 같다.  
+
+- 코스트 팩터(WorkFacfor) 를 사용해 해싱 반복  
+- 항상 랜덤한 솔트값을 생성하고 해시값 앞에 salt 값을 붙여 관리한다  
+- slow hashing 을 통해 고의적으로 느리계 해시값을 출력해 무작위 대입을 방지  
+
+```txt
+$2a$cost$salt&hash
+cost: 해시 반복 횟수
+salt: 솔트값
+hash: 해시값
+
+$2a$10$vQlFworGFqSGg/i7CSxYSunD2RQw4aYJHe8KNlVf0HP3MzstXxXyG
+2a - BCrypt 버전 정보
+vQlFworGFqSGg/i7CSxYSu - 솔트값, 첫 22자리(16byte salt) 값
+nD2RQw4aYJHe8KNlVf0HP3MzstXxXyG - 해시값
+```
+
+솔트값 없이 단순 해시함수를 통과한 값을 사용하면 사전에 사용할 수 있는 문자열들을 해시화해 놓고, 그 해시 값을 실제 해시 값과 비교하여 비밀번호를 알아내는 공격인 `레인보우 테이블 공격(Rainbow Table Attack)`에 취약하다.  
+
+솔트값을 사용하더라도 `$2a$cost$salt&hash` 값이 전부 유출되면 `레인보우 테이블` 에 있는 값들은 시간이 걸릴뿐 결국 복호화될 수 있다.  
+
+이미 유출되었던 데이터(전화번호, 주민번호, 이름) 등을 관리할 때에는 외부 인증용(서명)으로 해시를 제공하고 솔트값은 내부에서 안전하게 관리하는것을 권장한다.  
+
+### DelegatingPasswordEncoder
+
+`DelegatingPasswordEncoder` 를 사용하면 다양한 `PasswordEncoder` 구현체를 동시에 사용할 수 있다.  
+
+- `BCryptPasswordEncoder`
+- `Pbkdf2PasswordEncoder`
+- `SCryptPasswordEncoder`
+- `Argon2PasswordEncoder`
+
+```java
+private static final int ITERATIONS = 10000;
+private static final int HASH_LENGTH = 256;
+private static final SecureRandom random = new SecureRandom();
+private static byte[] salt = new byte[16];
+
+static {
+    random.nextBytes(salt);
+    Base64.getEncoder().encodeToString(salt);
+}
+
+@Bean
+public DelegatingPasswordEncoder delegatingPasswordEncoder() {
+    Map encoders = new HashMap<>();
+    encoders.put("bcrypt", new BCryptPasswordEncoder());
+    encoders.put("pbkdf2", new Pbkdf2PasswordEncoder(new String(salt), ITERATIONS, HASH_LENGTH, PBKDF2WithHmacSHA256));
+    encoders.put("sha256", new StandardPasswordEncoder());
+    return new DelegatingPasswordEncoder("bcrypt", encoders);
+}
+
+public static String hashPbkdf2Password(String rawPassword, String salt) {
+    Pbkdf2PasswordEncoder encoder = new Pbkdf2PasswordEncoder(new String(salt), ITERATIONS, HASH_LENGTH, PBKDF2WithHmacSHA256);
+    return encoder.encode(rawPassword);
+}
+
+// 비밀번호 검증
+public static boolean checkPbkdf2Password(String rawPassword, String encodedPassword, String salt) {
+    Pbkdf2PasswordEncoder encoder = new Pbkdf2PasswordEncoder(salt, ITERATIONS, HASH_LENGTH, PBKDF2WithHmacSHA256);
+    return encoder.matches(rawPassword, encodedPassword);
+}
+```
+
+일반적으로 password 해싱에는 BCrypt 를 사용하고 그외 표준 해싱 방식을 사용해야할 경우 다른 알고리즘을 사용하는 편이다.  
+
+### EnableWebSecurity
+
+`Spring Security` 는 `DSL` 형식의 언어로 구성이 가능하며  
+자주 사용하는 설정은 아래와 같다.  
+
+```java
+@Slf4j
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+public class RestSecurityConfig {
+
+    @Bean
+    @Order(1)
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable) // CSRF 보호 비활성화
+                .cors(AbstractHttpConfigurer::disable) // CORS 비활성화
+                .httpBasic(AbstractHttpConfigurer::disable) // HTTP Basic 로그인 비활성화
+                .formLogin(AbstractHttpConfigurer::disable) // Form Login 비활성화
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 관리 비활성화
+                .authorizeHttpRequests(auths -> auths
+                        .requestMatchers("/boards/random").hasAnyRole("BASIC", "MANAGER")
+                        .requestMatchers("/boards/list").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(authenticationEntryPoint())
+                        .accessDeniedHandler(accessDeniedHandler())
+                );
+        return http.build();
+    }
+
+    @Bean
+    @Order(2)
+    public SecurityFilterChain jwtSecurityFilterChain(HttpSecurity http) throws Exception {
+        http.addFilterBefore(new JwtFilter(), UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
+        return http.build();
+    }
+
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring() // 해당 경로는 보안 필터를 완전히 무시
+                .requestMatchers("/auth/login_demo")
+                .requestMatchers("/error")
+                .requestMatchers("/h2-console/**");
+    }
+
+    private AuthenticationEntryPoint authenticationEntryPoint() {
+        return new AuthenticationEntryPoint() {
+            @Override
+            public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            }
+        };
+    }
+
+    private AccessDeniedHandler accessDeniedHandler() {
+        return new AccessDeniedHandler() {
+            @Override
+            public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            }
+        };
+    }
+}
+```
+
+> XSS(Cross-site Scripting): 악성 스크립트가 담긴 게시물을 올린 뒤 사용자나 관리자가 해당 게시글을 읽으면서 악성 스크립트 실행, 세션탈취, 쿠키탈취 등의 동작을 수행  
+> CSRF(Cross-site Request Forgery): XSS 와 동일하게 사용자가 악성 스크립트를 실행하도록 함, 웹사이트에 의도치 않은 요청을 수행하도록 함
+> CSRF 토큰을 통해 세션내에서 요청/응답을 주고 받을 때 해당 토큰을 추적하여 CSRF 공격을 방지한다.  
+
+`WebSecurity ignoring` 과 `HttpSecurity permitAll` 의 차이는 `SecurityFilterChain` 을 거치는지 아닌지 차이  
+인증, 인가 모두 필요없는 리소스의 경우 `WebSecurity ignoring` 사용이 성능상 유리하다.  
+인증은 필요하지만 인가는 필요없는 경우 `HttpSecurity permitAll` 를 사용하면 된다.  
+
+위 설정처럼 `antMatchers("...").hasAnyRole("...")` 접근제한이 가능하지만  
+메서드에 어노테이션을 지정하는 것으로도 접근제한이 가능하다.  
+
+`@EnableMethodSecurity` 어노테이션 설정, 다른 클래스에서도 시큐리티 어노테이션을 사용할 수 있도록 설정한다.  
+
+### SecurityFilterChain
+
+`@EnableWebSecurity` 사용과 동시에 기본적으로 `SecurityFilterChain` 빈 객체가 생성되고,  
+그림과 같이 `Spring Security Filter` 내부 수많은 `Filter` 들이 객체요청에 대응한다.  
+
+![security7](/assets/springboot/springboot_security7.png)
+
+아무것도 설정하지 않고 `spring-boot-starter-security` 의존성만 넣었을 때 적용되는 `HttpSecurity` 의 설정은 아래와 같다.  
+
+```java
+@Configuration(proxyBeanMethods = false)
+public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAware {
+    ...
+    @Bean(name = AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME)
+    public Filter springSecurityFilterChain() throws Exception {
+        boolean hasFilterChain = !this.securityFilterChains.isEmpty();
+        if (!hasFilterChain) {
+            this.webSecurity.addSecurityFilterChainBuilder(() -> {
+                this.httpSecurity.authorizeHttpRequests((authorize) -> authorize.anyRequest().authenticated());
+                this.httpSecurity.formLogin(Customizer.withDefaults());
+                this.httpSecurity.httpBasic(Customizer.withDefaults());
+                return this.httpSecurity.build();
+            });
+        }
+        for (SecurityFilterChain securityFilterChain : this.securityFilterChains) {
+            this.webSecurity.addSecurityFilterChainBuilder(() -> securityFilterChain);
+        }
+        for (WebSecurityCustomizer customizer : this.webSecurityCustomizers) {
+            customizer.customize(this.webSecurity);
+        }
+        return this.webSecurity.build();
+    }
+
+}
+```
+
+- `formLogin`: 세션기반 로그인  
+  - UsernamePasswordAuthenticationFilter
+  - 아래에서 소개할 UserDetailService 와 연동  
+- `httpBasic`: Basic 헤더 기반 인증  
+  - BasicAuthenticationFilter
+
+위 `@EnableWebSecurity` 설정에선 2개 `SecurityFilterChain` 을 등록하였는데, 여러 개의 `SecurityFilterChain이` 정의된 경우, 각 요청은 여러 필터 체인 중에서 가장 적합한 하나에 의해 처리된다, `/api/**` 과 같은 패턴매칭, 정확한 일치(Exact Match) 이 있으며 정확한 일치`SecurityFilterChain` 을 우선으로 찾는다.  
+
+실제 `Spring Security Filter` 에 등록된 `Filter` 들을 출력하면 아래와 같다.  
+
+```java
+private final FilterChainProxy filterChainProxy;
+
+@PostConstruct
+public void printSecurityFilters() {
+    List<SecurityFilterChain> filterChains = filterChainProxy.getFilterChains();
+    for (SecurityFilterChain chain : filterChains) {
+        var filters = chain.getFilters();
+        System.out.println("Security Filter Chain: " + chain);
+        for (var filter : filters) {
+            System.out.println(filter.getClass());
+        }
+    }
+}
+/* 
+class org.springframework.security.web.session.DisableEncodeUrlFilter
+class org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter
+class org.springframework.security.web.context.SecurityContextHolderFilter
+class org.springframework.security.web.header.HeaderWriterFilter
+class org.springframework.web.filter.CorsFilter
+class org.springframework.security.web.csrf.CsrfFilter
+class org.springframework.security.web.authentication.logout.LogoutFilter
+class org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+class org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter
+class org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter
+class org.springframework.security.web.authentication.www.BasicAuthenticationFilter
+class org.springframework.security.web.savedrequest.RequestCacheAwareFilter
+class org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter
+class org.springframework.security.web.authentication.AnonymousAuthenticationFilter
+class org.springframework.security.web.access.ExceptionTranslationFilter
+class org.springframework.security.web.access.intercept.AuthorizationFilter
+*/
+```
+
+`AuthorizationFilter` 에서 최종적으로 `Spring Security Context` 에 저장되어 있는 `Authentication` 객체를 확인, URL 등과 매칭 후 `AccessDeniedException(401)` 에러를 발생시킨다.  
+
+`ExceptionTranslationFilter` 에는 예외를 처리할 수 있는 핸들러 함수를 사용해 에러를 조치한다(redirect OR error reponse)
+
+```java
+@Bean
+@Order(1)
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+        .securityMatcher("/auth/**") // URL 패턴 매칭
+        .csrf(AbstractHttpConfigurer::disable) // CSRF 보호 비활성화
+        .cors(AbstractHttpConfigurer::disable) // CORS 비활성화
+        ...
+    return http.build();
+}
+
+@Bean
+@Order(2)
+public SecurityFilterChain jwtSecurityFilterChain(HttpSecurity http) throws Exception {
+    
+    http.addFilterBefore(new JwtFilter(), UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
+    http.securityMatcher("/api/**") 
+    ...
+    return http.build();
+}
+```
+
+여러개 SecurityFilterChain 존재하더라도 하나의 요청이 모든 Filter Chain 을 거치진 않는다.  
+
+- FilterChainProxy가 요청을 받고 리스트 형태로 관리하는 SecurityFilterChain 중 요청 URL 패턴과 매칭되는 하나의 SecurityFilterChain를 선택한다.  
+- URL 패턴 매칭이 여러개 될 경우 우선순위에 따라 첫번째 SecurityFilterChain 를 매칭한다.  
+  - Order 가 낮을수록 우선순위가 높음
+
+대부분의 `Filter` 에서 `filterChain.doFilter(request, response)` 함수를 호출한다.  
+아래는 사용자 로그인요청을 수행하는 `UsernamePasswordAuthenticationFilter` 의 부모클래스인 `AbstractAuthenticationProcessingFilter`  
+
+주석의 경우 `UsernamePasswordAuthenticationFilter` 에서 실행하는 doFilter 의 동작을 설명.  
+
+```java
+public class AbstractAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
+    private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        if (!requiresAuthentication(request, response)) {
+            // 로그인 요청 url 이 아니라면
+            chain.doFilter(request, response);
+            return;
+        }
+        try {
+            // UsernamePasswordAuthenticationFilter의 인증 프로세스 수행
+            Authentication authenticationResult = attemptAuthentication(request, response);
+            if (authenticationResult == null) {
+                // 로그인 실패시 filter 종료
+                return;
+            }
+            this.sessionStrategy.onAuthentication(authenticationResult, request, response);
+            // 로그인 성공, 이후 filter 들 수행
+            if (this.continueChainBeforeSuccessfulAuthentication) {
+                chain.doFilter(request, response);
+            }
+            //
+            successfulAuthentication(request, response, chain, authenticationResult);
+        }
+        catch (InternalAuthenticationServiceException failed) {
+            this.logger.error("An internal error occurred while trying to authenticate the user.", failed);
+            unsuccessfulAuthentication(request, response, failed);
+        }
+        catch (AuthenticationException ex) {
+            // Authentication failed
+            unsuccessfulAuthentication(request, response, ex);
+        }
+    }
+}
+```
+
+`filterChain.doFilter` 를 사용하는 경우와 사용하지 않는 경우는 아래와 같다.  
+
+- 사용하는 경우  
+  - 다음 필터로 요청을 전달: 요청이 필터 체인을 따라 다음 필터로 전달. 최종적으로 서블릿 또는 컨트롤러에 도달할 수 있도록함, 대부분의 필터에서는 요청을 중단하지 않고, 다른 필터가 요청을 처리할 수 있도록 이 메서드를 호출한다.  
+- 사용하지 않는 경우
+  - 보안 검증 실패 시: 인증이 실패하거나 사용자 권한이 부족한 경우, 필터에서 응답을 직접 처리하고 필터 체인을 중단한다. 이 경우 필터에서 최종 응답을 생성하고 요청을 끝낸다. 데이터를 직접 반환하거나 특정 경로로 리디렉션한다.  
+
+### AuthenticationManager
+
+`AuthenticationManager` 는 인증객체를 검증하는 하는 `AuthenticationProvider` 객체를 관리하는 클래스, 빈으로 관리되며 여러개의 `SecurityFilterChain` 에서 사용된다.  
+
+여러개의 `SecurityFilterChain` 에 각각의 `AuthenticationProvider` 를 설정할 수 도 있다.  
+
+```java
+// 첫 번째 필터 체인 (API 경로 처리)
+@Bean
+public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
+    http.securityMatcher("/api/**")
+        .authenticationProvider(apiAuthenticationProvider()) // 특정 Provider 사용
+        .authorizeHttpRequests(authorize -> 
+            authorize.anyRequest().hasRole("API_USER")
+        )
+        .httpBasic();
+    return http.build();
+}
+
+// 두 번째 필터 체인 (Admin 경로 처리)
+@Bean
+public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
+    http.securityMatcher("/admin/**")
+        .authenticationProvider(adminAuthenticationProvider()) // 특정 Provider 사용
+        .authorizeHttpRequests(authorize -> 
+            authorize.anyRequest().hasRole("ADMIN")
+        )
+        .formLogin();
+    return http.build();
+}
+```
+
+인증을 수행하는 `Spring Security Filter` 에서 `AuthenticationManager` 에게 `Authentication` 인증객체를 전달하면 알맞는 `AuthenticationProvider` 객체를 찾아 인증을 수행하고 반환한다.  
+
+아래는 `Spring Security` 의 `AuthenticationManager` 기본 구현객체인 `ProviderManager` 가 `Authentication` 인증객체에 맞는 `AuthenticationProvider` 를 찾아 인증을 수행하는 코드.  
+
+`AuthenticationProvider` 객체는 순서에 맞춰 `iterator` 형태로 묶여있다.
+
+```java
+public interface AuthenticationManager {
+    Authentication authenticate(Authentication authentication) throws AuthenticationException;
+}
+public class ProviderManager implements AuthenticationManager, MessageSourceAware, InitializingBean {
+    ...
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        ...
+        Iterator var9 = this.getProviders().iterator();
+
+        while(var9.hasNext()) {
+            AuthenticationProvider provider = (AuthenticationProvider)var9.next();
+            Class<? extends Authentication> toTest = authentication.getClass();
+            ...
+            // provider 가 Authentication 인증객체를 지원하는지 확인
+            if (provider.supports(toTest)) {
+                ...
+                try {
+                    // 인증 수행
+                    result = provider.authenticate(authentication);
+                    if (result != null) {
+                        this.copyDetails(authentication, result);
+                        break;
+                    }
+                    ...
+                } catch (AuthenticationException var15) {
+                    AuthenticationException ex = var15;
+                    lastException = ex;
+                }
+            }
+        }
+        // 해당 AuthenticationManager 에서 인증객체를 찾을 수 없다면  
+        // 이전 SecurityFilterChain 에 등록된 AuthenticationManager 에서 인증을 수행
+        if (result == null && this.parent != null) {
+            try {
+                parentResult = this.parent.authenticate(authentication);
+                result = parentResult;
+            } catch (AuthenticationException var13) {
+                parentException = var13;
+                lastException = var13;
+            }
+        }
+
+    }
+}
+```
+
+`Spring Security Filter` 과 `AuthenticationManager` 가 여러개일 경우 `@Order` 순서에 맞춰 parent, child 관계를 맺으며 `AuthenticationProvider` 를 공유한다.  
+
+`BasicAuthenticationFilter` 에서 `Http Request` 의 인증을 `AuthenticationManager` 를 통해 수행하는 코드  
+
+```java
+// BasicAuthenticationFilter
+@Override
+protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+        throws IOException, ServletException {
+    try {
+        // UsernamePasswordAuthenticationToken 으로 convert
+        Authentication authRequest = this.authenticationConverter.convert(request);
+        ...
+        String username = authRequest.getName();
+        if (authenticationIsRequired(username)) {
+            // UsernamePasswordAuthenticationToken 인증객체를 알맞는 AuthenticationProvider 를 찾아서 인증을 수행한다.  
+            Authentication authResult = this.authenticationManager.authenticate(authRequest);
+            SecurityContext context = this.securityContextHolderStrategy.createEmptyContext();
+            context.setAuthentication(authResult);
+            this.securityContextHolderStrategy.setContext(context);
+            if (this.logger.isDebugEnabled()) {
+                this.logger.debug(LogMessage.format("Set SecurityContextHolder to %s", authResult));
+            }
+            this.rememberMeServices.loginSuccess(request, response, authResult);
+            this.securityContextRepository.saveContext(context, request, response);
+            onSuccessfulAuthentication(request, response, authResult);
+        }
+    }
+    catch (AuthenticationException ex) {
+        this.securityContextHolderStrategy.clearContext();
+        this.logger.debug("Failed to process authentication request", ex);
+        this.rememberMeServices.loginFail(request, response);
+        onUnsuccessfulAuthentication(request, response, ex);
+        if (this.ignoreFailure) {
+            chain.doFilter(request, response);
+        }
+        else {
+            this.authenticationEntryPoint.commence(request, response, ex);
+        }
+        return;
+    }
+
+    chain.doFilter(request, response);
+}
+```
+
+### AuthenticationProvider, UserDetailsService
+
+`AuthenticationManagr` 를 직접 정의하는 방식을 제한적인 환경(제공받은 메서드로만 구성해야함)으로 인해 잘 사용하지 않는다.  
+위와 같이 테스트용도로 inMemory, jdbc SQL 를 직접 정의하여 사용할 때에나 사용한다.  
+
+대부분 `AuthenticationProvider` 만을 Bean 으로 등록하고 `AuthenticationManager` 에서 자동으로 사용되도록 한다.  
+
+사용자 테이블로 부터 커스텀하게 로그인처리를 구현하는 경우가 많아 `UserDetailService` 를 사용해서 `AuthenticationProvider` 를 구성한다.  
+
+![security7](/assets/springboot/springboot_security5.png)
+
+> `DaoAuthenticationProvider` 가 `UserDetailService` 를 기반으로 만들어진 객체임.  
+
 
 먼저 간단히 사용할 사용자 클래스 정의
 
@@ -82,194 +553,6 @@ public class MemberRole {
     private String roleName;
 }
 ```
-
-### WebSecurityConfigurerAdapter
-
-`Spring Security` 사용을 알리는 java config 객체  
-
-```java
-@EnableWebSecurity
-public class SessionSecurityConfig extends WebSecurityConfigurerAdapter {
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        super.configure(http);
-    }
-}
-```
-
-정의와 동시에 그림과 같은 수많은 `SecurityFilterChain` 이 요청-응답사이에 들어간다.  
-
-![security7](/assets/springboot/springboot_security7.png)
-
-아무것도 설정하지 않고 `spring-boot-starter-security` 의존성만 넣었을 때 적용되는 `HttpSecurity` 의 설정은 아래와 같다.  
-
-```java
-protected void configure(HttpSecurity http) throws Exception {
-    this.logger.debug("Using default configure(HttpSecurity). "
-            + "If subclassed this will potentially override subclass configure(HttpSecurity).");
-    http.authorizeRequests((requests) -> requests.anyRequest().authenticated());
-    http.formLogin();
-    http.httpBasic();
-}
-```
-
-기본적으로 모든 `request` 에 `security filter chain` 이 적용되고  
-세션기반의 로그인  `formLogin`, `httpBasic` 방식이 들어가는 `security` 필터가 설정된다.  
-
-### PasswordEncoder
-
-`PasswordEncoder`를 통해 해시 인코딩 후 비교  
-
-```java
-@Bean
-public PasswordEncoder passwordEncoder () {
-    return new BCryptPasswordEncoder();
-}
-```
-
-`BCryptPasswordEncoder` 가 가장 무난하게 사용 가능  
-
-`BCryptPasswordEncoder` 의 경우 자동으로 랜덤한 솔트값을 생성하고 해시값 앞에 salt 값을 붙여 관리한다.  
-
-```txt
-$2a$cost$salt$hash
-cost: 해시 반복 횟수
-salt: 솔트값
-hash: 해시값
-```
-
-#### 해시와 솔트
-
-솔트값 없이 단순 해시함수를 통과한 값을 사용하면 사전에 사용할 수 있는 문자열들을 해시화해 놓고, 그 해시 값을 실제 해시 값과 비교하여 비밀번호를 알아내는 공격인 `레인보우 테이블 공격(Rainbow Table Attack)`에 취약하다.  
-
-솔트값을 사용하더라도 `$2a$cost$salt$hash` 값이 전부 유출되면 `레인보우 테이블` 에 있는 값들은 시간이 걸릴뿐 결국 복호화될 수 있다.  
-
-외부 인증용(서명)으로 해시를 제공하고 솔트값은 내부에서 안전하게 관리하는것을 권장한다.  
-
-솔트값과 해시값을 따로 수동으로 관리하고 싶다면 `Pbkdf2PasswordEncoder` 를 사용해야한다.  
-
-```java
-public class PasswordUtil {
-
-    private static final SecureRandom random = new SecureRandom();
-    // 10,000 iterations, 256-bit hash length
-    private static final int ITERATIONS = 10000;
-    private static final int HASH_LENGTH = 256;
-
-    public static String generateSalt() {
-        byte[] salt = new byte[16];
-        random.nextBytes(salt);
-        return Base64.getEncoder().encodeToString(salt);
-    }
-
-    public static String hashPassword(String rawPassword, String salt) {
-        Pbkdf2PasswordEncoder encoder = new Pbkdf2PasswordEncoder(salt, ITERATIONS, HASH_LENGTH);
-        return encoder.encode(rawPassword);
-    }
-
-    // 비밀번호 검증
-    public static boolean checkPassword(String rawPassword, String encodedPassword, String salt) {
-        Pbkdf2PasswordEncoder encoder = new Pbkdf2PasswordEncoder(salt, ITERATIONS, HASH_LENGTH);
-        return encoder.matches(rawPassword, encodedPassword);
-    }
-}
-
-...
-
-public static void main(String[] args) {
-    String password = "mySecurePassword";
-    // 솔트 생성
-    String salt = SaltUtil.generateSalt();
-    // 비밀번호 해싱
-    String hashedPassword = PasswordUtil.hashPassword(password, salt);
-    // 비밀번호 검증
-    boolean isPasswordValid = PasswordUtil.checkPassword(password, hashedPassword, salt);
-    System.out.println("Is Password Valid: " + isPasswordValid);
-}
-```
-
-### AuthenticationManager
-
-`AuthenticationManager` 는 사용자 인증을 담당하는 클래스로 `Spring Security Filter` 에서 반드시 거쳐야할 클래스  
-
-단순 테스트용도로 `inMemoryAuthentication` 으로 사용자를 정의해서 로그인시 사용할 수 있다.  
-
-간단히 DB 연동을 통해 로그인처리를 해야한다면 `jdbcAuthentication` 으로 사용자를 검색해서 사용할 수 있다.  
-
-
-아래는 `inMemoryAuthentication`, `jdbcAuthentication` 을 사용해 `AuthenticationManager` 를 생성하는 예
-
-```java
-@EnableWebSecurity
-public class SessionSecurityConfig extends WebSecurityConfigurerAdapter {
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-                .withUser(User.withUsername("user").password(passwordEncoder.encode("user")).roles("BASIC"))
-                .withUser(User.withUsername("admin").password(passwordEncoder.encode("admin")).roles("BASIC", "ADMIN"));
-    }
-}
-```
-
-```java
-@EnableWebSecurity
-public class SessionSecurityConfig extends WebSecurityConfigurerAdapter {
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private DataSource datasource;
-
-    @Autowired
-    private MemberRepository memberRepository;
-
-    @PostConstruct
-    private void init() {
-        if (memberRepository.findByUname("basic").isEmpty()) {
-            memberRepository.save(new Member("basic", passwordEncoder.encode("basic"), "BASIC"));
-        }
-        if (memberRepository.findByUname("manager").isEmpty()) {
-            memberRepository.save(new Member("manager", passwordEncoder.encode("manager"), "MANAGER"));
-        }
-        if (memberRepository.findByUname("admin").isEmpty()) {
-            memberRepository.save(new Member("admin", passwordEncoder.encode("admin"), "ADMIN"));
-        }
-    }
-
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        //enable 은 해당 계정 사용가능 여부
-        String query1 = "SELECT uid username, upw password, true enabled FROM tbl_members WHERE uname = ?";
-        String query2 = "SELECT uid, role_name role FROM tbl_member_role WHERE uid = ?";
-        auth.jdbcAuthentication()
-                .dataSource(datasource)
-                .usersByUsernameQuery(query1)
-                .authoritiesByUsernameQuery(query2)
-                .rolePrefix("ROLE_");
-    }
-}
-```
-
-> 검색된 쿼리 결과의 칼럼 순서, alias 명 모두 중요하니 주의
-
-### AuthenticationProvider, UserDetailsService
-
-`AuthenticationManagr` 를 직접 정의하는 방식을 제한적인 환경(제공받은 메서드로만 구성해야함)으로 인해 잘 사용하지 않는다.  
-위와 같이 테스트용도로 inMemory, jdbc SQL 를 직접 정의하여 사용할 때에나 사용한다.  
-
-대부분 `AuthenticationProvider` 만을 Bean 으로 등록하고 `AuthenticationManager` 에서 자동으로 사용되도록 한다.  
-
-사용자 테이블로 부터 커스텀하게 로그인처리를 구현하는 경우가 많아 `UserDetailService` 를 사용해서 `AuthenticationProvider` 를 구성한다.  
-
-![security7](/assets/springboot/springboot_security5.png)
-
-> `DaoAuthenticationProvider` 가 `UserDetailService` 를 기반으로 만들어진 객체임.   
 
 ```java
 @Service
@@ -404,68 +687,329 @@ public UsernamePasswordAuthenticationToken(Object principal, Object credentials,
 
 `DaoAuthenticationProvider` 는 `UserDetailService` 로부터 `UsernamePasswordAuthenticationToken` 의 `username` 을 사용해 사용자를 검색하고 `password` 를 비교해서 인증을 수행한다.  
 
-### Spring Security configure
+### AuthenticationEntryPoint
 
-`Spring Security` 는 `DSL` 형식의 언어로 구성이 가능하며  
-자주 사용하는 설정은 아래와 같다.  
+401, 403 에러와 같이 비인가 요청을 처리하기 위한 객체.  
 
 ```java
-@EnableWebSecurity
-@EnableGlobalMethodSecurity
-public class SessionSecurityConfig extends WebSecurityConfigurerAdapter {
+package org.springframework.security.web;
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-            .csrf().disable()
-            .antMatchers("/boards/list").permitAll() // 모든 사용자 허용
-            .antMatchers("/boards/register").hasAnyRole("MANAGER", "ADMIN"); // Role 가진 사용자 허용
-            .anyRequest().authenticated() // 모든 요청은 인증받은 사용자만 허용
-            .exceptionHandling() // 예외처리 시작
-            .authenticationEntryPoint(authenticationEntryPoint()) // 인증 예외
-            .accessDeniedHandler(accessDeniedHandler()) // 인가 예외
-
-    }
-
-    private AccessDeniedHandler accessDeniedHandler() {
-        return new AccessDeniedHandler() {
-            @Override
-            public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
-                log.error("url {} access denied, msg:{}", request.getRequestURL(), accessDeniedException.getMessage());
-            }
-        };
-    }
-
-    private AuthenticationEntryPoint authenticationEntryPoint() {
-        return new AuthenticationEntryPoint() {
-            @Override
-            public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-                log.error("url {} authentication denied, msg:{}", request.getRequestURL(), authException.getMessage());
-            }
-        };
-    }
-
-    private CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Collections.singletonList("*"));
-        configuration.setAllowedMethods(Arrays.asList("*"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(false);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+public interface AuthenticationEntryPoint {
+    void commence(HttpServletRequest request, 
+                  HttpServletResponse response, 
+                  AuthenticationException authException) throws IOException, ServletException;
 }
 ```
 
-`WebSecurity ignoring` 과 `HttpSecurity permitAll` 의 차이는 `SecurityFilterChain` 을 거치는지 아닌지 차이  
-인증, 인가 모두 필요없는 리소스의 경우 `WebSecurity ignoring` 사용이 성능상 유리하다.  
-인증은 필요하지만 인가는 필요없는 경우 `HttpSecurity permitAll` 를 사용하면 된다.  
+- `Spring Security` 사용시 기본적으로 `AccessDenied` 예외 발생시 `LoginUrlAuthenticationEntryPoint` 가 처리한다.  
+- 로그인 실패시 해당 요청 url 을 session 에 SAVED_REQUEST key 값으로 임시 저장한다
+  - 로그인 후 이동시키기 위해
+- `Login` 페이지로 `Redirect` 시키는 역할을 수행한다.  
 
-위 설정처럼 `antMatchers("...").hasAnyRole("...")` 접근제한이 가능하지만  
-메서드에 어노테이션을 지정하는 것으로도 접근제한이 가능하다.  
+```java
+public class LoginUrlAuthenticationEntryPoint implements AuthenticationEntryPoint, InitializingBean {
 
-`@EnableGlobalMethodSecurity` 어노테이션 설정, 다른 클래스에서도 시큐리티 어노테이션을 사용할 수 있도록 설정한다.  
+    private static final Log logger = LogFactory.getLog(LoginUrlAuthenticationEntryPoint.class);
+    private PortMapper portMapper = new PortMapperImpl();
+    private PortResolver portResolver = new PortResolverImpl();
+    private boolean forceHttps = false;
+    private boolean useForward = false;
+
+    private String loginFormUrl;
+    private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+
+    /**
+     * @param loginFormUrl URL where the login page can be found. Should either be
+     * relative to the web-app context path (include a leading {@code /}) or an absolute
+     * URL.
+     */
+    public LoginUrlAuthenticationEntryPoint(String loginFormUrl) {
+        Assert.notNull(loginFormUrl, "loginFormUrl cannot be null");
+        this.loginFormUrl = loginFormUrl;
+    }
+
+    /**
+     * Performs the redirect (or forward) to the login form URL.
+     */
+    @Override
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+        if (!this.useForward) {
+            // redirect to login page. Use https if forceHttps true
+            String redirectUrl = buildRedirectUrlToLoginPage(request, response, authException);
+            this.redirectStrategy.sendRedirect(request, response, redirectUrl);
+            return;
+        }
+        String redirectUrl = null;
+        if (this.forceHttps && "http".equals(request.getScheme())) {
+            // First redirect the current request to HTTPS. When that request is received,
+            // the forward to the login page will be used.
+            redirectUrl = buildHttpsRedirectUrlForRequest(request);
+        }
+        if (redirectUrl != null) {
+            this.redirectStrategy.sendRedirect(request, response, redirectUrl);
+            return;
+        }
+        String loginForm = determineUrlToUseForThisRequest(request, response, authException);
+        logger.debug(LogMessage.format("Server side forward to: %s", loginForm));
+        RequestDispatcher dispatcher = request.getRequestDispatcher(loginForm);
+        dispatcher.forward(request, response);
+        return;
+    }
+
+    protected String buildRedirectUrlToLoginPage(HttpServletRequest request, HttpServletResponse response,
+            AuthenticationException authException) {
+        String loginForm = determineUrlToUseForThisRequest(request, response, authException);
+        if (UrlUtils.isAbsoluteUrl(loginForm)) {
+            return loginForm;
+        }
+        int serverPort = this.portResolver.getServerPort(request);
+        String scheme = request.getScheme();
+        RedirectUrlBuilder urlBuilder = new RedirectUrlBuilder();
+        urlBuilder.setScheme(scheme);
+        urlBuilder.setServerName(request.getServerName());
+        urlBuilder.setPort(serverPort);
+        urlBuilder.setContextPath(request.getContextPath());
+        urlBuilder.setPathInfo(loginForm);
+        if (this.forceHttps && "http".equals(scheme)) {
+            Integer httpsPort = this.portMapper.lookupHttpsPort(serverPort);
+            if (httpsPort != null) {
+                // Overwrite scheme and port in the redirect URL
+                urlBuilder.setScheme("https");
+                urlBuilder.setPort(httpsPort);
+            }
+            else {
+                logger.warn(LogMessage.format("Unable to redirect to HTTPS as no port mapping found for HTTP port %s",
+                        serverPort));
+            }
+        }
+        return urlBuilder.getUrl();
+    }
+
+    /**
+     * Builds a URL to redirect the supplied request to HTTPS. Used to redirect the
+     * current request to HTTPS, before doing a forward to the login page.
+     */
+    protected String buildHttpsRedirectUrlForRequest(HttpServletRequest request) throws IOException, ServletException {
+        int serverPort = this.portResolver.getServerPort(request);
+        Integer httpsPort = this.portMapper.lookupHttpsPort(serverPort);
+        if (httpsPort != null) {
+            RedirectUrlBuilder urlBuilder = new RedirectUrlBuilder();
+            urlBuilder.setScheme("https");
+            urlBuilder.setServerName(request.getServerName());
+            urlBuilder.setPort(httpsPort);
+            urlBuilder.setContextPath(request.getContextPath());
+            urlBuilder.setServletPath(request.getServletPath());
+            urlBuilder.setPathInfo(request.getPathInfo());
+            urlBuilder.setQuery(request.getQueryString());
+            return urlBuilder.getUrl();
+        }
+        // Fall through to server-side forward with warning message
+        logger.warn(
+                LogMessage.format("Unable to redirect to HTTPS as no port mapping found for HTTP port %s", serverPort));
+        return null;
+    }
+
+    /**
+     * Set to true to force login form access to be via https. If this value is true (the
+     * default is false), and the incoming request for the protected resource which
+     * triggered the interceptor was not already <code>https</code>, then the client will
+     * first be redirected to an https URL, even if <tt>serverSideRedirect</tt> is set to
+     * <tt>true</tt>.
+     */
+    public void setForceHttps(boolean forceHttps) {
+        this.forceHttps = forceHttps;
+    }
+
+    protected boolean isForceHttps() {
+        return this.forceHttps;
+    }
+
+    public String getLoginFormUrl() {
+        return this.loginFormUrl;
+    }
+
+    public void setPortMapper(PortMapper portMapper) {
+        Assert.notNull(portMapper, "portMapper cannot be null");
+        this.portMapper = portMapper;
+    }
+
+    protected PortMapper getPortMapper() {
+        return this.portMapper;
+    }
+
+    public void setPortResolver(PortResolver portResolver) {
+        Assert.notNull(portResolver, "portResolver cannot be null");
+        this.portResolver = portResolver;
+    }
+
+    protected PortResolver getPortResolver() {
+        return this.portResolver;
+    }
+
+    /**
+     * Tells if we are to do a forward to the {@code loginFormUrl} using the
+     * {@code RequestDispatcher}, instead of a 302 redirect.
+     * @param useForward true if a forward to the login page should be used. Must be false
+     * (the default) if {@code loginFormUrl} is set to an absolute value.
+     */
+    public void setUseForward(boolean useForward) {
+        this.useForward = useForward;
+    }
+
+    protected boolean isUseForward() {
+        return this.useForward;
+    }
+
+}
+```
+
+아래와 같이 Filter 마다 각자의 구현객체가 적용되어 인증/인가 예외 발생시 호출된다.  
+
+`AuthenticationEntryPoint` 는 `BasicAuthenticationFilter` 과정에서 바로처리되기도 하고  
+
+```java
+public class BasicAuthenticationEntryPoint implements AuthenticationEntryPoint, InitializingBean {
+
+    private String realmName;
+
+    @Override
+    public void afterPropertiesSet() {
+        Assert.hasText(this.realmName, "realmName must be specified");
+    }
+
+    @Override
+    public void commence(HttpServletRequest request, HttpServletResponse response,
+    AuthenticationException authException) throws IOException {
+        response.setHeader("WWW-Authenticate", "Basic realm=\"" + this.realmName + "\"");
+        response.sendError(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase());
+    }
+}
+
+public class BasicAuthenticationFilter extends OncePerRequestFilter {
+
+    private AuthenticationEntryPoint authenticationEntryPoint;
+    ...
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        try {
+            Authentication authRequest = this.authenticationConverter.convert(request);
+            if (authRequest == null) {
+                this.logger.trace("Did not process authentication request since failed to find "
+                        + "username and password in Basic Authorization header");
+                chain.doFilter(request, response);
+                return;
+            }
+            ...
+        }
+        catch (AuthenticationException ex) {
+            this.securityContextHolderStrategy.clearContext();
+            this.logger.debug("Failed to process authentication request", ex);
+            this.rememberMeServices.loginFail(request, response);
+            onUnsuccessfulAuthentication(request, response, ex);
+            if (this.ignoreFailure)
+                chain.doFilter(request, response);
+            else
+                this.authenticationEntryPoint.commence(request, response, ex);
+            return;
+        }
+        chain.doFilter(request, response);
+    }
+    ...
+}
+```
+
+최종 `Authentication` 처리를 진행하는 `ExceptionTranslationFilter` 과정에서 처리되기도 한다.  
+
+```java
+public class ExceptionTranslationFilter extends GenericFilterBean implements MessageSourceAware {
+    private AuthenticationEntryPoint authenticationEntryPoint;
+    ...
+
+    private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        try {
+            chain.doFilter(request, response);
+        }
+        catch (IOException ex) {
+            throw ex;
+        }
+        catch (Exception ex) {
+            // Try to extract a SpringSecurityException from the stacktrace
+            Throwable[] causeChain = this.throwableAnalyzer.determineCauseChain(ex);
+            RuntimeException securityException = (AuthenticationException) this.throwableAnalyzer
+                .getFirstThrowableOfType(AuthenticationException.class, causeChain);
+            ...
+            if (response.isCommitted()) {
+                throw new ServletException("Unable to handle the Spring Security Exception "
+                        + "because the response is already committed.", ex);
+            }
+            handleSpringSecurityException(request, response, chain, securityException);
+        }
+    }
+    private void handleSpringSecurityException(HttpServletRequest request, HttpServletResponse response,
+        FilterChain chain, RuntimeException exception) throws IOException, ServletException {
+        if (exception instanceof AuthenticationException) {
+            handleAuthenticationException(request, response, chain, (AuthenticationException) exception);
+        }
+        else if (exception instanceof AccessDeniedException) {
+            handleAccessDeniedException(request, response, chain, (AccessDeniedException) exception);
+        }
+    }
+
+    private void handleAuthenticationException(HttpServletRequest request, HttpServletResponse response,
+            FilterChain chain, AuthenticationException exception) throws ServletException, IOException {
+        this.logger.trace("Sending to authentication entry point since authentication failed", exception);
+        sendStartAuthentication(request, response, chain, exception);
+    }
+
+    protected void sendStartAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
+            AuthenticationException reason) throws ServletException, IOException {
+        // SEC-112: Clear the SecurityContextHolder's Authentication, as the
+        // existing Authentication is no longer considered valid
+        SecurityContext context = this.securityContextHolderStrategy.createEmptyContext();
+        this.securityContextHolderStrategy.setContext(context);
+        this.requestCache.saveRequest(request, response);
+        this.authenticationEntryPoint.commence(request, response, reason);
+    }
+```
+
+`Spring Security Filter` 마다 다른 `AuthenticationEntryPoint` 를 가질 수 있으며 구현체인 `DelegatingAuthenticationEntryPoint` 에서 통합 관리한다.  
+
+```java
+package org.springframework.security.web.authentication;
+
+public class DelegatingAuthenticationEntryPoint implements AuthenticationEntryPoint, InitializingBean {
+
+    private static final Log logger = LogFactory.getLog(DelegatingAuthenticationEntryPoint.class);
+
+    private final LinkedHashMap<RequestMatcher, AuthenticationEntryPoint> entryPoints;
+
+    private AuthenticationEntryPoint defaultEntryPoint;
+
+    public DelegatingAuthenticationEntryPoint(LinkedHashMap<RequestMatcher, AuthenticationEntryPoint> entryPoints) {
+        this.entryPoints = entryPoints;
+    }
+
+    @Override
+    public void commence(HttpServletRequest request, HttpServletResponse response,
+            AuthenticationException authException) throws IOException, ServletException {
+        for (RequestMatcher requestMatcher : this.entryPoints.keySet()) {
+            logger.debug(LogMessage.format("Trying to match using %s", requestMatcher));
+            if (requestMatcher.matches(request)) {
+                AuthenticationEntryPoint entryPoint = this.entryPoints.get(requestMatcher);
+                logger.debug(LogMessage.format("Match found! Executing %s", entryPoint));
+                entryPoint.commence(request, response, authException);
+                return;
+            }
+        }
+        logger.debug(LogMessage.format("No match found. Using default entry point %s", this.defaultEntryPoint));
+        // No EntryPoint matched, use defaultEntryPoint
+        this.defaultEntryPoint.commence(request, response, authException);
+    }
+}
+```
 
 ## 세션 기반 스프링 시큐리티
 
@@ -473,38 +1017,53 @@ public class SessionSecurityConfig extends WebSecurityConfigurerAdapter {
 
 ### 로그인폼 설정
 
-별도의 설정을 하지 않을경우 `formLogin`, `httpBasic` 가 설정된 기본 `Spring Security Config` 를 사용한다.  
+별도의 `SecurityFilterChain` 빈 객체 설정을 하지 않을경우 `formLogin`, `httpBasic` 가 설정된 기본 `Spring Security Config` 를 사용한다.  
 
 `/login` 을 호출하면 `AuthenticationManager` 에 따라 로그인 절차가 이루어지고 세션에 로그인정보가 남게된다.  
 `/logout` 을 호출하면 세션을 초기화하는 과정을 진행한다.  
 
 ```java
-
-@Override
-protected void configure(HttpSecurity http) throws Exception {
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
-        .csrf().disable()
-        .authorizeRequests()
-        .antMatchers("/boards/random").hasAnyRole("BASIC", "MANAGER")
-        .antMatchers("/boards/list").permitAll()
-        .anyRequest().authenticated()
-        .and()
-        .formLogin() // login config
-        .usernameParameter("username_demo") // default: username
-        .passwordParameter("password_demo") // default: password
-        .loginPage("/auth/login_demo") // default: /login[GET]
-        .loginProcessingUrl("/auth/login_demo_process") // default: /login[POST]
-        .successForwardUrl("/auth/login_success") // login success redirect url
-        .failureUrl("/auth/login_demo?error=true") // login failed redirect url
-        .and()
-        .logout() // logout config
-        .logoutUrl("/auth/logout_demo") // default: /logout[GET, POST]
-        .logoutSuccessUrl("/boards/list") // logout success redirect url
-        .invalidateHttpSession(true) // logout 후 세션삭제여부, default: true
-        .and()
-        .exceptionHandling() // exception config
-        .accessDeniedPage("/auth/access_denied") // access denied redirect url
+        .httpBasic(AbstractHttpConfigurer::disable) // Basic Authorization 비활성화
+        .csrf(AbstractHttpConfigurer::disable) // CSRF 보호 비활성화
+        .authorizeHttpRequests(auths -> auths
+            .requestMatchers("/boards/random").hasAnyRole("BASIC", "MANAGER")
+            .requestMatchers("/boards/list").permitAll()
+            .anyRequest().authenticated()
+        )
+        // login config
+        .formLogin(formLogin -> formLogin
+            .usernameParameter("username_demo") // default: username
+            .passwordParameter("password_demo") // default: password
+            .loginPage("/auth/login_demo") // default: /login[GET]
+            .loginProcessingUrl("/auth/login_demo_process") // default: /login[POST]
+            //.successForwardUrl("/auth/login_success") // login success redirect url
+            .successHandler(new CustomLoginSuccessHandler("/boards/list"))
+            .failureUrl("/auth/login_demo?error=true") // login failed redirect url
+        )
+        // logout config
+        .logout(logout -> logout
+            .logoutUrl("/auth/logout_demo") // default: /logout[GET, POST]
+            .logoutSuccessUrl("/boards/list") // logout success redirect url
+            .invalidateHttpSession(true) // logout 후 세션삭제여부, default: true
+        )
+        // exception config
+        .exceptionHandling(exceptions -> exceptions
+            .accessDeniedPage("/auth/access_denied") // access denied redirect url
+        )
+        // remember me 설정
+        .rememberMe(rememberMe -> rememberMe
+            .rememberMeParameter("remember-me") // default: remember-me
+            .key("spring-demo-security-key")
+            .tokenValiditySeconds(60 * 60 * 24) // 24 hour, default  2week
+            .alwaysRemember(false) // default: false
+            //.tokenRepository(getJDBCRepository()) // use PersistentTokenBasedRememberMeServices
+            .userDetailsService(userDetailsService) // use TokenBasedRememberMeServices
+        )
     ;
+    return http.build();
 }
 ```
 
@@ -513,17 +1072,7 @@ protected void configure(HttpSecurity http) throws Exception {
 서버 `session` 에 로그인 데이터를 저장해놓고 로그인을 유지하는 방법,  
 쿠키에 **로그인토큰**을 저장해 로그인을 유지하는 방법이 있다.  
 
-아래와 같이 `rememberMe config` 를 설정하면 `RememberMeAuthenticationFilter` 가 추가 `Security Filter Chain` 에 추가된다.  
-
-```java
-http.rememberMe()
-    .rememberMeParameter("remember-me") // default: remember-me
-    .key("spring-demo-security-key") // secret key
-    .tokenValiditySeconds(60 * 60 * 24) // 24 hour, default  2week
-    .alwaysRemember(false) // default: false
-    .userDetailsService(userDetailsService) // use TokenBasedRememberMeServices
-;
-```
+위와 같이 `rememberMe config` 를 설정하면 `RememberMeAuthenticationFilter` 가 추가 `Security Filter Chain` 에 추가된다.  
 
 `TokenBasedRememberMeServices` 객체가 `userDetailsService` 를 사용하 사용자정보를 가져와 로그인토큰을 만들수 있도록 설정한다.  
 
@@ -931,148 +1480,10 @@ public class RestAuthController {
 }
 ```
 
-<!-- 
-## OAuth2
-
-스프링 시큐리티에서 `OAuth`를 지원하는 프레임워크가 잘 되어있지만 스프링 부트에서 템플릿까지 제공할 경우이다.  
-
-`Rest API` 서버이면서 `OAuth2` 인ㄴ증을 지원하려면 별도로 지원하는게 마음 편하다.  
-
-### OAuth2 개요  
-
-> https://opentutorials.org/course/3405
-
-1. `OAuth` 를 사용하기 위해 서비스 등록, 등록시 발급하는 Client ID, Client Secret 저장 필수  
-2. 구글에서 제공하는 인증 URL 파라미터에 **Client ID** 와 **리다이렉트될 URL** 을 입력, 인증 성공시 해당 URL 로 클라이언트가 로그인 성공했다는 `code` 값을 반환한다.
-3. `code`값을 사용해 구글에 클라이언트 정보에 접근할 수 있는 `accessToken` 을 발급받는다. 이 모든 과정은 클라이언트가 이미 나의 `Client ID`를 사용해서 로그인에 성공했기에 가능한 일이다.   
-4. `accessToken`을 발급받으면 구글에서 계정정보 (email, 사진, 이름) 등을 요청해 DB 에 저장후 로그인 처리한다(JWT 토큰 발급)  
-
-
-### 용어 설명
-
-* `Resoucrce` - 로그인 자원  
-* `Resoucrce Owner` - 로그인 자원을 가지는 개인 휴대폰, PC 등  
-* `Resoucrce Client` - 로그인 자원을 이용하는 어플리케이션 (우리가 만드는 스프링 서버)  
-* `Resoucrce Server` - 로그인 자원을 관리하는 서버 (구글, 트위터, 페이스북)  
-
-
-### 예제 코드  
-
-```java
-@Slf4j
-@RestController
-@RequestMapping("/oauth2/code")
-@RequiredArgsConstructor
-public class OAuth2Controller {
-
-  private final static String DEFAULT_PASSWORD = "default_password";
-  private final OAuthGoogleClient oAuthGoogleClient;
-  private final JwtTokenUtil jwtTokenUtil;
-  private final MemberService memberService;
-  @Value("${oauth2.client.registration.google.client-id")
-  private String googleClientId;
-  @Value("${oauth2.client.registration.google.client-secret")
-  private String googleClientSecret;
-  @Value("${oauth2.client.registration.google.scope")
-  private String googleScope;
-  @Value("${oauth2.client.registration.google.redirect-uri")
-  private String googleRedirectUri;
-
-  /**
-    * google oauth2 redirect
-    */
-  @GetMapping("/google")
-  public ResponseEntity<ResponseDto> googleRedirect(HttpServletRequest request) {
-    log.info("googleRedirect invoked");
-    Map<String, String[]> map = request.getParameterMap();
-    for (Map.Entry<String, String[]> stringEntry : map.entrySet()) {
-      String key = stringEntry.getKey();
-      String values = Arrays.toString(stringEntry.getValue());
-      log.info("key:" + key + ", values:" + values);
-    }
-    // 2.인증 성공시 해당 URL 로 클라이언트가 로그인 성공했다는 code 값을 반환한다.
-    String code = request.getParameter("code");
-    OAuthAccessToken token;
-    OAuthAttributes oAuthAttributes;
-    // 3. code값을 사용해 구글에 클라이언트 정보에 접근할 수 있는 accessToken 을 발급받는다. 
-    token = oAuthGoogleClient.getUserAccessToken(code);
-    // 4. accessToken을 발급받으면 구글에서 계정정보 (email, 사진, 이름) 등을 요청해 DB 에 저장후 로그인 처리한다(JWT 토큰 발급) 
-    oAuthAttributes = oAuthGoogleClient.getUserAttributes(token);
-    Member member = null;
-    if (memberService.iskMemberEmailExist(oAuthAttributes.getEmail())) {
-      // 이미 이메일 정보가 있을경우 DB 에서 find
-      member = memberService.findMemberByEmail(oAuthAttributes.getEmail());
-    } else {
-      // 기존 이메일이 없다면 새로운 계정 생성
-      member = oAuthAttributes.toEntity();
-      member = memberService.saveMember(member);
-    }
-
-    JwtUserDetails userDetails = new JwtUserDetails(
-      member.getId(),
-      member.getEmail(),
-      DEFAULT_PASSWORD,
-      "ROLE_MEMBER",
-      authorities);
-
-    JwtResponseDto jwtResponse = new JwtResponseDto(jwtTokenUtil.generateToken(userDetails), member.getRole());
-    return new ResponseEntity<>(jwtResponse, HttpStatus.OK);
-  }
-}
-```
-
-### acessToken, OAuthAttribute
-
-위에 3, 4번 과정인 `accessToken` 을 사용해 사용자 정보 `OAuthAttribute` 를 가져오는 코드  
-
-```java
-public OAuthAccessToken getUserAccessToken(String authenticate_code) {
-  UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(GOOGLE_REQUEST_TOKEN_URL)
-    .queryParam("code", authenticate_code)
-    .queryParam("client_id", googleClientId)
-    .queryParam("client_secret", googleClientSecret)
-    .queryParam("redirect_uri", googleRedirectUri)
-    .queryParam("grant_type", "authorization_code");
-
-  HttpHeaders headers = new HttpHeaders();
-  headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-  HttpEntity<?> entity = new HttpEntity<>(headers);
-
-  HttpEntity<GoogleAccessToken> responseEntity = restTemplate.exchange(
-    builder.toUriString(),
-    HttpMethod.POST,
-    entity,
-    GoogleAccessToken.class);
-  GoogleAccessToken token = responseEntity.getBody();
-  System.out.println(token.toString());
-  return token;
-}
-
-@Override
-public OAuthAttributes getUserAttributes(OAuthAccessToken accessToken) {
-  UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(GOOGLE_REQUEST_USER_INFO_URL)
-    .queryParam("access_token", accessToken.getAccessToken());
-  System.out.println(builder.toUriString());
-  HttpHeaders headers = new HttpHeaders();
-  headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-  HttpEntity<?> entity = new HttpEntity<>(headers);
-
-  HttpEntity<JSONObject> responseEntity = restTemplate.exchange(
-    builder.toUriString(),
-    HttpMethod.GET,
-    entity,
-    JSONObject.class);
-
-  JSONObject attributesMap = responseEntity.getBody();
-  OAuthAttributes oAuthAttributes = OAuthAttributes.of("google", attributesMap);
-  return oAuthAttributes;
-}
-```
 
 ## Spring Security cors 에러 이슈
 
 `spring-security`를 사용하지 않는경우 `CorsRegistry` 등록하여 `cors` 에러 이슈 처리방식을 사용해왔다.  
-
 
 ```java
 @Configuration
@@ -1092,7 +1503,6 @@ public class WebAdminConfig implements WebMvcConfigurer, Filter {
 }
 ```
 
-
 `spring-security` 를 사용한다면 `configure` 에 해당 필터를 등록해준다.  
 
 ```java
@@ -1110,14 +1520,13 @@ public class CorsFilter implements Filter {
 }
 ```
 
-
 ```java
 .addFilterBefore(new CorsFilter(), ChannelProcessingFilter.class)
 ```
 
 최신 `spring-security` 사용시에 `CorsConfiguration` 를 사용한 `cors` 이슈 처리  
 
-> https://stackoverflow.com/questions/36809528/spring-boot-cors-filter-cors-preflight-channel-did-not-succeed  
+> <https://stackoverflow.com/questions/36809528/spring-boot-cors-filter-cors-preflight-channel-did-not-succeed>
 
 ```java
 @EnableWebSecurity
@@ -1153,30 +1562,3 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 > 주의 : `WebSecurity` 의 `web.ignoring()` 사용시에 `spring-security filter` 에서 아예 제외됨으로 `CORS` 설정을 사용하지 않는다.  
 > `HttpSecurity` 와 `permitAll()` 을 통해 진행하는 것을 권장 
 > CORS는 응답이 Access-Control-Allow-Credentials: true 을 가질 경우, Access-Controll-Allow-Origin의 값으로 *를 사용하지 못하게 막고 있다.
-
-# SSL 적용  
-
-```
-# 비밀번호 123456 사용, 그외의 값은 아무값이나 적용  
-$ keytool -genkey -alias spring -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 4000
-...
-Is CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown correct?
-  [no]:  yes
-```
-
-`keystore.p12` 생성이 확인되었으면 아래처럼 설정  
-
-```conf
-#ssl
-server.ssl.key-store=keystore.p12
-server.ssl.key-store-type=PKCS12
-server.ssl.key-store-password=123456
-server.ssl.key-alias=spring
-```
-
-> https://127.0.0.1:8080/ 
-
-위와 같이 `https` 와 `ip`, `port` 를 사용해 접속 할 수 있다.  
-
-크롬기반 브라우저는 정책상 유효하지 않은 인증서는 사용할 수 없어 파이어폭스같은 브라우저로 테스트하길 권장 
--->

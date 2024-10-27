@@ -147,7 +147,7 @@ public class DemoDataSourceRouter extends AbstractRoutingDataSource {
 
 ### JpaTransactionManager 와의 호환 불량  
 
-`JPA` 와 `AbstractRoutingDataSource` 를 같이 사용할 경우 `JpaTransactionManager` 의 호환 문제로 인해 추가 설정 없이 `read replica` 분리는 어려우 수 있다.  
+`JPA` 와 `AbstractRoutingDataSource` 를 같이 사용할 경우 `JpaTransactionManager` 의 호환 문제로 인해 추가 설정 없이 `read replica` 분리는 어려울 수 있다.  
 
 `DataSource` 를 가져오는 과정은 `@Transaction` 으로 인한 AOP 로 인하여 정의 함수 실행 전 인터셉터되어 수행된다.  
 아래는 AOP로 수행되는 `JpaTransactionManager` 의 `doBegin` 함수인데 `Datasource` 를 가져오는 `beginTransaction` 코드가 먼저 실행되고, 
@@ -192,10 +192,9 @@ JPA 에선 트랜잭션 진입과 동시에 `DataSource` 를 가져오기 위해
 이를 해결하기 위한 방법은 아래 3가지.  
 
 1. `ThreadLocal` 에 `readOnly` 값을 포함시킨 `Datasource Key` 를 저장하기  
-2. `LazyConnectionDataSourceProxy` 사용하기  
-   `AbstractRoutingDataSource` 로직을 `@Transaction` 으로 인한 AOP 뒤에 실행되도록 설정하는 방법.  
-3. `JPA` 를 버리고 `JDBC` 사용하기  
-   `JpaTransactionManager` 를 사용하지 않고 `JDBC` 가 사용하는 `DatasourceTransactionManager` 의 경우 실행 직전에 다시 Connection 을 가져옴으로 위와같은 문제가 발생하지 않음.  
+2. `LazyConnectionDataSourceProxy` 사용하기 - `AbstractRoutingDataSource` 로직을 `@Transaction` 으로 인한 AOP 뒤에 실행되도록 설정하는 방법.  
+3. `JPA` 를 버리고 `JDBC` 사용하기 - `JDBC` 가 사용하는 `DatasourceTransactionManager` 의 경우 실행 직전에 다시 Connection 을 가져옴으로 위와같은 문제가 발생하지 않음.  
+
 
 ### LazyConnectionDataSourceProxy
 
@@ -277,6 +276,8 @@ dataSources:
 실제 `hibernate` 에서 `prepareQueryStatement` 메서드가 `logic_db` 의 `Connection.prepareStatement` 메서드를 호출할 때 물리적 `HikariDataSource` 의 `Connection` 객체를 가져온다.  
 
 > 라우팅 처리하는 코드가 궁금하다면 `org.apache.shardingsphere.infra.connection.kernel.KernelProcessor` 클래스의 `generateExecutionContext`, `route` 메서드를 확인하면 된다.  
+> 
+> 참고로 `AbstractRoutingDataSource` 를 사용하던 `ShardingSphere` 를 사용하던 2개의 DB 에서의 트랜잭션을 합치려면 별도의 `XA 트랜잭션` 소프트웨어를 사용해야한다.  
 
 ### Rules
 
