@@ -1,5 +1,5 @@
 ---
-title:  "Spring Boot - Auhtorization Server!"
+title:  "Spring Boot - OAuth!"
 
 read_time: false
 share: false
@@ -522,6 +522,7 @@ http.addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthe
 ### Spring OAuth2 Client 인증과정  
 
 OIDC 프로토콜을 지원하는 `Authorization Server` 의 경우 `/.well-known/oauth-authorization-server` API 를 지원하며 아래 3개 URI 를 자동으로 가져올 수 있다.  
+`OidcProviderConfigurationEndpointFilter` 에서 해당 url 을 처리한다.  
 
 - `authorizationUri`: `authorization code` 를 발급받을 수 있는 로그인 페이지 redirect url
 - `tokenUri`: `access token` 을 발급받을 수 있는 `API url(REST, Formdata)`
@@ -593,6 +594,7 @@ OAuth 인증과정은 5단계, `Resource Client` 에서 사용되는 `Spring Fil
    - 위에서 설명한 `OidcAuthorizationCodeAuthenticationProvider` 혹은 `OAuth2LoginAuthenticationProvider` 에서 `access token` 을 요청한다.  
      - `OidcAuthorizationCodeAuthenticationProvider` 사용시 `id token` 검증을 위해 `NimbusJwtDecoder` 에서 `/oauth/jwks` 호출 
      - `OAuth2UserService` 를 통해 `userinfo` 에 대한 요청도 해당 `Provider` 내에서 수행한다.  
+       - 요청시 `HTTP Header` `Authorization: Bearer {access_token}` 설정해서 `userinfo` 를 요청한다.   
 5. **Access Token**  
    - `Authorization Server` 는 `access token` 를 응답한다.  
    - `OAuth2LoginAuthenticationFilter` 에서 `access token` 을 DB 에 저장하고 `access token` 을 사용해 `Authentication` 객체를 생성한다.  
@@ -1428,6 +1430,7 @@ public OAuth2TokenGenerator<OAuth2Token> tokenGenerator(JwtEncoder jwtEncoder,
      - `Access Token, Refresh Token` 등이 포함된 `OAuth2AccessTokenAuthenticationToken` 생성 및 response 에 write.  
 6. **ID Token**  
    - `NimbusJwkSetEndpointFilter` 에서 `/oauth2/jwks` 요청 처리.  
+     - `access token, id token` 모두 `Authorization Server` 의 비밀키로 서명되어 `/oauth2/jwks` 에서 출력되는 공개키로 인증가능하다.  
    - `OidcUserInfoEndpointFilter` 에서 `/userinfo` 요청 처리.  
      - `OidcUserInfoAuthenticationProvider` 에서 사용자의 token 유효성 확인(DB, InMemory), 
        - `DefaultOidcUserInfoMapper` 를 통해 `scope` 확인 후 필요한 데이터만 반환.  
@@ -1572,6 +1575,31 @@ redirect_uri=http://127.0.0.1:8080/login/oauth2/code/naver-oauth-redirect
 # naver 의 token response 에는 scope 가 없어 DB 에 scope 가 누락되어 저장된다
 ```
 
+`userinfo` 요청할 때 사용하는 `HTTP Request` 형식
+
+```sh
+# Authorization Server 에 userinfo 요청
+GET http://authorization-server/userinfo,[
+# HEADER
+Accept=application/json
+Authorization="Bearer eyJraWQi..."
+# 응답 json body
+# {
+#   sub=admin, 
+#   aud=[oauth-demo-client-id], 
+#   nbf=2024-10-28T15:51:50Z, 
+#   scope=[openid, profile, email], 
+#   iss=http://authorization-server, 
+#   exp=2024-10-28T15:56:50Z, 
+#   iat=2024-10-28T15:51:50Z, 
+#   jti=72c3e846-e12b-4eef-a648-3ee9889d3d38, 
+#   nickname=admin_nickname, 
+#   phone_number=010-1111-2222, 
+#   birthdate=1998-02-03, 
+#   gender=female
+# },
+```
+
 <!-- 
 ## SSL 적용  
 
@@ -1598,3 +1626,136 @@ server.ssl.key-alias=spring
 위와 같이 `https` 와 `ip`, `port` 를 사용해 접속 할 수 있다.  
 
 크롬기반 브라우저는 정책상 유효하지 않은 인증서는 사용할 수 없어 파이어폭스같은 브라우저로 테스트하길 권장  -->
+
+## Spring Boot Resource Server  
+
+이전에는 `Spring Authorization Server` 에서 사용자 인증 및 조회까지 수행하였는데,  
+사용자의 상세정보는 별도의 서버에서 운영하는 경우가 많다. naver 와 kakao 의 경우에도 인증서버와 userinfo 조회서버가 다르다.  
+
+- naver
+  - authorization_url: <https://nid.naver.com/oauth2.0/authorize>
+  - userinfo_url: <https://openapi.naver.com/v1/nid/me>
+- kakao
+  - authorization_endpoint: <https://kauth.kakao.com/oauth/authorize>,
+  - userinfo_endpoint: <https://kapi.kakao.com/v1/oidc/userinfo>,
+
+`userinfo` 조회용 서버를 `spring-boot-starter-oauth2-resource-server` 를 통해 설정 가능하다.  
+
+```groovy
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+}
+```
+
+`userinfo` 뿐만 아니라 `scope` 설정대로 사용자의 데이터를 다루는 서버를 `Resource Server` 로 구현한다.  
+
+### Authorization Server userinfo 변경
+
+기본 설정이었던 `userinfo` url 을 `Resource Server` 를 바라보도록 `Authorization Server` 의 `Spring Security` 설정에서 수정.  
+
+```java
+// Authorization Server 의 security config
+authz
+    .registeredClientRepository(registeredClientRepository)
+    .authorizationService(authorizationService)
+    .authorizationConsentService(authorizationConsentService)
+    .tokenGenerator(tokenGenerator)
+    .oidc(Customizer.withDefaults())    // Initialize `OidcConfigurer`
+    .oidc(oidc -> oidc.providerConfigurationEndpoint(config -> config
+        .providerConfigurationCustomizer(customizer -> customizer
+            .userInfoEndpoint("http://resource-server/userinfo")
+        )
+    ))
+```
+
+### Resource Server Security Config  
+
+Resource Server 의 Spring Security Config 를 설정.  
+
+```java
+@Bean
+public SecurityFilterChain resourceServer(HttpSecurity http) throws Exception {
+    // 공개키 조회 및 jwtDecoder 등록
+    http.oauth2ResourceServer(resourceServer -> resourceServer
+            .jwt(jwtConfigurer -> jwtConfigurer.jwkSetUri("http://localhost:9090/oauth2/jwks")));
+
+    http.authorizeHttpRequests(auth -> auth
+            .requestMatchers("/userinfo").hasAuthority("SCOPE_profile") // 해당 권한이 있어야 /userinfo 접근 가능
+            .anyRequest().authenticated()
+    );
+    http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+    return http.build();
+}
+```
+
+위와같이 설정하면 아래와 같은 `Spring Security Filter` 들이 등록된다.  
+
+```java
+@PostConstruct
+public void printSecurityFilters() {
+    List<SecurityFilterChain> filterChains = filterChainProxy.getFilterChains();
+    for (SecurityFilterChain chain : filterChains) {
+        List<Filter> filters = chain.getFilters();
+        log.info("Security Filter Chain: " + chain);
+        for (Filter filter : filters) {
+            log.info(filter.getClass().toString());
+        }
+    }
+}
+/*
+Security Filter Chain: DefaultSecurityFilterChain
+class org.springframework.security.web.session.DisableEncodeUrlFilter
+class org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter
+class org.springframework.security.web.context.SecurityContextHolderFilter
+class org.springframework.security.web.header.HeaderWriterFilter
+class org.springframework.web.filter.CorsFilter
+class org.springframework.security.web.csrf.CsrfFilter
+class org.springframework.security.web.authentication.logout.LogoutFilter
+class org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter
+class org.springframework.security.web.savedrequest.RequestCacheAwareFilter
+class org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter
+class org.springframework.security.web.authentication.AnonymousAuthenticationFilter
+class org.springframework.security.web.session.SessionManagementFilter
+class org.springframework.security.web.access.ExceptionTranslationFilter
+class org.springframework.security.web.access.intercept.AuthorizationFilter
+*/
+```
+
+### BearerTokenAuthenticationFilter
+
+등록된 여러 Filter 객체중 `BearerTokenAuthenticationFilter` 에서 `access token` 검증을 수행한다.  
+
+- `HTTP Header` 에 저장된 `access token` 을 검증한다.  
+  - `Authorization: Bearer {access_token}` 
+- `Spring Authorizaion Server` 의 `/oauth/jwks` 에서 얻은 공개키를 사용해 검증한다.  
+  - 내부적으론 `JwtAuthenticationProvider` 를 사용하여 공개키가 등록된 `jwtDecoder` 로 access token 을 검증한다.  
+
+```java
+package org.springframework.security.oauth2.server.resource.web.authentication;
+
+public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
+    ...
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        String token = token = this.bearerTokenResolver.resolve(request);
+        ...
+        BearerTokenAuthenticationToken authenticationRequest = new BearerTokenAuthenticationToken(token);
+        authenticationRequest.setDetails(this.authenticationDetailsSource.buildDetails(request));
+
+        AuthenticationManager authenticationManager = this.authenticationManagerResolver.resolve(request);
+        // JwtAuthenticationProvider
+        Authentication authenticationResult = authenticationManager.authenticate(authenticationRequest);
+        SecurityContext context = this.securityContextHolderStrategy.createEmptyContext();
+        context.setAuthentication(authenticationResult);
+        // security context 에 저장
+        this.securityContextHolderStrategy.setContext(context);
+        this.securityContextRepository.saveContext(context, request, response);
+        if (this.logger.isDebugEnabled()) {
+            this.logger.debug(LogMessage.format("Set SecurityContextHolder to %s", authenticationResult));
+        }
+        filterChain.doFilter(request, response);
+    }
+}
+```
+
