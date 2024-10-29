@@ -139,26 +139,90 @@ cat id_rsa_deploy_jenkins
 
 만약 인증서 관련 오류가 발생할 경우 `Jenkins 관리 - Security - Git Host Key Verification Configuration` 에서 `No verification` 선택
 
-username/password 형태의 git 연동에서도 ssl 인증서 오류가 발생할 수 있다.  
+`username/password` 형태의 git 연동에서도 ssl 인증서 오류가 발생할 수 있다.  
 
 `Jenkins 관리 - System - Global Properties` 에서 환경변수 `[GIT_SSL_NO_VERIFY, false]` 설정  
 
-### Jenkins 플러그인
+`Git Lab Token Access` 방식으로 연동할 경우 `Username with password` 형태의 `credentials` 을 사용하고, `username` 에는 임의의 값, `password` 에는 `Token` 문자열을 입력해주면 된다.  
 
-`Jenksin 관리 - Plugins` 에 들어가보면 기본적으로 `CI/CD` 할 만큼의 플러그인들이 설치되어 있다.  
 
-- git, github  
-- shell command  
-- gradle  
+### SSH Pipeline Steps 플러그인
 
-`CI/CD` 구성에 따라 추가적으로 아래와 같은 플러그인들을 설치할 수 있다.  
+간단히 데모형태의 서비스를 로컬 컴퓨터에 배포할 때 SSH 를 통해 배포서버에 접속 후 명령을 실행시킬 수 있다.  
 
-- GitLab  
-- Maven Integration  
-- SSH server, Publish Over SSH  
+SSH 관련 플러그인중 SSH Pipeline Steps 설치를 권장  
 
-설치된 플러그인들은 `Jenkins Web UI` 를 통해 사용 및 설정 가능하지만 개발자가 원하는 CI/CD 를 구성하기에는 한계가 있다.  
+- SSH server  
+- Publish Over SSH  
+
+설치된 플러그인들은 `Jenkins Web UI` 를 통해 사용 및 설정 가능하지만 개발자가 원하는 `CI/CD` 를 구성하기에는 한계가 있다.  
 대부분의 경우 `Jenkins Pipeline` 을 통해 플러그인을 사용하고 `CI/CD` 를 처리한다.  
+
+```groovy
+def remote = [:]
+remote.name = "kouzie"
+remote.host = "192.168.0.127"
+remote.allowAnyHosts=true
+remote.fileTransfer = 'scp'
+
+pipeline {
+    agent any
+    environment {
+        CRED=credentials('kouzie')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'beyless', 
+                    credentialsId: 'kouzie_git',
+                    url: 'https://mydomain.com/demo_project'
+            }
+        }
+
+        stage('SCP Transfer') {
+            steps {
+                script {
+                    remote.user=env.CRED_USR
+                    remote.password=env.CRED_PSW
+                }
+                // SSH 플러그인을 통해 Jenkins의 작업 디렉토리에서 원격 서버로 파일 삭제 및 전송
+                sshCommand(remote: remote, command: "rm -rf ~/demo_project")
+                sshPut( 
+                    remote: remote, 
+                    from: "${env.WORKSPACE}",  // Jenkins 작업 디렉토리의 파일
+                    into: '~/demo_project/'  // 원격 서버의 경로
+                )
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                script {
+                    remote.user=env.CRED_USR
+                    remote.password=env.CRED_PSW
+                }
+                sshCommand(remote: remote, command: "cd ~/demo_project/ && docker build -t demo_image .")
+            }
+        }
+        stage('Docker Compose Up') {
+            steps {
+                script {
+                    remote.user=env.CRED_USR
+                    remote.password=env.CRED_PSW
+                }
+                sshCommand(remote: remote, command: "cd ~/demo_project && docker-compose up -d demo-service")
+            }
+        }
+    }
+    
+    post {
+        always {
+            sleep 2
+        }
+    }
+}
+```
 
 ## Jenkins Pipeline
 

@@ -1397,7 +1397,7 @@ public OAuth2TokenGenerator<OAuth2Token> tokenGenerator(JwtEncoder jwtEncoder,
 }
 ```
 
-### Spring OAuth2 Server 인증과정  
+### Spring Authorization Server 인증과정  
 
 
 1. **Client Identifier & Redirection URI**
