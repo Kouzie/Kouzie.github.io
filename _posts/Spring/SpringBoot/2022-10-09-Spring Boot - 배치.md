@@ -37,27 +37,27 @@ categories:
 
 ![springboot_batch1](/assets/springboot/springboot_batch2.png)  
 
-**Job**  
-**배치작업을 캡슐화**한 엔티티로 전반적인 작업구성이 정의된다.  
-
-**JobInstance**  
-`Job` 엔티티를 기반으로 실행시킨 **Job의 실행단위**. 시작시간과 `JobParameters` 를 기반으로 생성된다.  
-
-**JobExecution**  
-실행된 **`JobInstance` 인스턴스의 실행단위**  
-단번에 배치작업이 성공하면 `JobInstance` 와 `JobExecution` 는 1:1 매칭되겠지만  
-만약 배치작업이 실패한다면 다시 `JobInstance` 에 대한 새로운 `JobExecution` 을 생성해야 한다.  
+- **Job**  
+  - **배치작업을 캡슐화**한 엔티티로 전반적인 작업구성이 정의된다.  
+- **JobInstance**  
+  - **Job의 실행단위**  
+  - `Job` 엔티티를 기반으로 실행된다.  
+  - 시작시간과 `JobParameters` 를 기반으로 생성된다.  
+- **JobExecution**  
+  - **`JobInstance` 인스턴스의 실행단위**  
+  - 단번에 배치작업이 성공하면 `JobInstance` 와 `JobExecution` 는 1:1 매칭된다.  
+  - 배치작업이 실패한다면 다시 `JobInstance` 에 대한 새로운 `JobExecution` 을 생성해야 한다.  
 
 ### Step
 
 ![springboot_batch1](/assets/springboot/springboot_batch3.png)  
 
-**Step**  
-`Job` 의 **배치작업의 여러 단계를 캡슐화**하는 엔티티.  
-`Job` 이 매우 간단해서 하나의 과정만 있다면 하나의 `Step` 으로 정의할 수 있지만 복잡하다면 여러개의 `Step` 으로 나누어 처리해야 한다.  
-
-**StepExecution**  
-`Step` 의 **실행단위**, `Job` 하나당 N개의 `Step` 이 정의된다면 `JobExecution * N` 개 만큼 인스턴스가 생성될 수 있다.  
+- **Step**  
+  - `Job` 의 **배치작업의 여러 단계를 캡슐화**하는 엔티티.  
+  - `Job` 이 매우 간단해서 하나의 과정만 있다면 하나의 `Step` 으로 정의할 수 있지만 복잡하다면 여러개의 `Step` 으로 나누어 처리해야 한다.  
+- **StepExecution**  
+  - `Step` 의 **실행단위**, 
+  - `Job` 하나당 N개의 `Step` 이 정의된다면 `JobExecution * N` 개 만큼 인스턴스가 생성될 수 있다.  
 
 ### ExcutionContext
 

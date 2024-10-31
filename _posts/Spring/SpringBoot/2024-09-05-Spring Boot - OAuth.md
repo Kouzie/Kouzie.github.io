@@ -53,7 +53,7 @@ OAuth 중 `Authorization Code` 방식인증은 아래 순서대로 진행된다.
               Figure 3: Authorization Code Flow
 ```
 
-`Spring Boot` 에서 `OAuth 2.1, OpenID Connect` 를 지원하는 라이브러리를 제공한다.  
+`Spring Boot` 에서 `OAuth 2.0, OAuth 2.1(OpenID)` 를 지원하는 라이브러리를 제공한다.  
 
 > <https://spring.io/projects/spring-authorization-server>  
 > <https://docs.spring.io/spring-authorization-server/reference/getting-started.html>  
@@ -61,9 +61,9 @@ OAuth 중 `Authorization Code` 방식인증은 아래 순서대로 진행된다.
 
 단순 라이브러리 설정을 통해 아래 3가지 서버를 구성 가능하다.  
 
-- Authorization Server
-- Resource Client
-- Resource Server
+- Authorization Server  
+- Resource Client  
+- Resource Server  
 
 ## Spring Boot Resource Client
 
@@ -132,7 +132,7 @@ private String kakaoOAuthClientSecret;
 public ClientRegistrationRepository clientRegistrationRepository() {
     // oidc 를 지원할 경우 /.well-known/openid-configuration URL 을 통해
     // auth code, token, userinfo 를 가져오는 url 을 자동으로 등록한다
-    ClientRegistration springAuthDemoClient = ClientRegistrations.fromIssuerLocation("http://localhost:9090")
+    ClientRegistration springAuthDemoClient = ClientRegistrations.fromIssuerLocation("http://authorization-server")
         .registrationId("oauth-demo-registration-id")
         .clientId("oauth-demo-client-id")
         .clientSecret("secret")
@@ -451,7 +451,7 @@ public class OAuthLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHand
         CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
         String token = generateToken(oAuth2User);
         response.addCookie(createCookie("Authorization", token));
-        response.sendRedirect("http://localhost:8080/main");
+        response.sendRedirect("http://resource-client/main");
     }
 
     private Cookie createCookie(String name, String value) {
@@ -533,17 +533,17 @@ OIDC 프로토콜을 지원하는 `Authorization Server` 의 경우 `/.well-know
 ```json
 // `/.well-known/oauth-authorization-server`
 {
-    "issuer": "http://localhost:8080",
-    "authorization_endpoint": "http://localhost:8080/oauth2/authorize",
-    "device_authorization_endpoint": "http://localhost:8080/oauth2/device_authorization",
-    "token_endpoint": "http://localhost:8080/oauth2/token",
+    "issuer": "http://resource-client",
+    "authorization_endpoint": "http://resource-client/oauth2/authorize",
+    "device_authorization_endpoint": "http://resource-client/oauth2/device_authorization",
+    "token_endpoint": "http://resource-client/oauth2/token",
     "token_endpoint_auth_methods_supported": [
         "client_secret_basic",
         "client_secret_post",
         "client_secret_jwt",
         "private_key_jwt"
     ],
-    "jwks_uri": "http://localhost:8080/oauth2/jwks",
+    "jwks_uri": "http://resource-client/oauth2/jwks",
     "response_types_supported": [ "code" ],
     "grant_types_supported": [
         "authorization_code",
@@ -551,14 +551,14 @@ OIDC 프로토콜을 지원하는 `Authorization Server` 의 경우 `/.well-know
         "refresh_token",
         "urn:ietf:params:oauth:grant-type:device_code"
     ],
-    "revocation_endpoint": "http://localhost:8080/oauth2/revoke",
+    "revocation_endpoint": "http://resource-client/oauth2/revoke",
     "revocation_endpoint_auth_methods_supported": [
         "client_secret_basic",
         "client_secret_post",
         "client_secret_jwt",
         "private_key_jwt"
     ],
-    "introspection_endpoint": "http://localhost:8080/oauth2/introspect",
+    "introspection_endpoint": "http://resource-client/oauth2/introspect",
     "introspection_endpoint_auth_methods_supported": [
         "client_secret_basic",
         "client_secret_post",
@@ -592,9 +592,9 @@ OAuth 인증과정은 5단계, `Resource Client` 에서 사용되는 `Spring Fil
 4. **Authorization Code & Redirection URI**
    - `Authorization Code` 로 `access token` 을 요청  
    - 위에서 설명한 `OidcAuthorizationCodeAuthenticationProvider` 혹은 `OAuth2LoginAuthenticationProvider` 에서 `access token` 을 요청한다.  
-     - `OidcAuthorizationCodeAuthenticationProvider` 사용시 `id token` 검증을 위해 `NimbusJwtDecoder` 에서 `/oauth/jwks` 호출 
-     - `OAuth2UserService` 를 통해 `userinfo` 에 대한 요청도 해당 `Provider` 내에서 수행한다.  
-       - 요청시 `HTTP Header` `Authorization: Bearer {access_token}` 설정해서 `userinfo` 를 요청한다.   
+   - `access token` 을 얻은 뒤 `OAuth2UserService` 를 통해 `userinfo` 에 대한 요청도 해당 `Provider` 내에서 수행한다.  
+   - `userinfo` 요청시 `HTTP Header` `Authorization: Bearer {access_token}` 설정해서 요청한다.   
+   - `OidcAuthorizationCodeAuthenticationProvider` 사용시 `userinfo` 요청 전에 `id token` 검증을 위해 `NimbusJwtDecoder` 에서 `/oauth/jwks` 호출한다.  
 5. **Access Token**  
    - `Authorization Server` 는 `access token` 를 응답한다.  
    - `OAuth2LoginAuthenticationFilter` 에서 `access token` 을 DB 에 저장하고 `access token` 을 사용해 `Authentication` 객체를 생성한다.  
@@ -1127,7 +1127,7 @@ spring.sql.init.schema-locations=\
               }));
       /*authz
               .authorizationServerSettings( AuthorizationServerSettings.builder()
-                      .issuer("http://localhost:8080")
+                      .issuer("http://resource-client")
                       .authorizationEndpoint("/oauth2/v1/authorize")
                       .deviceAuthorizationEndpoint("/oauth2/v1/device_authorization")
                       .deviceVerificationEndpoint("/oauth2/v1/device_verification")
@@ -1525,7 +1525,7 @@ code_verifier=Wzv5cdcfWYxm9...
   "aud": "oauth-demo-client-id",
   "azp": "oauth-demo-client-id",
   "auth_time": 1729760759,
-  "iss": "http://localhost:9090",
+  "iss": "http://authorization-server",
   "exp": 1729762968,
   "iat": 1729761168,
   "nonce": "BV2Ik4qWdCn-BdL-9hANoGiq9FyFZH9wrgQonYGWA-I",
@@ -1579,7 +1579,7 @@ redirect_uri=http://127.0.0.1:8080/login/oauth2/code/naver-oauth-redirect
 
 ```sh
 # Authorization Server 에 userinfo 요청
-GET http://authorization-server/userinfo,[
+GET http://authorization-server/userinfo
 # HEADER
 Accept=application/json
 Authorization="Bearer eyJraWQi..."
@@ -1677,7 +1677,7 @@ Resource Server 의 Spring Security Config 를 설정.
 public SecurityFilterChain resourceServer(HttpSecurity http) throws Exception {
     // 공개키 조회 및 jwtDecoder 등록
     http.oauth2ResourceServer(resourceServer -> resourceServer
-            .jwt(jwtConfigurer -> jwtConfigurer.jwkSetUri("http://localhost:9090/oauth2/jwks")));
+            .jwt(jwtConfigurer -> jwtConfigurer.jwkSetUri("http://authorization-server/oauth2/jwks")));
 
     http.authorizeHttpRequests(auth -> auth
             .requestMatchers("/userinfo").hasAuthority("SCOPE_profile") // 해당 권한이 있어야 /userinfo 접근 가능
@@ -1728,7 +1728,7 @@ class org.springframework.security.web.access.intercept.AuthorizationFilter
 - `HTTP Header` 에 저장된 `access token` 을 검증한다.  
   - `Authorization: Bearer {access_token}` 
 - `Spring Authorizaion Server` 의 `/oauth/jwks` 에서 얻은 공개키를 사용해 검증한다.  
-  - 내부적으론 `JwtAuthenticationProvider` 를 사용하여 공개키가 등록된 `jwtDecoder` 로 access token 을 검증한다.  
+  - 내부적으론 `JwtAuthenticationProvider` 를 사용하여 공개키가 등록된 `jwtDecoder` 로 `access token` 을 검증한다.  
 
 ```java
 package org.springframework.security.oauth2.server.resource.web.authentication;
@@ -1759,3 +1759,178 @@ public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
 }
 ```
 
+## Spring OAuth Opaque Token
+
+> **Opaque Token**
+> 불투명 토큰, Authorization Server 에서 식별자 용도로 사용하는 랜덤 문자열 형태의 토큰  
+> `OAuth 2.0` 프로토콜에서 사용한다.  
+
+JWT 의 경우 `Authorization Server` 의 공개키를 통해 `Resource Server` 에서도 자체적으로 검증이 가능하기 때문에 추가적인 `Authorization Server` 의 개입을 필요로 하지 않는다.  
+하지만 만료시간으로 토큰 유효성을 검증할 경우 `Authorization Server` 에서 토큰을 비활성화(수동삭제 등) 해도 `Resource Server` 에서 반영되지 않는다.  
+
+`Opaque Token` 는 매 요청마다 토큰을 `Authorization Server` 로부터 검증받아야 하기 때문에 실시간 유효성 검증이 가능하다.  
+
+`Spring Authorization Server` 에서도 `OAuth 2.0` 기반의 `Opaque Token` 을 지원한다.  
+
+### Authorization Server 에서의 Opaque  
+
+`Opqeue Token` 의 경우 유효성을 확인하기 위해선 항상 `Authorization Server` 에 요청이 필요하다.  
+`Authorization Server` 의 개입이 각 API 마다 발생하지만 즉각적인 토큰의 유효성 체크가 가능하다.  
+
+```java
+// token claim 에 추가적인 정보를 삽입하기 위해 사용,  
+// email 정보가 Resource Server 에 존재하거나 email 자체가 필요하지 않다면 추가할필요없다.  
+@Bean
+public OAuth2TokenCustomizer<OAuth2TokenClaimsContext> accessTokenCustomizer() {
+    return context -> {
+        AuthUserEntity authUser = authUserService.findByUname(context.getPrincipal().getName()).orElseThrow();
+        context.getClaims().claims(claims -> claims.put("email", authUser.getEmail()));
+    };
+}
+
+@Bean
+public OAuth2TokenGenerator<OAuth2Token> tokenGenerator(OAuth2TokenCustomizer<OAuth2TokenClaimsContext> accessTokenCustomizer) {
+    OAuth2AccessTokenGenerator accessTokenGenerator = new OAuth2AccessTokenGenerator();
+    accessTokenGenerator.setAccessTokenCustomizer(accessTokenCustomizer);
+    OAuth2RefreshTokenGenerator refreshTokenGenerator = new OAuth2RefreshTokenGenerator();
+    return new DelegatingOAuth2TokenGenerator(
+            accessTokenGenerator, // access_token
+            refreshTokenGenerator // refresh_token
+    );
+}
+
+// oauth core module 등록
+@Bean
+@Order(1)
+public SecurityFilterChain authorizationServerSecurityFilterChain(RegisteredClientRepository registeredClientRepository,
+                                                                  OAuth2AuthorizationService authorizationService,
+                                                                  OAuth2AuthorizationConsentService authorizationConsentService,
+                                                                  OAuth2TokenGenerator<OAuth2Token> tokenGenerator,
+                                                                  HttpSecurity http) throws Exception {
+    OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+    OAuth2AuthorizationServerConfigurer authz = http.getConfigurer(OAuth2AuthorizationServerConfigurer.class);
+
+
+    authz
+            .registeredClientRepository(registeredClientRepository)
+            .authorizationService(authorizationService)
+            .authorizationConsentService(authorizationConsentService)
+            .tokenGenerator(tokenGenerator)
+            .authorizationEndpoint(configurer -> configurer.consentPage("/oauth2/consent"))
+    ;
+    http
+            .securityMatchers(matchers -> matchers.requestMatchers(antMatcher("/oauth2/**"), authz.getEndpointsMatcher()))
+            .exceptionHandling((exceptions) -> exceptions
+                    .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
+    ;
+    http.addFilterAfter(new PrintResponseBodyFilter(), UsernamePasswordAuthenticationFilter.class);
+    return http.build();
+}
+/* 
+org.springframework.security.web.session.DisableEncodeUrlFilter
+org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter
+org.springframework.security.web.context.SecurityContextHolderFilter
+org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.AuthorizationServerContextFilter
+org.springframework.security.web.header.HeaderWriterFilter
+org.springframework.web.filter.CorsFilter
+org.springframework.security.web.csrf.CsrfFilter
+org.springframework.security.web.authentication.logout.LogoutFilter
+org.springframework.security.oauth2.server.authorization.web.OAuth2AuthorizationServerMetadataEndpointFilter
+org.springframework.security.oauth2.server.authorization.web.OAuth2AuthorizationEndpointFilter
+org.springframework.security.oauth2.server.authorization.web.OAuth2DeviceVerificationEndpointFilter
+org.springframework.security.oauth2.server.authorization.web.NimbusJwkSetEndpointFilter
+org.springframework.security.oauth2.server.authorization.web.OAuth2ClientAuthenticationFilter
+com.example.auth.server.demo.config.PrintResponseBodyFilter
+org.springframework.security.web.savedrequest.RequestCacheAwareFilter
+org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter
+org.springframework.security.web.authentication.AnonymousAuthenticationFilter
+org.springframework.security.web.access.ExceptionTranslationFilter
+org.springframework.security.web.access.intercept.AuthorizationFilter
+org.springframework.security.oauth2.server.authorization.web.OAuth2TokenEndpointFilter
+org.springframework.security.oauth2.server.authorization.web.OAuth2TokenIntrospectionEndpointFilter
+org.springframework.security.oauth2.server.authorization.web.OAuth2TokenRevocationEndpointFilter
+org.springframework.security.oauth2.server.authorization.web.OAuth2DeviceAuthorizationEndpointFilter
+*/
+```
+
+`Resour Server` 가 `access token(Opaque Token)` 과 함께 `userinfo` 요청을 받으면 `Opaque Token` 의 유효성을 `Authorization Server` 로부터 검증받아야 한다.  
+
+- `OAuth2TokenIntrospectionEndpointFilter` 에서 `/oauth2/introspect` url 을 처리하며 로 `Opaque Token` 형태의 `access token` 검증을 수행한다.  
+- `OAuth2TokenIntrospectionAuthenticationProvider` 에서 `Authorization Entity` 를 DB 에서 조회, 해당 토큰이 유효한지 확인 후 `OAuth2TokenIntrospectionAuthenticationToken` 을 반환한다.  
+
+요청 및 응답은 아래와 같다.  
+
+```sh
+# Authorization Server 에 Opaque Token 검증 요청
+POST http://authorization-server/oauth2/introspect
+# HEADER
+Accept=application/json
+Authorization="Bearer b2F1dGgtZGVtby1jbGllbnQtaWQ6c2VjcmV0" # Opaque Token 형태의 access token
+# 응답 json body
+# {
+#     "active": true,
+#     "sub": "admin",
+#     "aud": ["oauth-demo-client-id"],
+#     "nbf": 1730341373,
+#     "scope": "profile email",
+#     "iss": "http://",
+#     "exp": 1730341673,
+#     "iat": 1730341373,
+#     "jti": "3177b005-9652-4784-9cd6-4f45674930ad",
+#     "client_id": "oauth-demo-client-id",
+#     "token_type": "Bearer"
+# }
+```
+
+### Resource Server 에서 Opaque
+
+`Resource Client` 가 요청한 `HTTP Request` 와 `access token(Opaque Token)` 이 유효한지 확인하기 위해 `Resource Server` 의 `/oauth2/introspect` 를 요청한다.  
+
+`Resource Server` 의 `Spring Security` 를 `Opaque Token` 을 사용하도록 변경  
+`JwtAuthenticationProvider` 대신 `OpaqueTokenAuthenticationProvider` 를 사용하게 된다.  
+
+```java
+@Bean
+@Profile("opaque")
+public SecurityFilterChain opaqueResourceServer(HttpSecurity http) throws Exception {
+    http.oauth2ResourceServer(resourceServer -> resourceServer
+        .opaqueToken(configurer -> configurer
+            .introspectionUri("http:///authorization-server/oauth2/introspect")
+            .introspectionClientCredentials("oauth-demo-client-id", "secret")
+        )
+    );
+    http.authorizeHttpRequests(auth -> auth
+        .requestMatchers("/userinfo").hasAuthority("SCOPE_profile") // 해당 권한이 있어야 /userinfo 접근 가능
+        .anyRequest().authenticated()
+    );
+    http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+    return http.build();
+}
+```
+
+- `BearerTokenAuthenticationFilter` 에서 `access token` 이 유효한 `Opaque Token` 인지 검증한다.  
+- `OpaqueTokenAuthenticationProvider` 에서 `/oauth2/introspect` 를 호출하여 Authorization Server 로부터 토큰 검증 후 `BearerTokenAuthentication` 을 반환한다.  
+
+```java
+@GetMapping("/userinfo")
+public Map<String, Object> getUserinfo() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String uname = authentication.getName();
+    AbstractOAuth2TokenAuthenticationToken<?> oAuth2TokenAuthenticationToken = (AbstractOAuth2TokenAuthenticationToken<?>) authentication;
+    Map<String, Object> response = new HashMap<>();
+    if (oAuth2TokenAuthenticationToken.getAuthorities().stream()
+            .anyMatch(auth -> auth.getAuthority().equals("SCOPE_profile"))) {
+        AuthUserDetailEntity entity = service.getUserById(uname);
+        response.putAll(oAuth2TokenAuthenticationToken.getTokenAttributes());
+        response.put("nickname", entity.getNickname());
+        response.put("phone_number", entity.getPhone());
+        response.put("birthdate", entity.getBirth());
+        response.put("gender", entity.getGender());
+    }
+    return response;
+}
+```
+
+## 데모코드  
+
+> <https://github.com/Kouzie/spring-boot-demo/tree/main/oauth-demo>

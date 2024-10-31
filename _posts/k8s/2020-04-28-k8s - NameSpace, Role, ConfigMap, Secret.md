@@ -486,20 +486,17 @@ spec:
 
 ## Secret
 
-**컨피그 맵과 같이 구성정보를 어플리케이션에 전달하기 위한 데이터**  
+**컨피그 맵과 같이 구성정보를 어플리케이션에 전달하기 위한 데이터 관리 리소스**  
 `DB password`, `OAuth` 토큰과 같은 비밀 정보를 주로 관리한다.  
 
-> 암호화 되어 `etcd` 에서 관리됨.  
+`ConfigMap` 과 매우 비슷하나 `etcd` 안에서 암호화 되어 `etcd` 에서 관리되고 좀 더 강력한 인증 및 접근 제어를 제공한다.  
 
 1. 내장 시크릿  
    `ServiceAccount` 생성시 같이 생성되며 kube api 를 호출할 때 사용됨
 2. 사용자 정의 시크릿  
    비밀번호, 인증키와 같은 기밀데이터를 다룰때 사용하는 사용자가 직접 만든 configMap 과 같은리소스  
 
-`ConfigMap` 과 매우 비슷하나 `etcd` 안에서 암호화된 상태로 관리된다.  
-
-주의할점은 `key-value` 형식의 데이터로 저장할 경우 `base64` 로 인코딩 해서 저장해야 한다.  
-`base64` 명령어로 인코딩, 디코딩 가능하다.  
+`key-value` 형식의 데이터로 저장할 경우 `base64` 로 인코딩 해서 저장해야 한다.  
 
 ```
 $ echo -n 'dbuser' | base64
@@ -519,6 +516,29 @@ data:
   id: ZGJ1c2Vy # dbuser
   key: YUJjRDEyMw== # aBcD123
 ```
+
+base64 로 인코딩하고 git 같은 공유 디렉토리에 올릴 수 없기 때문에 아래와 같이 `envsubst` 명령어와 같이 사용하는 편이다.  
+
+```sh
+AWS_ACCESS_KEY='AK...' \
+AWS_SECRET_KEY='dx...' \
+AWS_REGION='ap-northeast-2' \
+envsubst < my-demo-secret.yaml | \
+kubectl apply -f -
+```
+
+```yaml
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: aws-secret
+stringData:
+  AWS_ACCESS_KEY: ${AWS_ACCESS_KEY}
+  AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+  AWS_REGION: ${AWS_REGION}
+```
+
 
 ### Secret Type
 
@@ -616,3 +636,32 @@ tmpfs /etc/secrets tmpfs ro,relatime 0 0
 ```
 
 > `tmpfs`: 메모리 기반 파일 시스템
+
+### Secret Env 적용
+
+pod 에 환경변수 설정시 envFrom, evn 속성을 통해 Secret 에서 값을 가져올 수 있다.  
+
+```yaml
+spec:
+  containers:
+    - image: mydomain:5000/spring-demo:latest
+      name: spring-dmeo-container
+      imagePullPolicy: Always
+      envFrom:
+        - secretRef:
+            name: presence-sensor-secret
+      env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "dev"
+          # aws java sdk v2 로 인한 env 재정의
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: presence-sensor-secret
+              key: AWS_ACCESS_KEY
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: presence-sensor-secret
+              key: AWS_SECRET_KEY
+```

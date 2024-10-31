@@ -189,6 +189,99 @@ public static class WeatherData {
 Jackson 에서 제공하는 `ObjectMapper` 의 기본 네이밍 전략은 `lower camel case` 이다.  
 만약 특정 클래스의 네이밍 전략만 `snake case` 로 변경하고 싶다면 `@JsonNaming` 어노테이션 사용하면 된다.  
 
+### 기본생성자 없이 역직렬화
+
+`ObjectMapper` 에선 기본생성자를 통해 객체를 생성하고 `setter` 를 통해 필드값을 설정하는 방법으로 역직렬화를 수행한다.  
+기본생성자를 생성할 수 없는 경우에 역직렬화 하는 방법들을 알아본다.  
+
+```java
+// JSON 데이터
+public static String json = "{\"username\":\"john_doe\", \"email\":\"john@example.com\"}";
+
+public static class CustomUser {
+    public String username;
+    public String email;
+
+    public CustomUser(String username, String email) {
+        this.username = username;
+        this.email = email;
+    }
+}
+```
+
+`@JsonCreater @JsonProperty` 사용
+
+```java
+public static class CustomUser {
+    public String username;
+    public String email;
+
+    @JsonCreator
+    public CustomUser(@JsonProperty("username") String username,
+                      @JsonProperty("email") String email) {
+        this.username = username;
+        this.email = email;
+    }
+}
+public static void main(String[] args) throws JsonProcessingException {
+    ObjectMapper objectMapper = new ObjectMapper();
+    // 역직렬화
+    CustomUser user = objectMapper.readValue(json, CustomUser.class);
+}
+
+```
+
+`Mixin` 클래스 사용
+
+```java
+public static class CustomUser {
+    public String username;
+    public String email;
+
+    public CustomUser(String username, String email) {
+        this.username = username;
+        this.email = email;
+    }
+}
+
+public static class CustomUserMixin {
+    CustomUserMixin(@JsonProperty("username") String username,
+                    @JsonProperty("email") String email) {
+    }
+}
+
+public static void main(String[] args) throws JsonProcessingException {
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    // 믹스인 등록
+    objectMapper.addMixIn(CustomUser.class, CustomUserMixin.class);
+    // 역직렬화
+    CustomUser user = objectMapper.readValue(json, CustomUser.class);
+}
+```
+
+`parameter-names` 모듈 등록
+
+```java
+public static class CustomUser {
+    public String username;
+    public String email;
+
+    public CustomUser(String username, String email) {
+        this.username = username;
+        this.email = email;
+    }
+}
+
+public static void main(String[] args) throws JsonProcessingException {
+    ObjectMapper objectMapper = new ObjectMapper();
+    // parameter-names 등록
+    objectMapper.registerModule(new ParameterNamesModule());
+    // 역직렬화
+    CustomUser user = objectMapper.readValue(json, CustomUser.class);
+}
+```
+
 ## Date Time String
 
 시간값을 표현하는 방식은 time format 을 통해 결정된다.  
