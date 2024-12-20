@@ -391,147 +391,7 @@ for (int i = 0; i < pattern.length; i++) {
 }
 ```
 
-### Zone
-
-여러 국가에서 지원하는 서비스의 경우 서버가 위치한 `Local Time` 보다는  
-`Universal Time Coordinated(UTC: 세계 협정시)` 을 지원해야 한다.  
-
-그리니치 표준시라고도 하는데 런던 웰링턴의 그리니치 시계탑을 기준으로 표준시를 결정했기 때문  
-Zulu time 이라고도 하는데 군에서 UTC 를 뜻하는 단어이다.  
-> ISO 8601 의 마지막 특수문자 `Z` 가 Zulu time 을 뜻한다.  
-
-대표적인 나라 도시의 `UTC Time Zone` 은 아래와 같다.  
-
-```
-0:00     GMT/LON(런던)      GMT+0
-1:00     PAR(파리)          GMT+1
-2:00     CAI/JRS(카이로)    GMT+2
-3:00     JED(제다)          GMT+3
-3:30     THR(테헤란)        GMT+3.5
-4:00     DXB(두바이)        GMT+4
-4:30     KBL(카불)          GMT+4.5
-5:00     KHI(카라치)        GMT+5
-5:30     DEL(델리)          GMT+5.5
-6:00     DAC(다카)          GMT+6
-6:30     RGN(양곤)          GMT+6.5
-7:00     BKK(방콕)          GMT+7
-8:00     HKG(홍콩)          GMT+8
-9:00     SEL(서울)          GMT+9
-9:30     ADL(다윈)          GMT+9.5
-10:00    SYD(시드니)        GMT+10
-11:00    NOU(누메아)        GMT+11
-12:00    WLG(웰링턴)        GMT+12
-```
-
-> 더많은 도시의 타임존 을 확인하고 싶다면 아래 url 참고
-<https://jp.cybozu.help/general/en/admin/list_systemadmin/list_localization/timezone.html>
-
-타임존 을 표기하기 위해서 타임포멧문자열에 `Zone` 을 표기할 수 있는 문자열을 추가해야 한다.  
-
-`2011-08-12T20:17:46.384Z` - 뒤에 Z(Zulu Time) 특수문자가 붙어서 표준시를 뜻함.  
-
-`UTC` 를 위한 `Formatter` 는 아래 참고  
-
-```java
-SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-format.setTimeZone(TimeZone.getTimeZone("UTC"));
-
-DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX").withZone(ZoneId.of("UTC"));
-```
-
-`'Z'` 는 일반 문자열, 그리고 TimeZone 을 UTC 로 설정해서 Formatter 를 구현하면 된다.  
-
-`2020-09-10T10:58:19+09:00` - UTC+9 를 뜻하며 서울이나 도쿄 등의 도시에서 사용한다.  
-`yyyy-MM-dd'T'HH:mm:ssXXX` 를 Formatter 의 format 문자열로 정의하면 된다.  
-
-### ZoneDateTime  
-
-자바에서 시간 표기를 위한 클래스가 3개 있는데
-
-`LocalDateTime`, `OffsetDateTime`, `ZoneDateTime` 이다.  
-
-`OffsetDateTime` 보다 `ZoneDateTime` 이 더 많은 정보를 가지고 있는데
-`ZoneDateTime` 에는 국가와 같은 `ZoneId` `Asia/seoul` 같은 정보도 가지고 있을 수 있다.  
-
-`ZoneDateTime` 이라 하더라도 반드시 `ZoneId` 를 넣을 필요는 없기에  
-가장 범위가 작은 `LocalDateTime`, 가장 범위가 큰 `ZoneDateTime` 둘중 하나를 자주 사용한다.  
-
-`DateTimeFormatter` 에 이미 여러가지 형식을 지정해두었는데
-어떻게 출력되는지 알아보자.  
-
-```java
-ZonedDateTime zdt = ZonedDateTime.parse("2019-03-10T02:30:00Z").withZoneSameInstant(ZoneId.of("Asia/Seoul"));
-System.out.println(zdt.format(DateTimeFormatter.ISO_LOCAL_DATE)); // 2019-03-10
-System.out.println(zdt.format(DateTimeFormatter.ISO_OFFSET_DATE)); // 2019-03-10+09:00
-System.out.println(zdt.format(DateTimeFormatter.ISO_DATE)); // 2019-03-10+09:00
-System.out.println(zdt.format(DateTimeFormatter.ISO_LOCAL_TIME)); // 11:30:00
-System.out.println(zdt.format(DateTimeFormatter.ISO_OFFSET_TIME)); // 11:30:00+09:00
-System.out.println(zdt.format(DateTimeFormatter.ISO_TIME)); // 11:30:00+09:00
-System.out.println(zdt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)); // 2019-03-10T11:30:00
-System.out.println(zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)); // 2019-03-10T11:30:00+09:00
-System.out.println(zdt.format(DateTimeFormatter.ISO_ZONED_DATE_TIME)); // 2019-03-10T11:30:00+09:00[Asia/Seoul]
-System.out.println(zdt.format(DateTimeFormatter.ISO_DATE_TIME)); // 2019-03-10T11:30:00+09:00[Asia/Seoul]
-System.out.println(zdt.format(DateTimeFormatter.ISO_ORDINAL_DATE)); // 2019-069+09:00
-System.out.println(zdt.format(DateTimeFormatter.ISO_WEEK_DATE)); // 2019-W10-7+09:00
-System.out.println(zdt.format(DateTimeFormatter.ISO_INSTANT)); // 2019-03-10T02:30:00Z
-System.out.println(zdt.format(DateTimeFormatter.BASIC_ISO_DATE)); // 20190310+0900
-System.out.println(zdt.format(DateTimeFormatter.RFC_1123_DATE_TIME)); // Sun, 10 Mar 2019 11:30:00 +0900
-```
-
-`ISO_ZONED_DATE_TIME` `ISO_DATE_TIME` 두개의 포멧 차이가 없는데  
-
-```java
-ISO_ZONED_DATE_TIME = (new DateTimeFormatterBuilder())
-    .append(ISO_OFFSET_DATE_TIME)
-    .optionalStart()
-    .appendLiteral('[')
-    .parseCaseSensitive()
-    .appendZoneRegionId() // Asia/seoul
-    .appendLiteral(']')
-    .toFormatter(ResolverStyle.STRICT, IsoChronology.INSTANCE);
-
-ISO_DATE_TIME = (new DateTimeFormatterBuilder())
-    .append(ISO_LOCAL_DATE_TIME)
-    .optionalStart()
-    .appendOffsetId()
-    .optionalStart()
-    .appendLiteral('[')
-    .parseCaseSensitive()
-    .appendZoneRegionId()
-    .appendLiteral(']')
-    .toFormatter(ResolverStyle.STRICT, IsoChronology.INSTANCE);
-```
-
-구현부를 보면 `offsetId` 가 `optional` 한지 아닌지 정도 차이이다.  
-
-`ZoneId` 문자열을 `deseiralize` 하는 경우는 많이 없기 때문에  
-가장 많이 사용하는 것은 `ISO_LOCAL_DATE_TIME` `ISO_DATE_TIME` 정도.  
-
-`ISO_DATE_TIME` 가 `optional` 설정에 묶인 정보가 가장 많기 때문에 웬만한 포멧은 다 처리 가능하다.  
-
-`ZondId` 가 지정되어 있지 않은 `ZonedDateTime` 의 경우 `ZondId` 가 출력되지 않는다.  
-
-```java
-ZonedDateTime zdt1 = ZonedDateTime.parse("2019-03-10T02:30:00Z").withZoneSameInstant(ZoneId.of("Asia/Seoul"));
-ZonedDateTime zdt2 = ZonedDateTime.parse("2019-03-10T02:30:00Z");
-System.out.println(zdt1.format(DateTimeFormatter.ISO_DATE_TIME)); // 2019-03-10T11:30:00+09:00[Asia/Seoul]
-System.out.println(zdt2.format(DateTimeFormatter.ISO_DATE_TIME)); // 2019-03-10T02:30:00Z
-```
-
-
-#### withZoneSameInstant() vs withZoneSameLocal
-
-```java
-ZonedDateTime zdt = ZonedDateTime.parse("2019-03-10T02:30:00Z");
-ZoneId zoneId = ZoneId.of("Asia/Seoul");
-System.out.println(zdt.withZoneSameInstant(zoneId)); // 2019-03-10T11:30+09:00[Asia/Seoul] 
-System.out.println(zdt.withZoneSameLocal(zoneId)); // 2019-03-10T02:30+09:00[Asia/Seoul]
-```
-
-`withZoneSameInstant()` 은 시간과 함께 영역을 변경
-`withZoneSameLocal()` 은 영역만 변경
-
-#### TemporalAccessor
+### TemporalAccessor
 
 `TemporalAccessor` 를 사용하면 아래와 같이 `LocalDateTime` 과 `ZoneDateTime` 포멧 문자열을 모두 다룰 수 있다.  
 
@@ -607,7 +467,7 @@ public class GetController {
 }
 ```
 
-```
+```sh
 curl -H "Content-Type: application/json" \
     -X GET "http://localhost:8080/test?title=testTitle&type=testType&beginDate=2019-09-01T09:00:00+9:00&endingDate=2019-09-02T09:00:00+9:00"
 {
@@ -631,7 +491,7 @@ Parse attempt failed for value [2019-09-01T09:00:00 9:00]]<EOL>Field error in ob
 
 이번엔 `+09:00` 부분은 `Z` 로 교체한 후 request 해보자.  
 
-```
+```sh
 curl -H "Content-Type: application/json" \
     -X GET "http://localhost:8080/test?title=testTitle&type=testType&beginDate=2019-09-01T09:00:00Z&endingDate=2019-09-02T09:00:00Z"
 {
@@ -645,7 +505,7 @@ curl -H "Content-Type: application/json" \
 성공하는 것으로 보아 @DateTimeFormat 어노테이션은 정상작동 하고 있는 것을 알수 있고  
 URL 의 디코딩 문제로 유추할 수 있다.  
 
-```
+```sh
 curl -H "Content-Type: application/json" \
     -X GET "http://localhost:8080/test?title=testTitle&type=testType&beginDate=2019-09-01T09%3A00%3A00%2B09%3A00&endingDate=2019-09-02T09%3A00%3A00%2B09%3A00"
 {
@@ -660,7 +520,7 @@ URL 에서 + 기호는 공백을 표기하기도 하기에 위처럼 인코딩 �
 
 > Zulu time 을 사용하였을 때에도 URL 을 인코딩 하는 것을 권장한다. 브라우저나 서버 프레임워크별로 차이가 있을 수 있음.  
 
-#### Converter 
+### Converter  
 
 ```java
 String time = "2011-12-03T10:15:30";

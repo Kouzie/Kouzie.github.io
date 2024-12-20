@@ -51,22 +51,25 @@ MQTT 프로토콜은 메시지를 해당 `Topic`에 발행(`Publish`) 하고 해
 
 그림과 같이 총 3개 레벨의 `QOS`가 있다.  
 
-**Level 0** (At most once)
+- **Level 0 (At most once)**
+  - 메시지는 한번만 전달된다. Fire and Forget이라고도 한다. 즉 보내고 잊는다.
+  - 한번만 전달하지만 전달여부는 확인하지 않는 레벨이다.  
 
-메시지는 한번만 전달된다. Fire and Forget이라고도 한다. 즉 보내고 잊는다. 한번만 전달하지만 전달여부는 확인하지 않는 레벨이다.  
+- **Level 1 (At least once)**
+  - 대부분 브로커, 라이브러리는 `Level 1` 까지 지원한다
+  - 메시지는 최소 한번은 전달된다.  
+  - 유일하게 핸드셰이킹 같은 연결 여부를 확인하지 않고 메시지를 전달하는 레벨이다.
+  - 메시지를 성공적으로 전달하면 `Broker`가 `Publisher`에게 `PUBACK` 을 보내어 전달 성공을 알린다,  
+  - 만약 전달이 이루어지지 않을 경우 `Publisher` 는 `PUBACK`을 받지 못하여 적정 시간 후 실패로 알고 다시 메시지를 보낸다.  
+  - `Subscribe` 는 중복메시지를 받는 경우가 생기게 된다.  
 
-**Level 1** (At least once)
-
-메시지는 최소 한번은 전달된다. 유일하게 핸드셰이킹 같은 연결 여부를 확인하지 않고 메시지를 전달하는 레벨이다.
-위에 그림을 보면 메시지를 성공적으로 전달하면 `Broker`가 `Publisher`에게 PUBACK을 보내어 전달 성공을 알리지만  
-만약 정상적 통신이 이루어지지 않을 경우 `Loss`가 발생하여 `PUBACK`을 받지 못하여 `Publisher`는 적정 시간이 지나 실패로 알고 다시 메시지를 보내어  
-`Subscribe`에게 중복메시지를 보내는 경우가 생기게 된다. (무료 라이브러리는 대부분 `Level1`까지 지원한다)   
-
-**Level 2** (Exactly once)
-
-메시지는 반드시 한번 전달된다. 위에 있는 `PUBACK` 과정을 `PUBREC`으로 핸드 셰이킹을 함으로서 메시지가 정확히 한번만 가는 레벨이다.
-만약 위의 과정처럼 `Broker`가 `PUBREC`을 전달 받지 못해 `Loss`가 일어나게 되어도 `Broker`는 이미 보냈다는 사실을 알고 있기 때문에 새로 보내지 않는다.  
-
+- **Level 2 (Exactly once)**
+  - 아래 3가지 과정으로 메시지는 반드시 한번 전달된다.
+  - Publish received (PUBREC)
+  - Publish released (PUBREL)
+  - Publish complete (PUBCOMP)
+  - `Publisher`가 `PUBREC` 을 전달받지 못할 경우 메세지를 특정횟수만큼 재전송하고, 브로커는 메세지 id 를 기반으로 한번만 전송한다.  
+  - `Publisher` 가 `PUBCOMP` 를 전달받지 못할 경우 `PUBREL` 를 특정횟수 만큼 재전송하고, 결국 전달받지 못하면 `Loss` 처리한다.  
 
 ### MQTT Broker
 

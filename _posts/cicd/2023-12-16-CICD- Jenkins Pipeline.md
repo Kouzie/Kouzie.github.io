@@ -125,9 +125,12 @@ ssh-keygen -t rsa -f id_rsa_deploy_jenkins
 # 위 경로에 id_rsa_deploy_jenkins.pub 출력값 저장
 # ssh-rsa AAAAB3NzaC1yc2E...-9.local
 cat id_rsa_deploy_jenkins.pub
+```
 
-# Jenkins 관리 - Credentials - System(global) - Add Credentails - SSH Username with private key
-# Private Key - Enter directly - Key (Add)
+- Jenkins 관리 - Credentials - System(global) - Add Credentails - SSH Username with private key
+- Private Key - Enter directly - Key (Add)
+
+```sh
 # 위 경로에 id_rsa_deploy_jenkins 출력값 저장
 # -----BEGIN OPENSSH PRIVATE KEY-----
 # b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABlwAAAAdzc2gtcn
@@ -144,6 +147,16 @@ cat id_rsa_deploy_jenkins
 `Jenkins 관리 - System - Global Properties` 에서 환경변수 `[GIT_SSL_NO_VERIFY, false]` 설정  
 
 `Git Lab Token Access` 방식으로 연동할 경우 `Username with password` 형태의 `credentials` 을 사용하고, `username` 에는 임의의 값, `password` 에는 `Token` 문자열을 입력해주면 된다.  
+
+### Gitlab 연동
+
+Access Token 을 통해 연동하는것을 권장  
+
+`Account - User Settings - Access Tokens` 에서 Access Token 생성  
+
+`Jenkins 관리 - Credentials - System(global) - Add Credentails - Username with password` 생성
+
+`Username, ID` 는 기억하기 쉬운 문자열로 저장하고 `Password` 를 발급받은 `Access Token` 으로 저장.  
 
 
 ### SSH Pipeline Steps 플러그인

@@ -205,8 +205,10 @@ public class RestSecurityConfig {
 ```
 
 > XSS(Cross-site Scripting): 악성 스크립트가 담긴 게시물을 올린 뒤 사용자나 관리자가 해당 게시글을 읽으면서 악성 스크립트 실행, 세션탈취, 쿠키탈취 등의 동작을 수행  
-> CSRF(Cross-site Request Forgery): XSS 와 동일하게 사용자가 악성 스크립트를 실행하도록 함, 웹사이트에 의도치 않은 요청을 수행하도록 함
-> CSRF 토큰을 통해 세션내에서 요청/응답을 주고 받을 때 해당 토큰을 추적하여 CSRF 공격을 방지한다.  
+>> 사이트 차원에서 악성스크립트를 올리지 못하도록 특수문자 필터링 필요.  
+>> 서버가 반환하는 HTML 의 HTTP Header 에 CSP 정책을 설정, 브라우저에서 타 사이트 호출을 막도록 지정.  
+> CSRF(Cross-site Request Forgery): XSS 와 동일하게 사용자가 악성 스크립트를 실행하도록 함, 웹사이트에 의도치 않은 요청을 수행하도록 함, 세션 로그인시 세션ID 가 쿠키에 남아있기에 이를 악용하는 방법.
+>> CSRF 토큰을 통해 세션내에서 요청/응답을 주고 받을 때 해당 토큰을 추적하여 CSRF 공격을 방지한다.  
 
 `WebSecurity ignoring` 과 `HttpSecurity permitAll` 의 차이는 `SecurityFilterChain` 을 거치는지 아닌지 차이  
 인증, 인가 모두 필요없는 리소스의 경우 `WebSecurity ignoring` 사용이 성능상 유리하다.  

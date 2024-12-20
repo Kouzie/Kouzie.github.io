@@ -1384,55 +1384,6 @@ DB 예약어의 경우 테이블명으로 사용할 수 없는데 아래처럼 `
 `precision` | `int` | 소수 정밀도 | `0`
 `scale` | `int` | 소수 자리수 지정 | `0`
 
-### @GeneratedValue
-
-식별키 생성 방법을 지정한다.  
-
-속성값|설명
-|---|---|
-`AUTO` | 아래 3개중 DB에 맞게 자동으로 생성  
-`TABLE` | 기본키 생성방식 자체를 DB에 위임  
-`SEQUENCE` | 시퀀스를 사용해서 식별키 생성, `Oracle`에서 자주 사용  
-`IDENTITY` | 별도의 키를 생성해주는 채번 테이블 사용, `MySQL`에서 자주 사용  
-
-같은 DB 더라도 버전별로 시퀀스 식별키 생성방법이 달라 `GenerationType.AUTO` 는 혼란을 야기할수 있어 사용을 권장하지 않는다.  
-
-실제 `MySQL 8.0` 이상버전에 `AUTO` 사용시 아래와 같은 시퀀스용 테이블을 만들어 `insert`, `select`, `update` 를 반복한다.  
-
-```sql
-create table hibernate_sequence
-(
-    next_val bigint
-) engine = InnoDB;
-
-insert into hibernate_sequence values (1)
-select next_val as id_val from hibernate_sequence for update
-update hibernate_sequence set next_val= ? where next_val=?
-```
-
-`strategy`값이 `TABLE` `SEQUENCE` 일 경우 별도의 테이블을 생성해야 함으로  
-`@SequenceGenerator`혹은 `@TableGenerator` 를 엔티티클래스 위에 정의한다.  
-
-```java
-@Entity
-@TableGenerator(name="my_seq_table", table="SEQTB_USER", pkColumnValue="user_seq", allocationSize=1)
-public class User{
-    @Id
-    @GeneratedValue(strategy=GenerationType.TABLE, generator="my_seq_table")
-    private Long uid;
-     
-    private String uname;
-}
-
-@Entity
-@SequenceGenerator(name = "my_seq", sequnceName = "SEQ_BOARD", initialValue = 1, allocationSize = 1)
-public class Board {
-  @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "my_seq")
-  private Long id;
-}
-```
-
 ### @CreationTimestamp, @UpdateTimestamp, @CreatedDate, @LastModifiedDate
 
 `@CreationTimestamp`, `@UpdateTimestamp` 의 경우 `org.hibernate`에서 지원하는 어노테이션, `VM date` 의 시간값을 사용해 값을 기록한다.  
@@ -1457,6 +1408,14 @@ private Instant lastUpdatedOn;
 `@CreatedDate`, `@LastModifiedDate` 의 경우 `spring data` 에서 지원하는 어노테이션, 어플리케이션 서버의 시간값을 사용해 값을 기록한다.  
 
 `spring data` 에서 제공하는 어노테이션이 좀 더 범용적이지만 `@EnableJpaAuditing`, `@EntityListeners(AuditingEntityListener.class)` 설정이 필요함으로 편한거 사용하면 된다.  
+
+MySQL 의 경우 Instant, ZoneDateTime 같은 offset 관련 시간객체의 경우 TIMESTAMP 로 저장하며, LocalDateTime 같은 경우 DATETIM 형태로 저장한다.  
+
+- DATETIME  
+  시간대 정보 없이 날짜와 시간을 저장. Hibernate는 UTC 시간 값을 저장하지만 변환은 서버가 아닌 애플리케이션에서 처리.
+- TIMESTAMP  
+  UTC로 저장되며, MySQL이 서버 시간대를 기준으로 변환 처리. 조회 시 서버의 시간대 설정에 따라 시간 반환.
+  MySQL 의 TIMEZONE 설정을 변경하면 결과값이 다르게 나올 수 있다.  
 
 ### @Inheritance, @DiscriminatorValue, @DiscriminatorColumn
 
@@ -1544,7 +1503,31 @@ public class Member {
 
 ### @Id, @GeneratedValue, @GenericGenerator
 
+식별키 생성 방법을 지정한다.  
+
+속성값|설명
+|---|---|
+`AUTO` | 아래 3개중 DB에 맞게 자동으로 생성  
+`TABLE` | 기본키 생성방식 자체를 DB에 위임  
+`SEQUENCE` | 시퀀스를 사용해서 식별키 생성, `Oracle`에서 자주 사용  
+`IDENTITY` | 별도의 키를 생성해주는 채번 테이블 사용, `MySQL`에서 자주 사용  
+
+같은 DB 더라도 버전별로 시퀀스 식별키 생성방법이 달라 `GenerationType.AUTO` 는 혼란을 야기할수 있어 사용을 권장하지 않는다.  
+실제 `MySQL 8.0` 이상버전에 `AUTO` 사용시 아래와 같은 시퀀스용 테이블을 만들어 `insert`, `select`, `update` 를 반복한다.  
+
+```sql
+create table hibernate_sequence
+(
+    next_val bigint
+) engine = InnoDB;
+
+insert into hibernate_sequence values (1)
+select next_val as id_val from hibernate_sequence for update
+update hibernate_sequence set next_val= ? where next_val=?
+```
+
 보통 `@GeneratedValue(strategy = GenerationType.IDENTITY)` 를 사용하여 `Id` 생성전략을 `DataSource` 에 맡긴다.  
+MySQL 의 경우 테이블의 auto increment 기능을 사용한다.  
 
 ```java
 @Getter
@@ -1559,9 +1542,44 @@ public class AccountEntity {
 }
 ```
 
-이외에도 `@GeneratedValue` 를 사용해서 `UUID`, `Sequence ID` 등을 사용할 수다.  
+`strategy`값이 `TABLE` `SEQUENCE` 일 경우 별도의 테이블을 생성해야 함으로  
+`@SequenceGenerator`혹은 `@TableGenerator` 를 엔티티클래스 위에 정의한다.  
 
-하지만 직접 커스텀한 ID 생성방식이 있다면 아래와 같이 `@GenericGenerator` 를 사용하면 된다.  
+```java
+@Entity
+@TableGenerator(name="my_seq_table", table="SEQTB_USER", pkColumnValue="user_seq", allocationSize=1)
+public class User{
+    @Id
+    @GeneratedValue(strategy=GenerationType.TABLE, generator="my_seq_table")
+    private Long uid;
+     
+    private String uname;
+}
+
+@Entity
+@SequenceGenerator(name = "my_seq", sequnceName = "SEQ_BOARD", initialValue = 1, allocationSize = 1)
+public class Board {
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "my_seq")
+  private Long id;
+}
+```
+
+이외에도 `@GeneratedValue` 를 사용해서 `UUID`, `Sequence ID` 등을 사용할 수 있다.  
+
+```java
+@Entity
+class Reservation {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+    private String status;
+    private String number;
+}
+```
+
+직접 커스텀한 ID 생성방식이 있다면 아래와 같이 `@GenericGenerator` 를 사용하면 된다.  
 
 ```java
 @Getter
@@ -1597,6 +1615,44 @@ public class CustomIdGenerator implements IdentifierGenerator {
 }
 ```
 
+#### Persistable
+
+Persistable 인터페이스는 `@GeneratedValue` 를 통해 `Id` 를 생성할 수 없을 때 사용할만하다.  
+`@Id` 어노테이션은 객체의 영속성 역할에도 영향을 끼친다, `@GeneratedValue` 로 생성된 Id 라면 `INSERT` 쿼리가 호출되겠지만, 아래처럼 `@Id` 어노테이션만 설정하고 초기화 했을 때 `INSERT` 요청일지 `UPDATE` 요청일지 구분할 수 없다.  
+
+```java
+@Entity
+public class CustomEntity {
+    @Id
+    private Long id;
+    ...
+}
+```
+
+`managed` 영역에 이미 `persist`(영속)되어 있다면 `UPDATE` 요청을 하겠지만,  
+new 연산자를 통해 생성한 상태라면 `INSERT` 해야할지 `UPDATE` 해야할 지 모르기 때문에 `SELECT` 를 먼저 한번 수행한다.  
+
+`@GeneratedValue` 를 사용하는 것이 정석이지만 `Persistable` 인터페이스를 구현시켜 `isNew` 속성을 지정해주어 영속화 되지 않는 객체도 `INSERT, UPDATE` 구분할 수 있다.
+
+```java
+import org.springframework.data.domain.Persistable;
+
+@Getter
+@Entity
+public class CustomEntity implements Persistable<Long> {
+    
+    @Id
+    private Long id;
+    
+    @Setter
+    private boolean isNew;
+
+    public CustomEntity(Long id) {
+        this.id = id;
+        this.isNew = true;  // 새로운 엔티티임을 명시적으로 설정
+    }
+}
+```
 
 ## 트랜잭션
 

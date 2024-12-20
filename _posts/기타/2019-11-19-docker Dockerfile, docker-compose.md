@@ -12,7 +12,7 @@ categories:
   - tools
 ---
 
-# Dockerfile
+## Dockerfile
 
 
 `nginx`서버 `/usr/share/nginx/html/index.html` 디렉토리에 `index.html`파일을 삽입하여 다시 이미지를 만들고 싶을때  
@@ -59,7 +59,7 @@ Successfully tagged mywebserver:latest
 
 > 주의: 도커파일의 이름 기본값은 `Dockerfile`이며 이를 변경하면 별도의 이름 지정 속성을 사용해야 한다.  
 
-## Dokcerfile 명령어  
+### Dokcerfile 명령어  
 
 도커파일은 docker이미지를 생성하기 위한 파일로 기존 이미지에 여러가지 설정을 붙여 새로운 이미지를 만들때 사용하는 파일이다.  
 
@@ -100,8 +100,8 @@ CMD ["-d", "10"]
 해당 `Dockerfile` 로 `sample` 이란 이미지를 생성 후 아래처럼 사용 가능  
 
 ```
-$ docker run -it sample # CMD 의 인자를 그대로 사용, 10초 간격 갱신
-$ docker run -it sample -d 2 # CMD 의 인자 생략, 2초 간격 갱신    
+$ docker run -it sample ## CMD 의 인자를 그대로 사용, 10초 간격 갱신
+$ docker run -it sample -d 2 ## CMD 의 인자 생략, 2초 간격 갱신    
 ```
 
 `FROM`만 필수항목이고 나머지는 모두 없어도 된다.  
@@ -111,18 +111,18 @@ $ docker run -it sample -d 2 # CMD 의 인자 생략, 2초 간격 갱신
 `ubuntu` 컨테이너에 `nginx`를 설치하고 `index.html`파일을 삽인한 후 다시 이미지화.  
 
 ```dockerfile
-# Dockerfile.base
-# Dockerfile 에선 주석처리를 # 을 이용
-# ubuntu 컨테이너 생성
+## Dockerfile.base
+## Dockerfile 에선 주석처리를 ## 을 이용
+## ubuntu 컨테이너 생성
 FROM ubuntu:16.04
 
-# 명령어 실행
+## 명령어 실행
 RUN apt-get update && apt-get install -y -q nginx
 
-# 현재 디렉토리에 index.html을 해당 경로에 복사
+## 현재 디렉토리에 index.html을 해당 경로에 복사
 COPY index.html /usr/share/nginx/html
 
-# 데몬 실행 daemon off는 포그라운드로 실행 
+## 데몬 실행 daemon off는 포그라운드로 실행 
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
@@ -149,7 +149,7 @@ f4b126ec4a47        About a minute ago   /bin/sh -c #(nop) COPY file:b673a17565a
 
 생각해보면 docker hub에서 이미지 다운받아 컨테이너를 만들때 부터 어떤 포트가 들어갈지, 어떤 명령을 수행할지 이미 설정된 이미지들이 있는데 모두 `Dockerfile`로 만들어진 이미지들이다.  
 
-### union file system
+#### union file system
 
 위의 출력값을 통해 도커는 `union file system`을 사용함을 알 수 있다.  
 계층화된 파일 시스템을 사용해 중복 데이터를 피해 효율적인 이미지 관리를 할 수 있다.  
@@ -163,7 +163,11 @@ mywebserver               latest              fc4c50b45ccd        26 hours ago  
 nginx                     latest              540a289bab6c        4 days ago          126MB
 ```
 
-`docker run --name newNginx -d -p 80:80 mywebserver`명령어로 해당 이미지를 실행시키고 위에서 정의한 `index.html` 파일이 `/usr/share/nginx/html` 디렉터리에 들어있는지 확인  
+```
+docker run --name newNginx -d -p 80:80 mywebserver
+```
+
+위 명령어로 해당 이미지를 실행시키고 위에서 정의한 `index.html` 파일이 `/usr/share/nginx/html` 디렉터리에 들어있는지 확인  
 
 `docker image inspect`로 `nginx:latest` 이미지와 `mywebserver` 이미지를 확인하면 
 
@@ -196,7 +200,23 @@ nginx                     latest              540a289bab6c        4 days ago    
 `MergedDir, UpperDir, WorkDir`은 도커 이미지 구축을 위한 데이터로 
 두 이미지의 내용이 일치하는 부분이 상당히 많다.  
 
-## local docker private registry 구축 및 관리  
+### arm docker build
+
+apple silicon 에서 docker build 시 각별한 주의가 필요하다.  
+
+apple silicon 에서 빌드한 이미지는 arm 시스템에서 동작하는 Docker 이미지가 생성되고  
+일반 amd CPU 를 사용하는 시스템에서 해당 이미지를 실행하면 아래와 같은 오류가 발생한다.  
+
+`exec format error`
+
+빌드시 아래와 같이 amd 아키텍처에서 실행할 것임을 명시해야한다.  
+
+```sh
+docker build --platform linux/amd64 -t docker-test .
+```
+
+
+### local docker private registry 구축 및 관리  
 
 프라이빗 레지스트리를 구축하기 위한 이미지를 다운받아 컨테이너 생성해보자.  
 
@@ -269,7 +289,7 @@ REPOSITORY                              TAG                 IMAGE ID            
 
 이미지명 앞에 `ip:port`를 입력할 필요가 있다.  
 
-### 외부 서버에 private registry 등록  
+#### 외부 서버에 private registry 등록  
 
 `private registry` 를 외부에서 사용하려면 `https` 사용이 **필수**이다.  
 때문에 `dns` 설정, `ssl` 인증서 설치가 필요한대 `letsencrypt` 를 사용해 `ssl` 를 설치하고 진행해보았다.  
@@ -278,7 +298,7 @@ regitsry 실행 전에 인증 파일이 저장되는 `/data/auth` 위치 `htpass
 
 ```
 $ sudo apt-get install apache2-utils
-$ htpasswd -Bbn newid newpw > htpasswd # 루트 계정으로 진행
+$ htpasswd -Bbn newid newpw > htpasswd ## 루트 계정으로 진행
 ```
 
 ```
@@ -319,7 +339,7 @@ services:
       REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
       REGISTRY_HTTP_TLS_CERTIFICATE: /etc/letsencrypt/live/<mydomain>/fullchain.pem
       REGISTRY_HTTP_TLS_KEY: /etc/letsencrypt/live/<mydomain>/privkey.pem
-      REGISTRY_STORAGE_DELETE_ENABLED: "true" # 삭제 허용
+      REGISTRY_STORAGE_DELETE_ENABLED: "true" ## 삭제 허용
     volumes:
       - /data/registry:/var/lib/registry
       - /data/auth:/auth
@@ -339,8 +359,8 @@ services:
 
 ```
 $ docker login mydomain.com:5000
-# username: my-user
-# password: my-pass
+## username: my-user
+## password: my-pass
 
 $ docker image tag mysql:5.7 mydomain.com:5000/mysql:5.7
 $ docker image push mydomain.com:5000/mysql:5.7
@@ -350,295 +370,34 @@ $ docker image push mydomain.com:5000/mysql:5.7
 
 ![dockercompose6](/assets/2019/dockercompose6.png){: .shadow}  
 
+#### not certified ssl 등록
 
-### 구글 클라우드플랫폼 사용  
+`"SSL certificate problem: self signed certificate in certificate chain"`
 
-> 구글 id, 카드등록 필요  
+https 를 사용하더라도 공식 SSL 인증서가 아니라면 위와같은 에러가 docker login, pull, push 할 때 마다 발생한다.  
 
-> https://cloud.google.com/container-registry/docs/pushing-and-pulling?hl=ko
+아래 파일에서 `insecure-registries` 속성을 추가해서 해결 가능하다.  
 
-gcp에서 프로젝트를 하나 생성해보자.  
-![docker14](/assets/2019/docker14.png){: .shadow}  
+- ubuntu: `/etc/docker/daemon.json`  
+- mac: `/Users/{username}/.docker/daemon.json`  
 
-gcp에서 프로젝트를 생성하면 다음과 같이 projectID가 랜덤으로 생성되는데 gcp에 올릴때 도커 이미지 명명규칙으로 저 문자열을 사용해야한다.    
-
-`$ docker tag nginx asia.gcr.io/projectID/imagename`
-
-아시아 서버를 사용할 것이기에 맨 앞엔 아시아 서버 도메인을 사용 맨 뒤엔 사용할 이미지 이름을 사용.  
-
-#### google cloud sdk install
-
-> https://cloud.google.com/sdk/docs/quickstart-debian-ubuntu?hl=ko
-
-gcp에 이미지를 업로드하려면 먼저 `google cloud sdk` 를 설치해야한다.  
-
-리눅스 버전에 따른 `cloud-sdk`버전을 환경변수등록  
-```
-vi .bashrc
-export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)"
-```
-
-`/etc/apt/sources.list.d/google-cloud-sdk.list` 파일에 `deb http://packages.cloud.google.com/apt cloud-sdk-xenial main` 문자열 삽입 및 
-`apt-key` 등록  
-```
-echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | sudo tee a /etc/apt/sources.list.d/google-cloud-sdk.list
-curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-```
-
-`$ sudo apt-get update`
-```
-$ sudo apt-get update
-Hit:1 https://download.docker.com/linux/ubuntu xenial InRelease
-Hit:2 https://deb.nodesource.com/node_6.x xenial InRelease
-Hit:3 http://kr.archive.ubuntu.com/ubuntu xenial InRelease
-Get:4 http://security.ubuntu.com/ubuntu xenial-security InRelease [109 kB]
-Get:5 http://packages.cloud.google.com/apt cloud-sdk-xenial InRelease [6,372 B]
-Get:6 http://packages.cloud.google.com/apt cloud-sdk-xenial/main amd64 Packages [94.4 kB]
-Get:7 http://kr.archive.ubuntu.com/ubuntu xenial-updates InRelease [109 kB]
-Get:8 http://kr.archive.ubuntu.com/ubuntu xenial-backports InRelease [107 kB]
-Get:9 http://packages.cloud.google.com/apt cloud-sdk-xenial/main i386 Packages [94.5 kB]
-```
-
-`$ sudo apt-get install -y google-cloud-sdk`
-
-`gcloud` 명령을 쓸수 있게 되었다!   
-
-이미지를 올리기전 구글 클라우드에 로그인을 해야한다.
-`gcloud auth login`  
-
-출력된 url로 들어가 구글계정으로 로그인후 출력되는 `certify`키로 인증을 마친다.  
-
-올리고 싶은 프로젝트로 설정하고 이미지를 push하면 된다.  
-```
-gcloud config set project project-id
-gcloud docker -- push asia.gcr.io/project-id/nginx-cloudtest
-```
-
-올렸으면 `anotherserver`에서 pull해보자.(마찬가지로 `gcloud`명령을 쓰기 위해 `apt`키 설정 및 업데이트, `auth`를 모두 진행해야한다)  
-
-`gcloud docker -- pull asia.gcr.io/project-id/nginx-cloudtest`
-
-### maria db 샤딩
-
-`Docker`를 이용한 `MariaDB sharding` 구축 
-
-
-먼저 `mariadb` 이미지를 설치하자.  
-`$ docker pull mariadb:10.1`
-
-설치했으면 해당 이미지로 3개의 컨테이너를 생성. 각각 IP는 잘 기억해두자.  
-`spider`, `korea1`, `korea2` 으로 컨테이너 이름을 설정,  
-`spider`가 메인 db서버, `korea1`, `korea2`는 slave서버이다.  
-
-```
-$ docker run -d -e MYSQL_ROOT_PASSWORD=koreapass --name=spider mariadb:10.1
-
-$ docker inspect spider | grep "IPAddress"
-  "SecondaryIPAddresses": null,
-  "IPAddress": "172.17.0.2",
-          "IPAddress": "172.17.0.2",
-
-$ docker exec -it spider bash
-
-# mysql -u root -p < /usr/share/mysql/install_spider.sql
-# mysql -uroot -p
-
-MariaDB [(none)]> show engines\G;
-*************************** 1. row ***************************
-      Engine: SPIDER
-     Support: YES
-     Comment: Spider storage engine
-Transactions: YES
-          XA: YES
-  Savepoints: NO
-```
-
-이작업을 2개의 컨테이너를 새로 만들고 똑같이 수행한다.  
-단 새로 만들 2개의 컨테이너명을 `spider`가 아닌 `korea1`, `korea2`로 지정  
-
-```
-docker run -d -e MYSQL_ROOT_PASSWORD=koreapass --name=korea1 mariadb:10.1
-docker run -d -e MYSQL_ROOT_PASSWORD=koreapass --name=korea2 mariadb:10.1
-
-$ docker inspect korea1 | grep "IPAddress"
-  "SecondaryIPAddresses": null,
-  "IPAddress": "172.17.0.3",
-          "IPAddress": "172.17.0.3",
-$ docker inspect korea2 | grep "IPAddress"
-  "SecondaryIPAddresses": null,
-  "IPAddress": "172.17.0.4",
-          "IPAddress": "172.17.0.4",
-```
-
-IP확인 후 각각 들어가서 intall_spider.sql를 실행시킨다.  
-
-모든 컨테이너에서 다음과 같이 출력되면 설정끝
-
-```
-MariaDB [(none)]> show engines;
-+--------------------+---------+--------------------------------------------------------------------------------------------------+--------------+------+------------+
-| Engine             | Support | Comment                                                                                          | Transactions | XA   | Savepoints |
-+--------------------+---------+--------------------------------------------------------------------------------------------------+--------------+------+------------+
-| SPIDER             | YES     | Spider storage engine                                                                            | YES          | YES  | NO         |
-| MRG_MyISAM         | YES     | Collection of identical MyISAM tables                                                            | NO           | NO   | NO         |
-| CSV                | YES     | Stores tables as CSV files                                                                       | NO           | NO   | NO         |
-| MEMORY             | YES     | Hash based, stored in memory, useful for temporary tables                                        | NO           | NO   | NO         |
-| MyISAM             | YES     | Non-transactional engine with good performance and small data footprint                          | NO           | NO   | NO         |
-| SEQUENCE           | YES     | Generated tables filled with sequential values                                                   | YES          | NO   | YES        |
-| Aria               | YES     | Crash-safe tables with MyISAM heritage                                                           | NO           | NO   | NO         |
-| PERFORMANCE_SCHEMA | YES     | Performance Schema                                                                               | NO           | NO   | NO         |
-| InnoDB             | DEFAULT | Percona-XtraDB, Supports transactions, row-level locking, foreign keys and encryption for tables | YES          | YES  | YES        |
-+--------------------+---------+--------------------------------------------------------------------------------------------------+--------------+------+------------+
+```json
+{
+  "builder": {
+    "gc": {
+      "defaultKeepStorage": "20GB",
+      "enabled": true
+    }
+  },
+  "experimental": false,
+  "insecure-registries": [
+    "https://core.harbor.domain"
+  ]
+}
 ```
 
 
-이제 `spider`, `korea1`, `korea2` 컨테이너의 db에 계정 생성 및 권한을 할당한다.  
-그리고 `koreaDB`라는 데이터베이스를 생성  
-```
-MariaDB [(none)]> use mysql;
-MariaDB [mysql]> create user 'spider-user'@'%' identified by 'spiderpass';
-MariaDB [mysql]> grant all on *.* to 'spider-user'@'%' with grant option;
-MariaDB [mysql]> flush privileges;
-MariaDB [(none)]> create database koreaDB;
-MariaDB [(koreaDB)]> 
-```
-
-모든 컨테이너에 사용자와 database가 생성되었으면 
-master서버인 `spider`에서 slave 서버인 `korea1`, `korea2`를 등록하자.  
-
-```
--- spider의 koreaDB --
-MariaDB [(koreaDB)]> create server korea1
-  foreign data wrapper mysql
-  options(
-  host '172.17.0.3',
-  database 'koreaDB',
-  user 'spider-user',
-  password 'spiderpass',
-  port 3306
-  );
-
-Query OK, 0 rows affected (0.00 sec)
-
-MariaDB [(koreaDB)]> create server korea2
-  foreign data wrapper mysql
-  options(
-  host '172.17.0.4',
-  database 'koreaDB',
-  user 'spider-user',
-  password 'spiderpass',
-  port 3306
-  );
-MariaDB [(koreaDB)]> select * from mysql.servers;
-+-------------+------------+---------+-------------+------------+------+--------+---------+-------+
-| Server_name | Host       | Db      | Username    | Password   | Port | Socket | Wrapper | Owner |
-+-------------+------------+---------+-------------+------------+------+--------+---------+-------+
-| korea1      | 172.17.0.3 | koreaDB | spider-user | spiderpass | 3306 |        | mysql   |       |
-| korea2      | 172.17.0.4 | koreaDB | spider-user | spiderpass | 3306 |        | mysql   |       |
-+-------------+------------+---------+-------------+------------+------+--------+---------+-------+
-```
-
-그리고 공유할 테이블인 `shard_table`을 생성 
-```
--- spider의 koreaDB --
-MariaDB [mysql]> use koreaDB;
-MariaDB [koreaDB]> create table shard_table
-  (id int not null auto_increment
-  , name varchar(255) not null
-  , address varchar(255) not null
-  , primary key(id))
-  engine=spider comment='wrapper "mysql", table "shard_table"'
-  partition by key(id)
-  ( partition korea1 comment = 'srv "korea1"'
-  , partition korea2 comment = 'srv "korea2"' );
-
-MariaDB [koreaDB]> FLUSH TABLES;
-```
-
-마스터 서버에서 공유할 테이블을 만들고 slave서버설정까지 끝났으면
-
-slave서버들이 마스터 서버의 table을 같이 사용할 수 있게 테이블을 생성, `korea1`, `korea2`에서 각각 설정한다.  
-
-```
--- korea1, korea2 의 koreaDB --
-MariaDB [(none)]> use koreaDB;
-MariaDB [koreaDB]> create table shard_table
-  (
-  id int not null auto_increment,
-  name varchar(255) not null,
-  address varchar(255) not null,
-  primary key(id)
-  );
-MariaDB [koreaDB]> FLUSH TABLES;
-```
-
-slave에서 db 테이블 생성이 모두 끝났으면 
-`masger`서버에서 `insert` 쿼리를 여러번 수행 
-
-```
--- spider의 koreaDB --
-insert into shard_table(name, address) values ('kim', 'seoul');
-insert into shard_table(name, address) values ('lee', 'seoul');
-insert into shard_table(name, address) values ('park', 'seoul');
-insert into shard_table(name, address) values ('kim', 'busan');
-insert into shard_table(name, address) values ('lee', 'daegu');
-insert into shard_table(name, address) values ('park', 'jeju');
-```
-
-그리고 spider, korea1, korea2 서버의 DB에 접속해 `select * from shard_table;` 명령 수행  
-
-```
--- spider koreaDB --
-MariaDB [koreaDB]> select * from shard_table;
-+----+------+---------+
-| id | name | address |
-+----+------+---------+
-|  1 | kim  | seoul   |
-|  3 | park | seoul   |
-|  5 | lee  | daegu   |
-|  7 | kim  | seoul   |
-|  9 | park | seoul   |
-|  2 | lee  | seoul   |
-|  4 | kim  | busan   |
-|  6 | park | jeju    |
-|  8 | lee  | seoul   |
-| 10 | kim  | busan   |
-+----+------+---------+
-36 rows in set (0.01 sec)
-```
-
-```
--- korea1 koreaDB --
-MariaDB [koreaDB]> select * from shard_table;
-+----+------+---------+
-| id | name | address |
-+----+------+---------+
-|  1 | kim  | seoul   |
-|  3 | park | seoul   |
-|  5 | lee  | daegu   |
-|  7 | kim  | seoul   |
-|  9 | park | seoul   |
-+----+------+---------+
-18 rows in set (0.00 sec)
-```
-
-```
--- korea2 koreaDB --
-MariaDB [koreaDB]> select * from shard_table;
-+----+------+---------+
-| id | name | address |
-+----+------+---------+
-|  2 | lee  | seoul   |
-|  4 | kim  | busan   |
-|  6 | park | jeju    |
-|  8 | lee  | seoul   |
-| 10 | kim  | busan   |
-+----+------+---------+
-18 rows in set (0.00 sec)
-```
-
-
-# docker-compose
+## docker-compose
 
 지금까지 도커와의 링크를 위해 네트워크, 볼륨, 혹은 `--link` 속성으로 컨테이너간의 연결을 진행하였는데  
 `docker-compose` 혹은 `dockerfile`을 사용하면 복잡한 명령어를 파일단위로 관리할 수 있다.  
@@ -652,7 +411,8 @@ MariaDB [koreaDB]> select * from shard_table;
 `docker-compose`는 단순 명령 실행의 떨어지는 가독성을 보완하고 1개의 컨테이너만 생성하는 것이 아니라 여러개의 컨테이너를 연관지어 한꺼번에 생성 가능하게해준다.  
 
 
-## docker compose 설치 및 운영
+
+### docker compose 설치 및 운영
 
 `apt-get install`로 설치가능하지만 버전에 따른 오류가 많기에 아래 명령으로 실행
 
@@ -724,7 +484,7 @@ f4fe464220e4        mysql:5.7           "docker-entrypoint.s…"   10 minutes ag
 ```
 version: '3.3'
 services:
-  # WebServer config
+  ## WebServer config
   webserver:
     build: .
     ports:
@@ -732,7 +492,7 @@ services:
     depends_on:
      - redis
 
-  # Redis config
+  ## Redis config
   redis:
     image: redis:4.0
 ```
@@ -740,31 +500,31 @@ services:
 webserver의 경우 `build: .` 이 적혀있는데 이는 같은 디렉토리에 있는 `Dockerfile`을 빌드해서 생성한 컨테이너를 사용하겠다는 뜻.  
 
 ```
-# Base Image
+## Base Image
 FROM python:3.6
 
-# Maintainer
+## Maintainer
 LABEL maintainer "Shiho ASA"
 
-# Upgrade pip
+## Upgrade pip
 RUN pip install --upgrade pip
 
-# Install Path
+## Install Path
 ENV APP_PATH /opt/imageview
 
-# Install Python modules needed by the Python app
+## Install Python modules needed by the Python app
 COPY requirements.txt $APP_PATH/
 RUN pip install --no-cache-dir -r $APP_PATH/requirements.txt
 
-# Copy files required for the app to run
+## Copy files required for the app to run
 COPY app.py $APP_PATH/
 COPY templates/ $APP_PATH/templates/
 COPY static/ $APP_PATH/static/
 
-# Port number the container should expose
+## Port number the container should expose
 EXPOSE 80
 
-# Run the application
+## Run the application
 CMD ["python", "/opt/imageview/app.py"]
 ```
 
@@ -774,7 +534,7 @@ CMD ["python", "/opt/imageview/app.py"]
 
 ![docker13](/assets/2019/docker13.png){: .shadow}  
 
-## docker-compose 상태 확인  
+### docker-compose 상태 확인  
 
 `docker-compose ps` 명령으로 컨테이너 동작 상황을 알 수 있다.  
 단 `docker-compose.yml`파일이 있는 위치에서 실행해야한다.  
@@ -798,7 +558,7 @@ chap07_webserver_1   python /opt/imageview/app.py     Up      0.0.0.0:80->80/tcp
 `down`후에 `ps`로 한번 모든 컨테이너가 종료되었는지 확인해보자.  
 
 
-# docker swarm
+## docker swarm
 
 도커가 공식적으로 만든 `Orchestration tool`(도커 관리도구)
 
@@ -947,7 +707,7 @@ nginx
 자동으로 하나씩 추가된다.   
 ![dockercompose5](/assets/2019/dockercompose5.png){: .shadow}  
 
-## docker swarm - Rolling update  
+### docker swarm - Rolling update  
 
 만약 기존의 서비스가 오류가 발생해 업데이트를 해야할 때 
 `Rolling update`를 사용하자  
