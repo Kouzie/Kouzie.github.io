@@ -132,6 +132,8 @@ OSM 에서 대표적으로 사용되는 지도 스타일이 `openstreetmap-carto
 
 ![ddd1](/assets/2022/osm1.png)
 
+> 출처: <https://ircama.github.io/osm-carto-tutorials/tile-server-ubuntu/>
+
 ## 데모코드  
 
 > <https://github.com/Kouzie/osm-docker>
