@@ -1348,6 +1348,24 @@ create table purchase_order
 
 `order_line` 에는 별도의 `primary key` 가 생기지 않음으로 벨류타입 정의에 합리적이다.  
 
+### @Enumerated
+
+`enum` 타입저장시 지정하여 사용가능.  
+지정하지 않을경우 enum 객체의 정의 순서에 따라 int 값이 저장됨.  
+
+```java
+public class MemberEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long uid;
+    private String uname;
+    private String upw;
+
+    @Enumerated(EnumType.STRING) 
+    private MemberRole role;
+}
+```
+
 ## 기본 어노테이션
 
 JPA 가장 기본적인 어노테이션의 속성들 설명  

@@ -217,7 +217,125 @@ public class RestSecurityConfig {
 위 설정처럼 `antMatchers("...").hasAnyRole("...")` 접근제한이 가능하지만  
 메서드에 어노테이션을 지정하는 것으로도 접근제한이 가능하다.  
 
+### EnableMethodSecurity
+
 `@EnableMethodSecurity` 어노테이션 설정, 다른 클래스에서도 시큐리티 어노테이션을 사용할 수 있도록 설정한다.  
+
+```java
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
+public class DefaultSecurityConfig {
+    ...
+}
+```
+
+`@EnableMethodSecurity` 속성  
+
+- **prePostEnabled**: `@PreAuthorize, @PostAuthorize` 활성화.
+- **securedEnabled**: `@Secured` 활성화.
+
+권한/역할 기반 어노테이션
+
+- **@PreAuthorize**: 메서드 실행 전에 권한 검사,  SpEL 사용.  
+- **@PostAuthorize**: 메서드 실행 후에 결과를 기반 권한 검사,  SpEL 사용.  
+- **@Secured**: 간단한 Role 기반 검사,  SpEL 사용.  
+- **@RolesAllowed**: Role 기반 검사, JSR-250 표준 사용.  
+
+```java
+
+@Service
+public class SampleService {
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public String adminOnly() {
+        return "This is an admin-only service.";
+    }
+
+    @PreAuthorize("hasAuthority('WRITE_PRIVILEGE')")
+    public String writePrivilegeOnly() {
+        return "This service requires WRITE_PRIVILEGE.";
+    }
+
+    @Secured("ROLE_USER")
+    public String userOnly() {
+        return "This is a user-only service.";
+    }
+
+    @RolesAllowed({"ROLE_ADMIN", "ROLE_USER"})
+    public String adminOrUser() {
+        return "This service is accessible to admin or user.";
+    }
+}
+```
+
+내부에선 `UserDetails.getAuthorities` 에 들어간 role, auth 의 존재여부를 검사하는 어노테이션들이다.  
+`hasRole, hasAuthority` 차이는 앞에 `ROLE_` `prefix` 를 붙이는 여부임으로 `hasAuthority` 에 `ROLE_` 를 붙여 혼용 사용해도 상관없다.  
+
+복잡한 권한검증코드의 경우 별도의 Bean 을 작성해서 처리하면 편하다.  
+
+```java
+@Service("customSecurityService")
+public class CustomSecurityService {
+
+    public boolean hasAccess(Authentication authentication, Long resourceId) {
+        String username = authentication.getName();
+        return checkResourceOwnership(username, resourceId);
+    }
+
+    private boolean checkResourceOwnership(String username, Long resourceId) {
+        return "admin".equals(username);
+    }
+}
+```
+
+```java
+@GetMapping("/custom/{id}")
+@PreAuthorize("@cssecu.hasAccess(authentication, #id)")
+public String accessResource(@PathVariable Long id) {
+    return "Resource with ID: " + id;
+}
+```
+
+### RoleHierarchy
+
+Role 계층 정의를 통해 상위 Role 은 하위 Role 접근을 가능하게 설정한다.  
+
+```java
+@Bean
+public RoleHierarchy roleHierarchy() {
+    RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+    roleHierarchy.setHierarchy("""
+                ROLE_ADMIN > ROLE_MANAGER
+                ROLE_MANAGER > ROLE_USER
+            """);
+    return roleHierarchy;
+}
+```
+
+```java
+
+@Service
+public class SampleService {
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public String adminOnly() {
+        return "Accessible by ROLE_ADMIN.";
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    public String managerAndAbove() {
+        return "Accessible by ROLE_MANAGER or higher (including ROLE_ADMIN).";
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    public String userAndAbove() {
+        return "Accessible by ROLE_USER or higher.";
+    }
+}
+```
+
+`Authority` 의 경우 계층정의가 없어 위에 이야기 했던 `@PreAuthorize` 커스텀 로직으로 처리할 수 있다.  
 
 ### SecurityFilterChain
 
@@ -511,18 +629,21 @@ protected void doFilterInternal(HttpServletRequest request, HttpServletResponse 
 }
 ```
 
-### AuthenticationProvider, UserDetailsService
+### AuthenticationProvider
 
 `AuthenticationManagr` 를 직접 정의하는 방식을 제한적인 환경(제공받은 메서드로만 구성해야함)으로 인해 잘 사용하지 않는다.  
-위와 같이 테스트용도로 inMemory, jdbc SQL 를 직접 정의하여 사용할 때에나 사용한다.  
 
-대부분 `AuthenticationProvider` 만을 Bean 으로 등록하고 `AuthenticationManager` 에서 자동으로 사용되도록 한다.  
+> 위와 같이 테스트용도로 inMemory, jdbc SQL 를 직접 정의하여 사용할 때에나 사용한다.  
+
+대부분 `AuthenticationProvider` 을 Bean 으로 등록하고 `AuthenticationManager` 에서 자동으로 선택받아 사용되도록 구성한다.  
+
+#### UserDetailsService
 
 사용자 테이블로 부터 커스텀하게 로그인처리를 구현하는 경우가 많아 `UserDetailService` 를 사용해서 `AuthenticationProvider` 를 구성한다.  
 
 ![security7](/assets/springboot/springboot_security5.png)
 
-> `DaoAuthenticationProvider` 가 `UserDetailService` 를 기반으로 만들어진 객체임.  
+> `DaoAuthenticationProvider` 가 `UserDetailService` 를 사용하기 위해 만들어진 객체임.  
 
 
 먼저 간단히 사용할 사용자 클래스 정의
@@ -1125,7 +1246,7 @@ http.rememberMe()
 ```
 
 아래와 같이 로그인토큰 관리용 테이블 생성  
-> `persistent_logins` 테이블명이 하드코딩되어있음으로 변경 불가능  
+> `persistent_logins` 테이블명이 하드코딩되어있음으로 테이블명 변경 불가능  
 
 ```java
 @Getter

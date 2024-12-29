@@ -209,6 +209,28 @@ public static class CustomUser {
 }
 ```
 
+`parameter-names` 모듈 등록
+
+```java
+public static class CustomUser {
+    public String username;
+    public String email;
+
+    public CustomUser(String username, String email) {
+        this.username = username;
+        this.email = email;
+    }
+}
+
+public static void main(String[] args) throws JsonProcessingException {
+    ObjectMapper objectMapper = new ObjectMapper();
+    // parameter-names 등록
+    objectMapper.registerModule(new ParameterNamesModule());
+    // 역직렬화
+    CustomUser user = objectMapper.readValue(json, CustomUser.class);
+}
+```
+
 `@JsonCreater @JsonProperty` 사용
 
 ```java
@@ -260,26 +282,195 @@ public static void main(String[] args) throws JsonProcessingException {
 }
 ```
 
-`parameter-names` 모듈 등록
+### 다형성 지원 - @JsonTypeInfo, @JsonSubTypes
+
+아래와 같이 `[id, notificationType, userId, message, timestamp]` 까지는 동일하지만 그 뒤의 일부 필드만 다를 경우 사용 가능하다.  
+
+```json
+[
+    {
+        "id": "60d5dbf87f3e6e3b2f4b2b3a",
+        "notificationType": "message",
+        "userId": "1",
+        "message": "You have a new message from Alice",
+        "timestamp": "2023-08-01T10:00:00Z",
+        "senderId": 2
+    },
+    {
+        "id": "60d5dbf87f3e6e3b2f4b2b3b",
+        "notificationType": "friend_request",
+        "userId": "1",
+        "message": "Bob sent you a friend request",
+        "timestamp": "2023-08-01T10:05:00Z",
+        "requesterId": 3
+    },
+    {
+        "id": "60d5dbf87f3e6e3b2f4b2b3c",
+        "notificationType": "event_invite",
+        "userId": "1",
+        "message": "You are invited to Sarah birthday party",
+        "timestamp": "2023-08-01T10:10:00Z",
+        "eventId": 5,
+        "location": "123 Main St"
+    }
+]
+```
+
+아래와 같이 `Notification` 클래스의 상속구조로 구성하고 `jackson` 의 `@JsonTypeInfo, @JsonSubTypes` 어노테이션을 사용해 비직렬화시 다형성을 지원할 수 있다.  
+
+가끔 json 문자열을 지원하는 라이브러리에서 `@class`, `@type` 같은 필드를 가지는 경우 해다 어노테이션을 사용한 경우이다.  
 
 ```java
-public static class CustomUser {
-    public String username;
-    public String email;
+@Getter
+@Setter
+@ToString
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        property = "notificationType",
+        include = JsonTypeInfo.As.EXISTING_PROPERTY,
+        visible = true // type 정보도 출력할건지 여부
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = Notification.MessageNotification.class, name = "message"),
+        @JsonSubTypes.Type(value = Notification.FriendRequestNotification.class, name = "friend_request"),
+        @JsonSubTypes.Type(value = Notification.EventInviteNotification.class, name = "event_invite")
+})
+@AllArgsConstructor
+public abstract class Notification {
+    private String id;
+    private String notificationType;
+    private String userId;
+    private String message;
+    private Instant timestamp;
 
-    public CustomUser(String username, String email) {
-        this.username = username;
-        this.email = email;
+    @Getter
+    @Setter
+    @ToString(callSuper = true)
+    public static class MessageNotification extends Notification {
+        private Long senderId;
+
+        public MessageNotification(String id, String notificationType, String userId, String message, Instant timestamp, Long senderId) {
+            super(id, notificationType, userId, message, timestamp);
+            this.senderId = senderId;
+        }
+    }
+
+    @Getter
+    @Setter
+    @ToString(callSuper = true)
+    public static class FriendRequestNotification extends Notification {
+        private Long requesterId;
+
+        public FriendRequestNotification(String id, String notificationType, String userId, String message, Instant timestamp, Long requesterId) {
+            super(id, notificationType, userId, message, timestamp);
+            this.requesterId = requesterId;
+        }
+    }
+
+    @Getter
+    @Setter
+    @ToString(callSuper = true)
+    public static class EventInviteNotification extends Notification {
+        private Long eventId;
+        private String location;
+
+        public EventInviteNotification(String id, String notificationType, String userId, String message, Instant timestamp, Long eventId, String location) {
+            super(id, notificationType, userId, message, timestamp);
+            this.eventId = eventId;
+            this.location = location;
+        }
     }
 }
+```
 
-public static void main(String[] args) throws JsonProcessingException {
-    ObjectMapper objectMapper = new ObjectMapper();
-    // parameter-names 등록
-    objectMapper.registerModule(new ParameterNamesModule());
-    // 역직렬화
-    CustomUser user = objectMapper.readValue(json, CustomUser.class);
+- **JsonTypeInfo**
+  - **use**: 타입 정보를 어떤 형식으로 나타낼지를 지정  
+    - `JsonTypeInfo.Id.NAME`: 사전 정의된 별칭 사용.  
+    - `JsonTypeInfo.Id.CLASS`: 클래스 전체 이름 사용.  
+    - `JsonTypeInfo.Id.MINIMAL_CLASS`: 축약된 클래스 이름 사용.  
+    - `JsonTypeInfo.Id.CUSTOM`: TypeIdResolver 사용.  
+  - **property**: 타입 정보를 저장할 JSON 속성의 이름을 지정, 별도지정 안하면 아래 문자열을 사용함.  
+    - `@class`, `JsonTypeInfo.Id.CLASS` 인 경우.  
+    - `@type`, `JsonTypeInfo.Id.NAME` 인 경우.  
+  - **include**: 타입 정보를 JSON에 어떤 방식으로 포함할지 지정.  
+    - `JsonTypeInfo.As.PROPERTY`: 클래스 정보를 JSON 객체의 특정 속성사용.  
+    - `JsonTypeInfo.As.EXISTING_PROPERTY`: 클래스 정보를 내부에 이미 정의된 속성으로 사용.  
+    - `JsonTypeInfo.As.EXTERNAL_PROPERTY`: 클래스 정보를 JSON 객체 외부의 별도 속성으로 저장.  
+    - `JsonTypeInfo.As.WRAPPER_OBJECT`: 클래스 정보를 별도의 래핑(wrapping) 객체로 저장.  
+    - `JsonTypeInfo.As.WRAPPER_ARRAY`: 클래스 정보를 배열의 첫 번째 요소로 저장.  
+  - **visible**: 다형성 지원 필드로 비직렬화에 출력시킬지 여부.  
+
+```json
+// EXTERNAL_PROPERTY
+{
+  "type": "com.example.MyClass",
+  "data": {
+    "name": "Example Name",
+    "value": 42
+  }
 }
+
+// WRAPPER_OBJECT
+{
+  "com.example.MyClass": {
+    "name": "Example Name",
+    "value": 42
+  }
+}
+
+// WRAPPER_ARRAY
+[
+  "com.example.MyClass",
+  {
+    "name": "Example Name",
+    "value": 42
+  }
+]
+```
+
+아래와 같이 다형성 처리된 JSON 문자열을 전달해도 jackson 이 정확하게 비직렬화 한다.  
+
+```java
+@PostMapping
+public void sendNotification(@RequestBody List<Notification> notifications) {
+    // 받은 notifications를 처리하는 로직 추가
+    notifications.forEach(notification -> {
+        // 예시로 각 알림의 'type'을 출력하는 로직
+        log.info("Received notification of type: " + notification.getNotificationType());
+        log.info(notification.toString());
+    });
+}
+/* 
+curl -X POST http://localhost:8080/mapper \
+-H "Content-Type: application/json" \
+-d '[
+    {
+        "id": "60d5dbf87f3e6e3b2f4b2b3a",
+        "notificationType": "message",
+        "userId": "1",
+        "message": "You have a new message from Alice",
+        "timestamp": "2023-08-01T10:00:00Z",
+        "senderId": 2
+    },
+    {
+        "id": "60d5dbf87f3e6e3b2f4b2b3b",
+        "notificationType": "friend_request",
+        "userId": "1",
+        "message": "Bob sent you a friend request",
+        "timestamp": "2023-08-01T10:05:00Z",
+        "requesterId": 3
+    },
+    {
+        "id": "60d5dbf87f3e6e3b2f4b2b3c",
+        "notificationType": "event_invite",
+        "userId": "1",
+        "message": "You are invited to Sarah birthday party",
+        "timestamp": "2023-08-01T10:10:00Z",
+        "eventId": 5,
+        "location": "123 Main St"
+    }
+]'
+*/
 ```
 
 ## Date Time String
