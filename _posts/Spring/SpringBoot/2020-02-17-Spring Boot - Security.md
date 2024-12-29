@@ -273,18 +273,17 @@ public class SampleService {
 `hasRole, hasAuthority` 차이는 앞에 `ROLE_` `prefix` 를 붙이는 여부임으로 `hasAuthority` 에 `ROLE_` 를 붙여 혼용 사용해도 상관없다.  
 
 복잡한 권한검증코드의 경우 별도의 Bean 을 작성해서 처리하면 편하다.  
+아래는 JWT 로부터 변환한 `CustomSecurityUser` 객체의 `uid` 와 입력받은 `uid` 가 일치하는지 판단하는 과정이다.  
 
 ```java
-@Service("customSecurityService")
+@Slf4j
+@Service("cssecu")
 public class CustomSecurityService {
 
-    public boolean hasAccess(Authentication authentication, Long resourceId) {
-        String username = authentication.getName();
-        return checkResourceOwnership(username, resourceId);
-    }
-
-    private boolean checkResourceOwnership(String username, Long resourceId) {
-        return "admin".equals(username);
+    public boolean hasAccess(Authentication authentication, Long uid) {
+        CustomSecurityUser user  = (CustomSecurityUser) authentication.getPrincipal();
+        log.info("cssecu hasAccess invoked, username:{}, uid:{}", user.getUsername(),  user.getUid());
+        return uid.equals(user.getUid());
     }
 }
 ```
