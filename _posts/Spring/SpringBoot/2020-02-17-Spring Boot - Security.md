@@ -217,125 +217,6 @@ public class RestSecurityConfig {
 위 설정처럼 `antMatchers("...").hasAnyRole("...")` 접근제한이 가능하지만  
 메서드에 어노테이션을 지정하는 것으로도 접근제한이 가능하다.  
 
-### EnableMethodSecurity
-
-`@EnableMethodSecurity` 어노테이션 설정, 다른 클래스에서도 시큐리티 어노테이션을 사용할 수 있도록 설정한다.  
-
-```java
-@Configuration
-@EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
-public class DefaultSecurityConfig {
-    ...
-}
-```
-
-`@EnableMethodSecurity` 속성  
-
-- **prePostEnabled**: `@PreAuthorize, @PostAuthorize` 활성화.
-- **securedEnabled**: `@Secured` 활성화.
-
-권한/역할 기반 어노테이션
-
-- **@PreAuthorize**: 메서드 실행 전에 권한 검사,  SpEL 사용.  
-- **@PostAuthorize**: 메서드 실행 후에 결과를 기반 권한 검사,  SpEL 사용.  
-- **@Secured**: 간단한 Role 기반 검사,  SpEL 사용.  
-- **@RolesAllowed**: Role 기반 검사, JSR-250 표준 사용.  
-
-```java
-
-@Service
-public class SampleService {
-
-    @PreAuthorize("hasRole('ADMIN')")
-    public String adminOnly() {
-        return "This is an admin-only service.";
-    }
-
-    @PreAuthorize("hasAuthority('WRITE_PRIVILEGE')")
-    public String writePrivilegeOnly() {
-        return "This service requires WRITE_PRIVILEGE.";
-    }
-
-    @Secured("ROLE_USER")
-    public String userOnly() {
-        return "This is a user-only service.";
-    }
-
-    @RolesAllowed({"ROLE_ADMIN", "ROLE_USER"})
-    public String adminOrUser() {
-        return "This service is accessible to admin or user.";
-    }
-}
-```
-
-내부에선 `UserDetails.getAuthorities` 에 들어간 role, auth 의 존재여부를 검사하는 어노테이션들이다.  
-`hasRole, hasAuthority` 차이는 앞에 `ROLE_` `prefix` 를 붙이는 여부임으로 `hasAuthority` 에 `ROLE_` 를 붙여 혼용 사용해도 상관없다.  
-
-복잡한 권한검증코드의 경우 별도의 Bean 을 작성해서 처리하면 편하다.  
-아래는 JWT 로부터 변환한 `CustomSecurityUser` 객체의 `uid` 와 입력받은 `uid` 가 일치하는지 판단하는 과정이다.  
-
-```java
-@Slf4j
-@Service("cssecu")
-public class CustomSecurityService {
-
-    public boolean hasAccess(Authentication authentication, Long uid) {
-        CustomSecurityUser user  = (CustomSecurityUser) authentication.getPrincipal();
-        log.info("cssecu hasAccess invoked, username:{}, uid:{}", user.getUsername(),  user.getUid());
-        return uid.equals(user.getUid());
-    }
-}
-```
-
-```java
-@GetMapping("/custom/{id}")
-@PreAuthorize("@cssecu.hasAccess(authentication, #id)")
-public String accessResource(@PathVariable Long id) {
-    return "Resource with ID: " + id;
-}
-```
-
-### RoleHierarchy
-
-Role 계층 정의를 통해 상위 Role 은 하위 Role 접근을 가능하게 설정한다.  
-
-```java
-@Bean
-public RoleHierarchy roleHierarchy() {
-    RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
-    roleHierarchy.setHierarchy("""
-                ROLE_ADMIN > ROLE_MANAGER
-                ROLE_MANAGER > ROLE_USER
-            """);
-    return roleHierarchy;
-}
-```
-
-```java
-
-@Service
-public class SampleService {
-
-    @PreAuthorize("hasRole('ADMIN')")
-    public String adminOnly() {
-        return "Accessible by ROLE_ADMIN.";
-    }
-
-    @PreAuthorize("hasRole('MANAGER')")
-    public String managerAndAbove() {
-        return "Accessible by ROLE_MANAGER or higher (including ROLE_ADMIN).";
-    }
-
-    @PreAuthorize("hasRole('USER')")
-    public String userAndAbove() {
-        return "Accessible by ROLE_USER or higher.";
-    }
-}
-```
-
-`Authority` 의 경우 계층정의가 없어 위에 이야기 했던 `@PreAuthorize` 커스텀 로직으로 처리할 수 있다.  
-
 ### SecurityFilterChain
 
 `@EnableWebSecurity` 사용과 동시에 기본적으로 `SecurityFilterChain` 빈 객체가 생성되고,  
@@ -1133,6 +1014,207 @@ public class DelegatingAuthenticationEntryPoint implements AuthenticationEntryPo
 }
 ```
 
+
+## EnableMethodSecurity
+
+`@EnableMethodSecurity` 어노테이션 설정, 다른 클래스에서도 시큐리티 어노테이션을 사용할 수 있도록 설정한다.  
+
+```java
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
+public class DefaultSecurityConfig {
+    ...
+}
+```
+
+`@EnableMethodSecurity` 속성  
+
+- **prePostEnabled**: `@PreAuthorize, @PostAuthorize` 활성화.
+- **securedEnabled**: `@Secured` 활성화.
+
+권한/역할 기반 어노테이션
+
+- **@PreAuthorize**: 메서드 실행 전에 권한 검사,  SpEL 사용.  
+- **@PostAuthorize**: 메서드 실행 후에 결과를 기반 권한 검사,  SpEL 사용.  
+- **@Secured**: 간단한 Role 기반 검사,  SpEL 사용.  
+- **@RolesAllowed**: Role 기반 검사, JSR-250 표준 사용.  
+
+```java
+@Service
+public class SampleService {
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public String adminOnly() {
+        return "This is an admin-only service.";
+    }
+
+    @PreAuthorize("hasAuthority('WRITE_PRIVILEGE')")
+    public String writePrivilegeOnly() {
+        return "This service requires WRITE_PRIVILEGE.";
+    }
+
+    @Secured("ROLE_USER")
+    public String userOnly() {
+        return "This is a user-only service.";
+    }
+
+    @RolesAllowed({"ROLE_ADMIN", "ROLE_USER"})
+    public String adminOrUser() {
+        return "This service is accessible to admin or user.";
+    }
+}
+```
+
+내부에선 `UserDetails.getAuthorities` 에 들어간 role, auth 의 존재여부를 검사하는 어노테이션들이다.  
+`hasRole, hasAuthority` 차이는 앞에 `ROLE_` `prefix` 를 붙이는 여부임으로 `hasAuthority` 에 `ROLE_` 를 붙여 혼용 사용해도 상관없다.  
+
+`@PostAuthorize` 의 경우 아래와 같이 Service 로직에서 응답 객체에 대한 권한 확인용으로 많이 사용.  
+삭제나 수정을 위해 사전에 조회작업을 수행할 떄 권한체크를 동시에 수행가능.  
+
+```java
+@Transactional(readOnly = true)
+@PostAuthorize("returnObject.isPresent() && returnObject.get().uname == authentication.name && returnObject.get().uname == #uname")
+public Optional<MemberEntity> findByUnameSecurity(String uname) {
+    return repository.findByUname(uname);
+}
+```
+
+### 커스텀 검증 로직로직
+
+복잡한 권한검증코드의 경우 별도의 Bean 을 작성해서 처리하면 편하다.  
+아래는 JWT 로부터 변환한 `CustomSecurityUser` 객체의 `uid` 와 입력받은 `uid` 가 일치하는지 판단하는 과정이다.  
+
+```java
+@Slf4j
+@Service("cssecu")
+public class CustomSecurityService {
+
+    public boolean hasAccess(Authentication authentication, Long uid) {
+        CustomSecurityUser user  = (CustomSecurityUser) authentication.getPrincipal();
+        log.info("cssecu hasAccess invoked, username:{}, uid:{}", user.getUsername(),  user.getUid());
+        return uid.equals(user.getUid());
+    }
+}
+```
+
+```java
+@GetMapping("/custom/{id}")
+@PreAuthorize("@cssecu.hasAccess(authentication, #id)")
+public String accessResource(@PathVariable Long id) {
+    return "Resource with ID: " + id;
+}
+```
+
+`PermissionEvaluator` 구현체를 Bean 으로 등록하면 `hasPermission` `SpEL` 를 사용하여 커스텀한 검증코드 작성이 가능하다.  
+
+```java
+@Component
+@RequiredArgsConstructor
+public class CustomPermissionEvaluator implements PermissionEvaluator {
+    private final MemberRepository repository;
+
+    @Override
+    public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
+        if (targetDomainObject == null) return false;
+        String username = authentication.getName();
+        String requiredPermission = (String) permission;
+        // member entity 에 대한 사용자 확인 및 권한 확인
+        if (targetDomainObject instanceof MemberEntity entity) {
+            return entity.getUname().equals(username) && "READ".equals(requiredPermission);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean hasPermission(Authentication authentication, Serializable targetId, String targetType, Object permission) {
+        if ("MemberEntity".equalsIgnoreCase(targetType)) {
+            Long id = (Long) targetId;
+            String requiredPermission = (String) permission;
+            return repository.findById(id)
+                    .filter(entity -> entity.getUname().equals(authentication.getName()) && "READ".equalsIgnoreCase(requiredPermission))
+                    .isPresent();
+        }
+        return false;
+    }
+}
+```
+
+위와 같이 구현체 작성 후 `MethodSecurityExpressionHandler` 에 Bean 으로 등록
+
+```java
+@Bean
+public MethodSecurityExpressionHandler createExpressionHandler(PermissionEvaluator customPermissionEvaluator) {
+    DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
+    expressionHandler.setPermissionEvaluator(customPermissionEvaluator);
+    return expressionHandler;
+}
+```
+
+컨트롤레 메서드에서 들어갈때 `@PreAuthorize` 를 통해 한번 검증하고  
+
+```java
+/**
+ * PermissionEvaluator 구현체인 CustomPermissionEvaluator.hasPermission 함수 사용
+ * */
+@PostMapping("/user/{id}")
+@PreAuthorize("hasPermission(#id, 'MemberEntity', 'READ')")
+public MemberEntity updateResource(@PathVariable Long id) {
+    return service.findById(id);
+}
+```
+
+서비스 메서드에서 나올때 `@PostAuthorize` 를 통해 다시 한번 검증  
+
+```java
+@Transactional(readOnly = true)
+@PostAuthorize("hasPermission(returnObject, 'READ')")
+public MemberEntity findById(Long id) {
+    return repository.findById(id).orElseThrow();
+}
+```
+
+### RoleHierarchy
+
+Role 계층 정의를 통해 상위 Role 은 하위 Role 접근을 가능하게 설정한다.  
+
+```java
+@Bean
+public RoleHierarchy roleHierarchy() {
+    RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+    roleHierarchy.setHierarchy("""
+                ROLE_ADMIN > ROLE_MANAGER
+                ROLE_MANAGER > ROLE_USER
+            """);
+    return roleHierarchy;
+}
+```
+
+```java
+
+@Service
+public class SampleService {
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public String adminOnly() {
+        return "Accessible by ROLE_ADMIN.";
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    public String managerAndAbove() {
+        return "Accessible by ROLE_MANAGER or higher (including ROLE_ADMIN).";
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    public String userAndAbove() {
+        return "Accessible by ROLE_USER or higher.";
+    }
+}
+```
+
+`Authority` 의 경우 계층정의가 없어 위에 이야기 했던 `@PreAuthorize` 커스텀 로직으로 처리할 수 있다.  
+
+
 ## 세션 기반 스프링 시큐리티
 
 `formLogin` 과 세션기반의 `Spring Security` 설명  
@@ -1684,3 +1766,79 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 > 주의 : `WebSecurity` 의 `web.ignoring()` 사용시에 `spring-security filter` 에서 아예 제외됨으로 `CORS` 설정을 사용하지 않는다.  
 > `HttpSecurity` 와 `permitAll()` 을 통해 진행하는 것을 권장 
 > CORS는 응답이 Access-Control-Allow-Credentials: true 을 가질 경우, Access-Controll-Allow-Origin의 값으로 *를 사용하지 못하게 막고 있다.
+
+
+## HandlerMethodArgumentResolver
+
+템플릿용 `@Controller` 의 메서드에선 `Authentication` 를 파라미터로 사용시 `org.springframework.security.web.method.annotation` 패키지의 `AuthenticationPrincipalArgumentResolver` 를 통해 주입해준다.  
+
+```java
+@Controller
+@RequestMapping("/boards")
+@RequiredArgsConstructor
+public class BoardController {
+
+    private final BoardService boardService;
+
+    @GetMapping("/list")
+    public void list(Authentication authentication, Model model) {
+        log.info(authentication.toString()); // UsernamePasswordAuthenticationToken
+        Pageable page = PageRequest.of(0, 1000, Sort.by("bno"));
+        Page<Board> result = boardService.findAll(page);
+        model.addAttribute("result", result);
+    }
+}
+```
+
+`RestController` 에는 해당 기능사용하기 위해 별도로 `HandlerMethodArgumentResolver` 를 작성해야 한다.  
+
+```java
+@Target(ElementType.PARAMETER)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface LoginUser {
+}
+
+
+public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver {
+
+    @Override
+    public boolean supportsParameter(MethodParameter parameter) {
+        boolean isLoginUserAnnotation = parameter.getParameterAnnotation(LoginUser.class) != null;
+        boolean isUserClass = CustomSecurityUser.class == parameter.getParameterType();
+        return isLoginUserAnnotation && isUserClass;
+    }
+
+    @Override
+    public Object resolveArgument(MethodParameter parameter,
+                                  ModelAndViewContainer mavContainer,
+                                  NativeWebRequest webRequest,
+                                  WebDataBinderFactory binderFactory) throws Exception {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
+            return null;
+        }
+        return authentication.getPrincipal();
+    }
+}
+```
+
+코드 가독성을 위해 어노테이션 클래스를 하나 정의하여 사용하는 것을 권장.  
+
+```java
+@Configuration
+@RequiredArgsConstructor
+public class WebConfig implements WebMvcConfigurer {
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(new LoginUserArgumentResolver());
+    }
+}
+```
+
+```java
+@GetMapping("/list")
+public List<Board> list(@LoginUser CustomSecurityUser user) {
+    log.info(user.toString());
+    return boardService.findAll(PageRequest.of(0, 1000)).getContent();
+}
+```
