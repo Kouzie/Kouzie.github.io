@@ -65,6 +65,9 @@ public ObjectMapper objectMapper() {
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     // InvalidDefinitionException, Object 클래스는 빈 객체로 변환(필드가 없는 객체도 변환하도록)
     objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+    // {}, [] 같은 빈 json 객체를 null 로 변환처리
+    objectMapper.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true)
+    objectMapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
     return objectMapper;
 }
 ```

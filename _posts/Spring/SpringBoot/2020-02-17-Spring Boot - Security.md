@@ -1014,6 +1014,33 @@ public class DelegatingAuthenticationEntryPoint implements AuthenticationEntryPo
 }
 ```
 
+### GenericFilterBean, OncePerRequestFilter
+
+`Spring Security` 에서 제공하는 대부분의 `Filter` 는 `GenericFilterBean` 의 구현체이다.  
+
+```java
+public abstract class GenericFilterBean implements Filter, BeanNameAware, EnvironmentAware,
+        EnvironmentCapable, ServletContextAware, InitializingBean, DisposableBean {
+
+    private String beanName;
+    private Environment environment;
+    private ServletContext servletContext;
+    private FilterConfig filterConfig;
+
+    private final Set<String> requiredProperties = new HashSet<>(4);
+    ...
+}
+```
+
+스프링 웹서버 동작시에 필요한 `Context` 정보를 가지고 있는 `Filter` 객체,  
+서블릿 및 각종 환경변수등을 미리 설정하여 Spring Security 동작에 필요한 코드를 수행한다.  
+
+`OncePerRequestFilter` 는 `GenericFilterBean` 의 구현체로 한번만 Filter 를 수행하고 필터를 수행하지 않을 각종 조건을 설정할 수 있다.  
+
+- **shouldNotFilter(HttpServletRequest request)** 조건 검사를 통해 수행 여부 결정  
+- **shouldNotFilterErrorDispatch()** 에러가 발생한 요청의 수행 여부 결정, default true(수행 X)  
+- **shouldNotFilterAsyncDispatch()** CompletableFuture, DeferredResult 등 비동기로 동작하는 요청에 대해 수행 여부 결정, default true(수행 X)  
+
 
 ## EnableMethodSecurity
 
@@ -1580,11 +1607,21 @@ public class JwtTokenUtil implements Serializable {
 토큰으로부터 유저 아이디를 확인하고 해당 토큰이 로그인시에 암호화해서 발급했던 토큰이 맞는지 확인  
 
 ```java
-
 @Slf4j
 public class JwtFilter extends OncePerRequestFilter {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER = "Bearer";
+    private final List<String> ignoreUrls;
+
+    public JwtFilter(List<String> ignoreUrls) {
+        this.ignoreUrls = ignoreUrls;
+
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return ignoreUrls.contains(request.getRequestURI());
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {

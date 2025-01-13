@@ -567,6 +567,64 @@ class EnumValidator implements ConstraintValidator<ValidEnum, String> {
 }
 ```
 
-## 샘플 프로젝트  
+## Kotlin Validation
+
+```kotlin
+data class CreateCustomerRequest(
+    @field:NotEmpty(message = "username is required")
+    val username: String,
+    @field:NotEmpty(message = "password is required")
+    var password: String?,
+    @field:NotEmpty
+    var nickname: String,
+    @field:NotEmpty
+    var name: String,
+    var birth: String,
+)
+```
+
+위와 같은 data class 를 `@Valid @RequestBody` 로 수신받을 때, 
+
+`username` 을 빼면 `org.springframework.http.converter.HttpMessageNotReadableException` 에러가 발생하고
+`password` 를 빼면 `org.springframework.web.bind.support.WebExchangeBindException` 에러가 발생한다.  
+
+`username` 의 경우 `not null property` 로 정의되어 있어 json 을 dto 로 변환하는 과정에서 에러가 발생하고  
+`password` 의 경우 `nullable property` 로 정의되어 있어 `Validation` 처리에서 예외가 발생한다.  
+
+> WebFlux 에선 `HttpMessageNotReadableException` 대신 `org.springframework.web.server.ServerWebInputException` 에러가 발생함.  
+
+아래와 같이 기본값을 추가하면 json 변환에서 `not null` 로 인한 오류는 뜨지 않고 `validation` 로직을 수행한다.  
+
+> 하지만 null 로 값을 설정할수 없기 때문에 반쪽자리 코드이긴 하다.  
+
+```kotlin
+@field:NotEmpty(message = "username is required")
+val username: String = "",
+@field:NotEmpty(message = "password is required")
+var password: String = "",
+```
+
+굳이 `validation` 로직을 수행할 필요없이 에러 응답을 수행하려면 `HttpMessageNotReadableException` 내부 `cause` 필드를 이용할 수 있다.  
+
+```kotlin
+@ExceptionHandler(value = [HttpMessageNotReadableException::class])
+fun handleException(e: HttpMessageNotReadableException): ResponseEntity<ErrorResponseDto> {
+    val description = when (val cause = e.cause) {
+        is MismatchedInputException -> "${cause.path.joinToString { it.fieldName }} 필드에 값이 없습니다."
+        else -> messageSource.getMessage("error.BAD_REQUEST", null, Locale.getDefault())
+    }
+    return ResponseEntity(
+        ErrorResponseDto(
+            code = ErrorCode.BAD_REQUEST.code,
+            error = ErrorCode.BAD_REQUEST.error,
+            description = description
+        ), HttpStatus.BAD_REQUEST
+    )
+}
+```
+
+> `WebFlux` 의 `ServerWebInputException` 에선 에러발생 유발 필드이름을 가져오는 방법이 없음으로 기본값 사용을 통해 `validation` 처리해야 할듯.
+
+## 데모 코드
 
 > <https://github.com/Kouzie/spring-boot-demo/tree/main/mapper-demo>  

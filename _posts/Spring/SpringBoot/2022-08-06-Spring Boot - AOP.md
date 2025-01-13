@@ -418,3 +418,5 @@ public @interface CheckApiKey {
 컴파일 타임에선 어노테이션 사용의 문제가 있어도 알수 없어 런타임시에 확인이 필요하다.  
 
 빌드시 어노테이션 오류를 체크하기 위해 `Annotation Processor` 를 사용할 수 있다.  
+
+> <https://kouzie.github.io/cicd/gradle/gradle-Plugin,-buildSrc/#annotation-processor>
