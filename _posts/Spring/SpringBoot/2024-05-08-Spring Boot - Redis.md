@@ -173,14 +173,6 @@ $ redis-cli
 
 ```java
 @Bean
-public RedisTemplate<?, ?> redisTemplate(@Autowired RedisConnectionFactory redisConnectionFactory) {
-    RedisTemplate<?, ?> redisTemplate = new RedisTemplate<>();
-    redisTemplate.setConnectionFactory(redisConnectionFactory);
-    return redisTemplate;
-}
-
-
-@Bean
 public StringRedisTemplate stringRedisTemplate(@Autowired RedisConnectionFactory redisConnectionFactory) {
     StringRedisTemplate stringRedisTemplate = new StringRedisTemplate();
     stringRedisTemplate.setConnectionFactory(redisConnectionFactory);
@@ -257,6 +249,75 @@ public class RedisTemplateController {
 ```
 
 지금까지 저장된 키 목록이 출력된다.  
+
+### RedisTemplate 직렬화  
+
+```java
+@Bean
+public RedisTemplate<String, Object> redisTemplate(@Autowired RedisConnectionFactory redisConnectionFactory) {
+    RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+    redisTemplate.setConnectionFactory(redisConnectionFactory);
+    redisTemplate.setKeySerializer(new StringRedisSerializer());
+    return redisTemplate;
+}
+
+@Bean(name = "jacksonRedisTemplate")
+public RedisTemplate<String, Object> jacksonRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+    RedisTemplate<String, Object> template = new RedisTemplate<>();
+    template.setConnectionFactory(redisConnectionFactory);
+
+    GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer();
+    template.setKeySerializer(new StringRedisSerializer());
+    template.setValueSerializer(serializer);
+    return template;
+}
+```
+
+`ValueSerializer` 를 설정하지 않거나 `GenericJackson2JsonRedisSerializer` 를 사용할 수 있다.  
+
+```java
+@PostMapping("/normal")
+public void addUserData(@RequestBody UserData userData) {
+    String key = userData.getUsername();
+    redisTemplate.opsForValue().set(key, userData);
+}
+
+@GetMapping("/normal/{username}")
+public UserData getUserData(@PathVariable String username) {
+    return (UserData) redisTemplate.opsForValue().get(username);
+}
+
+@PostMapping("/jackson")
+public void addUserDataJackson(@RequestBody UserData userData) {
+    String key = userData.getUsername();
+    jacksonRedisTemplate.opsForValue().set(key, userData);
+}
+
+@GetMapping("/jackson/{username}")
+public UserData getUserDataJackson(@PathVariable String username) {
+    return (UserData) jacksonRedisTemplate.opsForValue().get(username);
+}
+```
+
+위 API 를 통해 테스트하고 redis 에 들어가 value 를 조회하면 아래와 같이 출력된다.  
+
+기본 `ValueSerializer` 의 경우 객체 바이트 배열로 저장된다.  
+
+```
+��sr com.example.redis.model.UserData,�3a&�LagetLjava/lang/Integer;LdesctLjava/lang/String;Lemailq~Lnicknameq~Lusernameq~xpsrjava.lang.Integer⠤���8Ivaluexrjava.lang.Number������xptSoftware Developertjohn@example.comtjohnnytjohn_doe
+```
+
+`GenericJackson2JsonRedisSerializer` 를 사용할 경우 `@class` 정보를 가지는 json 객체로 저장된다.  
+
+```json
+{"@class":"com.example.redis.model.UserData","nickname":"johnny","username":"john_doe","email":"john@example.com","age":30,"desc":"Software Developer"}
+```
+
+`@class` 정보 없이 순수 json 으로 저장하기 위해 `GenericJackson2JsonRedisSerializer` 에 `ObjectMapper` 를 지정하는 경우도 있다.  
+
+```java
+GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+```
 
 ## Redisson 분산락  
 
