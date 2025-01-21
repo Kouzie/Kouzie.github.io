@@ -472,6 +472,69 @@ services:
     command: sh -c "trap 'exit' SIGTERM; while true; do echo 'demo log2'; sleep 5; done"
 ```
 
+### docker-compose 환경변수  
+
+`docker` 컨테이너 생성시 환경변수를 `-e` 옵션으로 지정할 수 도 있지만 `--env-file` 을 사용해 설정할 수 도 있다.  
+
+```sh
+docker run --env-file .env <이미지 이름>
+```
+
+`docker-compose` 에서는 `.env` 숨김파일을 `docker-compose.yml` 과 같은 위치에 지정해놓을 경우 docker-compose up 명령실행시 자동으로 환경변수 파일이 지정된다.  
+
+아래와 같이 `.env` 파일을 생성하고  
+
+```conf
+GRAFANA_ADMIN_USER=admin
+GRAFANA_ADMIN_PASSWORD=password
+```
+
+`environment` 속성에 환경변수 사용하도록 이름 지정
+
+```yaml
+services:
+  grafana:
+    image: grafana/grafana:11.4.0
+    user: "0:0"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./volume/grafana:/var/lib/grafana
+```
+
+환경별로 다르게 설정하고 싶다면 `.env` 를 삭제하고 아래처럼 명시하여 실행 가능.  
+
+```sh
+docker-compose --env-file dev.env up -d
+docker-compose --env-file prd.env up -d
+```
+
+혹은 아래와 같이 environment 에 들어가 환경변수를 직접 env 파일에 명시할 수 있다.  
+
+```conf
+# dev.env
+GF_SECURITY_ADMIN_USER=dev
+GF_SECURITY_ADMIN_PASSWORD=password
+```
+
+```yaml
+grafana:
+  image: grafana/grafana:11.4.0
+  env_file:
+    - dev.env
+  # environment:
+  #   - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+  #   - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+  ports:
+    - "3000:3000"
+  volumes:
+    - ./volume/grafana:/var/lib/grafana  # 데이터를 저장할 볼륨 마운트
+  user: "0:0"  # root 권한으로 실행
+```
+
 <!-- 
 ## docker swarm
 
