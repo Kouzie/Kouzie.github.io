@@ -310,6 +310,60 @@ docker 컨테이너가 출력하는 `/var/log/containers/*.log` 로그파일을 
 
 `stdout` 으로 출력된 결과를 확인하고 `regex` 로 로그가 파싱되어 라벨이 붙어있는지 확인한다.  
 
+## docker 운영
+
+`docker` 로그를 `fluentbit` 를 사용해 수집하는 테스트 진행,  
+
+> <https://docs.docker.com/engine/logging/drivers/fluentd/>
+
+`docker` 로그는 컨테이너 이름으로 저장되지 않기 때문에 tailing 으로 특정 컨테이너의 로그를 수집하긴 힘들다.  
+`log-driver` 를 `fluentd` 로 지정하여 `fluentbit` 로 `log` 를 전송할 수 있다.  
+
+아래와 같이 서비스에 `fluentd logging driver` 를 설정해서 실행.
+
+```yaml
+x-test-logging: &default_logging
+  driver: "fluentd"
+  options:
+    fluentd-address: localhost:24224 # host 에서 접근하는 IP 지정
+
+services:
+  fluentbit:
+    image: fluent/fluent-bit:3.2.4
+    ports:
+      - "24224:24224"
+    volumes:
+      - ./fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+  demo-log-app1:
+    image: alpine
+    logging: *default_logging
+    command: sh -c "trap 'exit' SIGTERM; while true; do echo 'demo log1'; sleep 2; done"
+  demo-log-app2:
+    image: alpine
+    logging: *default_logging
+    command: sh -c "trap 'exit' SIGTERM; while true; do echo 'demo log2'; sleep 5; done"
+```
+
+사용한 `fluent-bit.conf` 파일은 아래와 같다.  
+
+```conf
+[Service]
+    Flush        1
+    Log_Level    info
+
+[Input]
+    Name         forward
+    Listen       0.0.0.0
+    Port         24224
+    TAG          fluentd.*
+
+[Output]
+    Name         stdout
+    Match        *
+    Format       json_lines
+    Retry_Limit  False
+```
+
 ## k8s 운영
 
 > <https://docs.fluentbit.io/manual/installation/kubernetes>

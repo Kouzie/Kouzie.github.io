@@ -14,7 +14,6 @@ categories:
 
 ## Dockerfile
 
-
 `nginx`서버 `/usr/share/nginx/html/index.html` 디렉토리에 `index.html`파일을 삽입하여 다시 이미지를 만들고 싶을때  
 이미 존재하는 `nginx` 서비스를 사용할때 다시 이미지화 할 수 있으면 좋지 않을까?  
 
@@ -97,11 +96,12 @@ FROM ubuntu:16.04
 ENTRYPOINT ["top"]
 CMD ["-d", "10"]
 ```
+
 해당 `Dockerfile` 로 `sample` 이란 이미지를 생성 후 아래처럼 사용 가능  
 
-```
-$ docker run -it sample ## CMD 의 인자를 그대로 사용, 10초 간격 갱신
-$ docker run -it sample -d 2 ## CMD 의 인자 생략, 2초 간격 갱신    
+```sh
+docker run -it sample ## CMD 의 인자를 그대로 사용, 10초 간격 갱신
+docker run -it sample -d 2 ## CMD 의 인자 생략, 2초 간격 갱신    
 ```
 
 `FROM`만 필수항목이고 나머지는 모두 없어도 된다.  
@@ -126,9 +126,7 @@ COPY index.html /usr/share/nginx/html
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
-
 `docker images`로 내가 지정한 이미지가 생성됬는지 확인하고 `docker history 이미지명:태그명`으로 `Dockerfile`을 실행하면서 어떤 명령들이 실행되었는지 확인가능하다.   
-
 
 ```
 $ docker build -t ubuntunginx:1.0 -f Dockerfile.base .
@@ -215,166 +213,14 @@ apple silicon 에서 빌드한 이미지는 arm 시스템에서 동작하는 Doc
 docker build --platform linux/amd64 -t docker-test .
 ```
 
+### not certified ssl 등록
 
-### local docker private registry 구축 및 관리  
-
-프라이빗 레지스트리를 구축하기 위한 이미지를 다운받아 컨테이너 생성해보자.  
-
-`main server - 192.168.56.102`에 `private registry`구축하고 다른 서버에서 이에 접근에 올라가 있는 이미지를 다운.  
+공식 Docker Registry 가 아닌 사설 SSL 인증서가 적용된 Private Registry 지정시 아래와 같은 오류가 발생할 수 있다.  
+`https` 를 사용하더라도 공식 SSL 인증서가 아니라면 아래 에러가 docker login, pull, push 할 때 마다 발생한다.  
 
 ```
-[main server - 192.168.56.102]
-$ docker pull registry:2
-$ docker run -d \
-  -p 5000:5000 \
-  --restart=always \
-  --name local-registry \
-  -v /mnt/registry:/var/lib/registry \
-  registry:2
-
-$ docker ps | grep registry
-sudo netstat -nlp | grep 5000
+"SSL certificate problem: self signed certificate in certificate chain"
 ```
-
-`5000`번 포트를 매핑하고 해당 `local-registry` 컨테이너가 동작중이지 확인  
-
-`private registry` 구축끝!  
-
-이제 이미지를 다운받고 싶은 서버에서 우리가 구축한 `private registry`서버를 등록하기만 하면된다.  
-
-메인서버에도 이미지를 `private registry`서버에 올리고 다운받을 수 있도록 설정  
-
-```
-[main server - 192.168.56.102]
-[another server - 192.168.56.103]
-$ sudo vi /etc/init.d/docker
-31 ... DOCKER_OPTS=--insecure-registry 192.168.56.102:5000
-
--- daemon.json은 새로 작성한다.  
-$ sudo vi /etc/docker/daemon.json
-{"insecure-registries": ["192.168.56.102:5000"]}
-```
-
-`sudo service docker restart`, `docker version` 으로 서버가 다시 뜨는지 확인  
-`docker info` 명령어로 프라이빗 레지스트리가 추가되었는지 확인, 아래 문구처럼 뜨면 등록완료.
-
-```
-[main server - 192.168.56.102]
-[another server - 192.168.56.103]
-$ docker info
-Insecure Registries:
-192.168.56.102:5000
-127.0.0.0/8
-```
-
-이제 main 서버에 이미지 푸쉬, 기존에 만들어 두었던 `cadvisor`이미지를 업로드한다.  
-> `docker image tag`명령으로 이미지 명을 따로 줄 필요가 있다. `ip:port/imagename`  
-
-```
-[main server - 192.168.56.102]
-$ docker image tag google/cadvisor:latest localhost:5000/google-monitoring
-localhost:5000/google-monitoring   latest              eb1210707573        12 months ago       69.6MB
-$ docker image push localhost:5000/google-monitoring
-```
-
-`push`가 끝났으면 `another`서버에서 다운.  
-
-```
-[another server - 192.168.56.103]
-$ docker image pull 192.168.56.102:5000/google-monitoring
-$ docker images
-REPOSITORY                              TAG                 IMAGE ID            CREATED             SIZE
-192.168.56.102:5000/google-monitoring   latest              eb1210707573        12 months ago       69.6MB
-```
-
-이미지명 앞에 `ip:port`를 입력할 필요가 있다.  
-
-#### 외부 서버에 private registry 등록  
-
-`private registry` 를 외부에서 사용하려면 `https` 사용이 **필수**이다.  
-때문에 `dns` 설정, `ssl` 인증서 설치가 필요한대 `letsencrypt` 를 사용해 `ssl` 를 설치하고 진행해보았다.  
-
-regitsry 실행 전에 인증 파일이 저장되는 `/data/auth` 위치 `htpasswd` 를 사용해 계정정보 파일 생성 및 계정정보 입력
-
-```
-$ sudo apt-get install apache2-utils
-$ htpasswd -Bbn newid newpw > htpasswd ## 루트 계정으로 진행
-```
-
-```
-docker run -d \
--p 5000:5000 \
---restart=always \
---name docker-registry \
--v /etc/letsencrypt:/etc/letsencrypt \
--v /data/registry/registry:/var/lib/registry \
--v /data/auth:/auth \
--e "REGISTRY_AUTH=htpasswd" \
--e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
--e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd" \
--e "REGISTRY_HTTP_TLS_CERTIFICATE=/etc/letsencrypt/live/<mydomain>/fullchain.pem" \
--e "REGISTRY_HTTP_TLS_KEY=/etc/letsencrypt/live/<mydomain>/privkey.pem" \
-registry:2
-```
-
-> `<mydomain>` 부분을 본인의 `letsencrypt` 에 적용된 도메인으로 변경  
-
-`letsencrypt`의 `pem` 파일들은 심볼릭 링크이기에 실제 파일을 사용하려면 `/etc/letsencrypt`를 모두 볼륨처리 해야한다.  
-
-간단한 `docker-registry-ui` 를 지원하고 싶다면 아래처럼 `docker-compose` 파일 작성 권장  
-`joxit/docker-registry-ui` 외에도 `portus`, `nexus3` 등 지원  
-
-```yaml
-version: "3"
-
-services:
-  registry:
-    restart: always
-    image: registry:2
-    ports:
-      - 5000:5000
-    environment:
-      REGISTRY_AUTH: htpasswd
-      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
-      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
-      REGISTRY_HTTP_TLS_CERTIFICATE: /etc/letsencrypt/live/<mydomain>/fullchain.pem
-      REGISTRY_HTTP_TLS_KEY: /etc/letsencrypt/live/<mydomain>/privkey.pem
-      REGISTRY_STORAGE_DELETE_ENABLED: "true" ## 삭제 허용
-    volumes:
-      - /data/registry:/var/lib/registry
-      - /data/auth:/auth
-      - /etc/letsencrypt:/etc/letsencrypt
-  ui:
-    restart: always
-    image: joxit/docker-registry-ui:static
-    ports:
-      - 8000:80
-    environment:
-      REGISTRY_URL: https://registry:5000
-      DELETE_IMAGES: "true"
-      REGISTRY_TITLE: My Private Docker Registry
-    depends_on:
-      - registry
-```
-
-```
-$ docker login mydomain.com:5000
-## username: my-user
-## password: my-pass
-
-$ docker image tag mysql:5.7 mydomain.com:5000/mysql:5.7
-$ docker image push mydomain.com:5000/mysql:5.7
-```
-
-> http://mydomina.com:8000/?page=1#!taglist/mysql 접속시 아래와 같은 WEB UI 출력  
-
-![dockercompose6](/assets/2019/dockercompose6.png){: .shadow}  
-
-#### not certified ssl 등록
-
-`"SSL certificate problem: self signed certificate in certificate chain"`
-
-https 를 사용하더라도 공식 SSL 인증서가 아니라면 위와같은 에러가 docker login, pull, push 할 때 마다 발생한다.  
 
 아래 파일에서 `insecure-registries` 속성을 추가해서 해결 가능하다.  
 
@@ -396,6 +242,35 @@ https 를 사용하더라도 공식 SSL 인증서가 아니라면 위와같은 �
 }
 ```
 
+### 멀티스테이지 빌드(Multi-Stage Build)
+
+Spring Boot 서버를 실행하는 Docker 이미지를 만드려면 jar 파일을 COPY 하여 실행시키는 Dockerfile 을 작성한다.  
+jar 파일을 만들기 위해 host 에는 JDK 가 설치되어 있어야 하는데, jar 를 만드는 과정까지 Docker 컨테이너에서 수행할 수 있다.  
+
+```
+# 빌드 단계
+FROM gradle:8.8-jdk17 AS build
+WORKDIR /app
+
+# 프로젝트 소스 복사
+COPY . .
+
+# Gradle 빌드 실행
+RUN gradle build --no-daemon
+
+# ------------------------------
+
+# 실행 단계
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+
+# 빌드된 JAR 파일 복사
+COPY --from=build /app/build/libs/*.jar app.jar
+
+# 애플리케이션 실행
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+```
 
 ## docker-compose
 
@@ -409,8 +284,6 @@ https 를 사용하더라도 공식 SSL 인증서가 아니라면 위와같은 �
 
 컨테이너화 할때 사양한 설정 명령을 삭성해야 하며 `docker run` 명령이 10줄이 넘어갈 수 있다.  
 `docker-compose`는 단순 명령 실행의 떨어지는 가독성을 보완하고 1개의 컨테이너만 생성하는 것이 아니라 여러개의 컨테이너를 연관지어 한꺼번에 생성 가능하게해준다.  
-
-
 
 ### docker compose 설치 및 운영
 
@@ -557,7 +430,49 @@ chap07_webserver_1   python /opt/imageview/app.py     Up      0.0.0.0:80->80/tcp
 
 `down`후에 `ps`로 한번 모든 컨테이너가 종료되었는지 확인해보자.  
 
+### docker-compose 앵커
 
+yaml 설정 중복을 줄이고 설정을 재사용하기 위해 사용
+
+```yaml
+# 앵커이름 및 내부에 사용할 yaml 설정 지정
+x-test-logging: &default_logging
+  driver: "json-file"
+  options:
+    max-size: "10m" # docker 로그 최대 사이즈
+    max-file: "3"   # docker 로그 최대 개수
+
+services:
+  demo-log-app:
+    image: alpine
+    command: sh -c "trap 'exit' SIGTERM; while true; do echo 'demo log'; sleep 2; done"
+    logging: *default_logging
+```
+
+`병합 키(<<)` 문법을 사용하여 속성명부터 재활용할 수 있다.  
+
+```yaml
+x-test-logging: &default_logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+
+x-common-settings: &common
+  image: alpine
+  logging: *default_logging
+
+services:
+  demo-log-app1:
+    <<: *common
+    command: sh -c "trap 'exit' SIGTERM; while true; do echo 'demo log1'; sleep 2; done"
+  demo-log-app2:
+    <<: *common
+    command: sh -c "trap 'exit' SIGTERM; while true; do echo 'demo log2'; sleep 5; done"
+```
+
+<!-- 
 ## docker swarm
 
 도커가 공식적으로 만든 `Orchestration tool`(도커 관리도구)
@@ -717,3 +632,4 @@ nginx
 `$ docker service update --image nginx:1.11 myweb`
 
 순차적으로 update된다....
+ -->
