@@ -270,6 +270,8 @@ services:
     Rule     "multi_line"    "/.*/"                           "multi_line"
 ```
 
+> Spring Boot 버전에 따라 시간출력 형태가 다름으로 Regex 변경 필요, ChatGPT 를 사용하면 잘 출력해준다.  
+
 docker 컨테이너가 출력하는 `/var/log/containers/*.log` 로그파일을 tail 하는데 모든 로그형태가 json 이기에, 이를 한번 파싱하기 위해 `docker_json` 를 정의한다.  
 
 파싱된 로그안에는 SpringBoot 기본 로그, 에러 혹은 기타 출력물의 멀티라인 형태 로그가 구성되어있다.  

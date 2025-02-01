@@ -193,8 +193,7 @@ JPA 에선 트랜잭션 진입과 동시에 `DataSource` 를 가져오기 위해
 
 1. `ThreadLocal` 에 `readOnly` 값을 포함시킨 `Datasource Key` 를 저장하기  
 2. `LazyConnectionDataSourceProxy` 사용하기 - `AbstractRoutingDataSource` 로직을 `@Transaction` 으로 인한 AOP 뒤에 실행되도록 설정하는 방법.  
-3. `JPA` 를 버리고 `JDBC` 사용하기 - `JDBC` 가 사용하는 `DatasourceTransactionManager` 의 경우 실행 직전에 다시 Connection 을 가져옴으로 위와같은 문제가 발생하지 않음.  
-
+3. `JDBC` 사용하기 - `JDBC` 가 사용하는 `DatasourceTransactionManager` 의 경우 실행 직전에 다시 Connection 을 가져옴으로 위와같은 문제가 발생하지 않음.  
 
 ### LazyConnectionDataSourceProxy
 

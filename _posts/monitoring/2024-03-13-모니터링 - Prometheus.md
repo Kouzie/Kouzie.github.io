@@ -35,6 +35,40 @@ categories:
 
 `Prometheus` 는 위 4가지를 작업을 효과적으로 수행할 수 있게 도와준다.  
 
+### 설정  
+
+프로메테우스의 설계원칙에선 `설정 파일(prometheus.yml)` 로는 런타임시 동작 과정을 설정하고, `명령줄 플래그` 로는 시스템 레벨를 설정한다.  
+
+- **prometheus.yml**  
+  - <https://prometheus.io/docs/prometheus/latest/configuration/configuration/>  
+  - 주로 스크래핑 규칙, 알림 규칙, 경보 설정 등 런타임 동작과 관련된 설정  
+- **명령줄 플래그**  
+  - <https://prometheus.io/docs/prometheus/latest/storage/#operational-aspects>
+  - 데이터 저장소와 같은 시스템 레벨 설정을 관리  
+  - `--storage.tsdb.retention.time` (보존 기간)  
+  - `--storage.tsdb.retention.size` (용량 제한)  
+  - `--storage.tsdb.path` (데이터 저장 경로)  
+  - `--web.enable-lifecycle` (HTTP 기반 재시작 지원)  
+
+```yaml
+services:
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    volumes:
+      - "./path/to/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - "./path/to/rules.yml:/etc/prometheus/rules.yml"
+      - "./volume/prometheus:/prometheus"
+    ports:
+      - '9090:9090'
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml" # command 지정시 yml 위치 지정해줘야함.
+      - "--storage.tsdb.retention.time=30d"
+      - "--storage.tsdb.retention.size=2GB"
+      - "--storage.tsdb.path=/prometheus"
+```
+
+기간이 완료되기 전에 용량이 초과될 경우 오래된 데이터를 삭제하여 용량제한을 유지한다.  
+
 ### 데모코드
 
 > <https://github.com/Kouzie/spring-boot-demo/tree/main/micrometer-demo>

@@ -810,6 +810,24 @@ Error response from daemon: error while removing network: network webap-net id a
 
 `docker network disconnect webap-net dreamy_wilbur` 혹은 컨테이너를 stop하고 삭제해도 상관없다.  
 
+### 127.0.0.11
+
+docker 내부의 dns서버 IP는 127.0.0.11
+호스트의 이름을 유동적인 컨테이너를 찾을 때 주로 사용  
+
+아래와 같이 docker 내부 nginx 에서 서버를 동작중이라면 docker dns 로부터 refresh 수행이 가능하다.  
+
+```conf
+http {
+  client_max_body_size 15M;
+
+  resolver 127.0.0.11 valid=5s;  # Docker 내 DNS 서버 사용
+
+  upstream api-server {
+    server api-server:8080;
+  }
+}
+```
 
 ## doker 컨테이너간 통신 - ssh 
 

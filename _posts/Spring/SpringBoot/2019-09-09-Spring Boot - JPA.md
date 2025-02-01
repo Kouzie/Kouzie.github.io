@@ -1763,7 +1763,7 @@ public abstract class AbstractPlatformTransactionManager
 
 1. 트랜잭션 시작, 하래 함수를 순서대로 호출
    `TransactionAspectSupport.createTransactionIfNecessary`  
-   `AbstractPlatformTransactionManager.getTransaction`   
+   `AbstractPlatformTransactionManager.getTransaction`  
    `AbstractPlatformTransactionManager.startTransaction`  
 2. `DataSource` 로부터 `Connection` 흭득 및 `ThreadLocal` 에 등록
    `AbstractPlatformTransactionManager.doBegin` 
@@ -1774,10 +1774,128 @@ public abstract class AbstractPlatformTransactionManager
 5. `DataSource` 에 `Connection` 반환  
 
 `readOnly = true` 가 특별한 유형의 연결을 생성하지는 않지만, 읽기 전용 트랜잭션의 이점을 활용하여 ORM의 성능을 최적화할 수 있다.  
-수정요청시 에러를 발생시키도록 하거나 `Hibernate` 의 영속성 플러시 작업을 추가적으로 하지않아 성능을 최적화 할 수 있다.  
-이를 통해 데이터 일관성을 보장하고, 읽기 전용 작업의 성능을 극대화할 수 있다.
+수정요청시 에러를 발생시키도록 하거나 `Hibernate` 의 **영속성 플러시** 작업을 추가적으로 하지않아 성능을 최적화 할 수 있다.  
+이를 통해 데이터 일관성을 보장하고, 읽기 전용 작업의 성능을 극대화할 수 있다.  
 
 `DataSourceTransactionManager` 를 JPA 에서 사용하면 간단한 쿼리는 정상동작 하겠지만 영속성 관리, Lazy loading 등에서 문제가 발생할 수 있음으로 `JpaTransactionManager` 사용을 권장한다.  
+
+#### 트랜잭션 general_log
+
+> 출처: <https://tech.kakaopay.com/post/jpa-transactional-bri/>
+
+`JpaTransactionManager` 가 트랜잭션을 위해 호출하는 SQL 쿼리를 `general_log` 를 통해 확인가능하다.  
+기존에 FILE 에 출력되는 로그를 `mysql.general_log` 테이블에 출력되도록 변경.  
+
+```sql
+SHOW VARIABLES LIKE 'log_output';
+-- +-------------+-----+
+-- |Variable_name|Value|
+-- +-------------+-----+
+-- |log_output   |FILE |
+-- +-------------+-----+
+SET GLOBAL general_log = 'ON';
+SET GLOBAL log_output = 'TABLE';
+
+SELECT * FROM mysql.general_log
+```
+
+위와같이 설정하고 `spring.jpa.open-in-view=false` 상태에서 기본 `DataSource` 를 사용해서 `@Transaction` 설정별로 `mysql.general_log` 의 출력 결과를 확인하면 아래와 같다.  
+
+```java
+@Beans
+public DataSource dataSource() {
+    HikariDataSource dataSource = new HikariDataSource();
+    dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/demo?useUnicode=true&serverTimezone=Asia/Seoul");
+    dataSource.setUsername("root");
+    dataSource.setPassword("root");
+    dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+    return dataSource;
+}
+```
+
+
+```java
+// @Transaction 이 없을 때  
+public List<Board> findAll() {
+    return repository.findAll();
+}
+```
+
+```java
+@Transactional(readOnly = true)
+public List<Board> findAll() {
+    return repository.findAll();
+}
+```
+
+위와 같이 `@Transactional(readOnly = true)` 있는것과 없는 메서드 실행시 아래 6개의 `general_log` 가 출력된다.  
+
+- **set session transaction read only**  
+  세션의 읽기 전용 지정  
+- **SET autocommit=0**  
+  세션에서 호출될 쿼리들이 자동커밋되지 않고 트랜잭션으로 묶이는 것을 의미, 트랜잭션 시작을 의미.  
+- **select b1_0.bno,... from tbl_boards b1_0**  
+  쿼리 수행  
+- **commit**  
+  쿼리 커밋, 트랜잭션 종료  
+- **SET autocommit=1**  
+  autocommit 원복  
+- **set session transaction read write**  
+  세션 읽기 쓰기 지정 원복  
+
+> `@Transactional` 을 지정하지 않으면 `repository` 메서드 호출마다 `session` 에 대한 설정을 수행하기 때문에 위 예제의 경우 `@Transactional(readOnly = true)` 설정한것과 동일하다.  
+
+`@Transactional(readOnly=false)` 의 경우 4개의 `general_log` 가 출력된다.  
+
+```java
+@Transactional(readOnly=false)
+public List<Board> findAll() {
+    return repository.findAll();
+}
+// SET autocommit=0
+// "select b1_0.bno,... from tbl_boards b1_0"
+// commit
+// SET autocommit=1
+```
+
+`@Transactional(readOnly=true)` 를 설정할 경우 영속성 레이어에서 추가작업을 하지 않아 어플리케이션 레이어에선 부하가 줄어들겠지만,  
+`session transaction` 의 `read only, read write` 작업을 추가적으로 수행하기 때문에 DB 레이어에선 부하가 증가한다.  
+
+`DataSource` 에서 `autocommit` 설정을 `disable` 처리하고, `@Transactional` 만 지정된 메서드를 수행하면 단 2개의 `general_log` 가 출력된다.  
+
+```java
+HikariDataSource dataSource = new HikariDataSource();
+...
+dataSource.setAutoCommit(false);
+```
+
+```sql
+"select b1_0,.... from tbl_boards b1_0"
+commit
+```
+
+대부분의 상황에서 트랜잭션은 필수이기에 `autocommit` 을 사용하겠지만 아래와 같은 특수한 상황에선 사용할만 하다.   
+
+- SELECT 만 수행하는 CQRS 패턴 어플리케이션의 경우 DB 부하를 줄이기 위해.  
+- 읽기전용 `DataSource` 를 구성하고 `AbstractRoutingDataSource, LazyConnectionDataSourceProxy` 를 통해 분리호출 할 경우.  
+
+실시간 트랜잭션 `read_only` 활성여부를 확인하려면 아래 SQL 참고  
+
+```sql
+-- SET GLOBAL TRANSACTION READ WRITE;
+-- SET SESSION TRANSACTION READ WRITE;
+SET GLOBAL TRANSACTION READ ONLY;
+SET SESSION TRANSACTION READ ONLY;
+
+SELECT @@SESSION.transaction_isolation as 'STI',
+       @@SESSION.transaction_read_only as 'STR',
+       @@GLOBAL.transaction_isolation as 'GTI',
+       @@GLOBAL.transaction_read_only as 'GTR';
+
+SELECT * FROM mysql.general_log;
+```
+
+> MySQL Workbench 기준, DB Client 별로 출력결과가 다를 수 있음.  
 
 #### @Lock, @Version
 
