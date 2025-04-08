@@ -255,6 +255,12 @@ WORKDIR /app
 # 프로젝트 소스 복사
 COPY . .
 
+# Gradle 설정 파일들만 먼저 복사 (의존성 캐시를 위해)
+COPY build.gradle settings.gradle gradle.properties ./
+
+# 의존성 다운로드 (캐시 레이어 생성)
+RUN gradle --no-daemon dependencies
+
 # Gradle 빌드 실행
 RUN gradle build --no-daemon
 
@@ -271,6 +277,10 @@ COPY --from=build /app/build/libs/*.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
 ```
+
+`--no-daemon` 옵션은 Gradle 빌드 실행 시 Gradle daemon 프로세스를 사용하지 않도록 하는 옵션.
+
+Gradle 데몬은 빌드 속도를 높이기 위해 백그라운드에서 상시 실행되며, 이전 빌드 결과를 캐싱하여 다음 빌드를 빠르게 시작할 수 있도록 하지만 Docker나 CI/CD 환경에서는 데몬이 계속 실행되면 자원 관리나 프로세스 종료 문제 등이 발생할 수 있기 때문에, --no-daemon 옵션을 사용하여 빌드가 완료되면 프로세스가 종료되도록 하는 것이 좋음.
 
 ## docker-compose
 
@@ -289,20 +299,21 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
 `apt-get install`로 설치가능하지만 버전에 따른 오류가 많기에 아래 명령으로 실행
 
-https://github.com/docker/compose/releases?after=1.23.1
+> <https://github.com/docker/compose/releases>
 
 위 사이트에서 docker가 제공해준 실행파일을 다운 받은 후 권한을 설정한다.  
 
-```
-$ sudo curl -L https://github.com/docker/compose/releases/download/1.21.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
-$ chmod +x /usr/local/bin/docker-compose
-$ sudo chown kouzie /usr/local/bin/docker-compose
+```sh
+sudo curl -L https://github.com/docker/compose/releases/download/1.21.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+sudo chown kouzie /usr/local/bin/docker-compose
 ```
 
 그후 `vi`로 `docker-compose.yml`파일 생성  
 
-샘플로 wordpress와 wordpress가 사용할 mysqlDB를 생성해보자.  
-```
+샘플로 `wordpress, mysqlDB` 서비스를 생성해보자.  
+
+```yaml
 version: '2'
 services:
     db:
@@ -328,11 +339,13 @@ services:
 ```
 
 `docker-compose up`명령으로 `docker-compose.yml`파일 실행  
+
+```sh
+docker-compose up
+# Starting kouzie_wordpress_1 ... done
+# Starting kouzie_db_1        ... done
 ```
-$ docker-compose up
-Starting kouzie_wordpress_1 ... done
-Starting kouzie_db_1        ... done
-```
+
 실행과 동시에 출력되는 로그가 계속 뜨는데 도중에 나갈 수 없다.  
 시작할때 백그라운드로 실행해야 한다.  
 

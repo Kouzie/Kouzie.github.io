@@ -256,6 +256,12 @@ public CacheManager cacheManager() {
 }
 ```
 
+`offheap` 은 메모리 공간이지만 JVM 에 의해 청소되지 않는 공간.
+
+캐시에 저장될 엔트리는 아래 순서대로 저장된다.  
+
+heap > offheap > disk
+
 ## Redis CacheManager
 
 `redis` 를 `CacheManager` 로 사용 가능.  

@@ -61,9 +61,9 @@ OAuth 중 `Authorization Code` 방식인증은 아래 순서대로 진행된다.
 
 단순 라이브러리 설정을 통해 아래 3가지 서버를 구성 가능하다.  
 
-- Authorization Server  
-- Resource Client  
-- Resource Server  
+- Authorization Server(인증서버)  
+- Resource Client(리소스 서버)  
+- Resource Server(사용자정보 서버)  
 
 ## Spring Boot Resource Client
 
@@ -1435,7 +1435,8 @@ public OAuth2TokenGenerator<OAuth2Token> tokenGenerator(JwtEncoder jwtEncoder,
      - `OidcUserInfoAuthenticationProvider` 에서 사용자의 token 유효성 확인(DB, InMemory), 
        - `DefaultOidcUserInfoMapper` 를 통해 `scope` 확인 후 필요한 데이터만 반환.  
 
-
+> 인증, 인가에 필요한 각종 도메인을 CRUD 하기 위한 API 를 개발하는건 피곤한 일이다.  
+> Spring Auth Server 를 통해 직접 구축할 수 도 있지만 Keycloak 과 같은 오픈소스를 사용하는 것도 좋은 방법이다.  
 
 ## 인증과정 중 요청/응답 값  
 
@@ -1630,7 +1631,7 @@ server.ssl.key-alias=spring
 ## Spring Boot Resource Server  
 
 이전에는 `Spring Authorization Server` 에서 사용자 인증 및 조회까지 수행하였는데,  
-사용자의 상세정보는 별도의 서버에서 운영하는 경우가 많다. naver 와 kakao 의 경우에도 인증서버와 userinfo 조회서버가 다르다.  
+사용자의 상세정보는 별도의 서버에서 운영하는 경우가 많다. naver 와 kakao 의 경우에도 인증서버와 `userinfo` 조회서버가 다르다.  
 
 - naver
   - authorization_url: <https://nid.naver.com/oauth2.0/authorize>
@@ -1639,7 +1640,7 @@ server.ssl.key-alias=spring
   - authorization_endpoint: <https://kauth.kakao.com/oauth/authorize>,
   - userinfo_endpoint: <https://kapi.kakao.com/v1/oidc/userinfo>,
 
-`userinfo` 조회용 서버를 `spring-boot-starter-oauth2-resource-server` 를 통해 설정 가능하다.  
+`userinfo` 용 서버를 `spring-boot-starter-oauth2-resource-server` 를 통해 설정 가능하다.  
 
 ```groovy
 dependencies {

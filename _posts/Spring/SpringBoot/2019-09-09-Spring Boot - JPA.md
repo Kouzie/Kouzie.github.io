@@ -380,125 +380,26 @@ public interface SurveyRepository extends CrudRepository<Survey, Long> {
 }
 ```
 
-### Querydsl
+### 1차 캐시, 2차 캐시
 
-> <http://querydsl.com/>
+- **1차 캐시(First Level Cache, L1 Cache)**  
+  트랜잭션 단위에서 공유하는 캐시, 영속성 컨텍스트 내부에 존재하여 엔티티 매니저로 조회하는 모든 엔티티는 1차캐시에서 값을 확인하고 가져온다.  
+  영속성 컨택스트는 JPA 를 사용한다면 자동으로 설정된다.  
 
-`@Param` 으로 SQL 쿼리에 동적으로 변수를 매핑할 수 있지만  
-SQL 조건문도 동적으로 추가할 수 있어야 한다.  
+- **2차 캐시(Second Level Cache, L2 Cache)**  
+  어플리케이션 단위에서 공유하는 캐시, 애플리케이션을 종료할 때까지 유지된다.  
+  대부분 API 단의 캐시(Redis, EhCache 등) 을 사용하고 hibernate 의 2차캐시는 사용하지 않는다.  
 
-아래와 같이 build 과정에서 `Qclass` 를 자동생성, `querydsl` 문법을 지원한다.  
+hibernate 에서 2차 캐시 연동을 위한 설정을 제공, 아래 url 과 `@javax.persistence.Cacheable`, `@org.hibernate.annotations.Cache` 설정을 통해 각종 추가설정이 가능하다.  
 
-```java
-/**
- * QBoard is a Querydsl query type for Board
- */
-@Generated("com.querydsl.codegen.EntitySerializer")
-public class QBoard extends EntityPathBase<Board> {
+> <https://docs.jboss.org/hibernate/orm/6.2/userguide/html_single/Hibernate_User_Guide.html#caching>  
 
-    private static final long serialVersionUID = 384858839L;
+#### 영속성 concurrency
 
-    public static final QBoard boardx = new QBoard("board");
+멀티 스레드 환경에서 `JPA`를 사용하다 보면 1차 캐시(영속성 컨택스트)의 동시성 문제가 발생한다.  
 
-    public final NumberPath<Long> bno = createNumber("bno", Long.class);
-
-    public final StringPath content = createString("content");
-
-    public final DateTimePath<java.sql.Timestamp> regdate = createDateTime("regdate", java.sql.Timestamp.class);
-
-    public final StringPath title = createString("title");
-
-    public final DateTimePath<java.sql.Timestamp> updatedate = createDateTime("updatedate", java.sql.Timestamp.class);
-
-    public final StringPath writer = createString("writer");
-
-    public QBoard(String variable) {
-        super(Board.class, forVariable(variable));
-    }
-
-    public QBoard(Path<? extends Board> path) {
-        super(path.getType(), path.getMetadata());
-    }
-
-    public QBoard(PathMetadata metadata) {
-        super(Board.class, metadata);
-    }
-}
-```
-
-기존의 정수, 문자열 변수들이 `NumberPath`, `StringPath` 과 같은 객체형으로 변경되었다.  
-내부적으로 조건문 처리를 할 수 있는 함수들이 정의되어있다.  
-
-```java
-@Test
-public void testPredicate() {
-    String type = "t";
-    String keyword = "17";
-
-    BooleanBuilder builder = new BooleanBuilder();
-    
-    QBoard board = QBoard.board;
-    if (type.equals("t")){
-        builder.and(board.title.like("%"+keyword+"%"));
-    }
-    builder.and(board.bno.gt(0L));
-    Pageable pageable = PageRequest.of(0, 10);
-    Page<Board> result = repo.findAll(builder, pageable);
-
-    System.out.println(result.getSize());
-    System.out.println(result.getTotalPages());
-    System.out.println(result.getTotalElements());
-    System.out.println(result.nextPageable());
-    List<Board> list = result.getContent();
-    list.forEach(b-> System.out.println(b));
-    }
-```
-
-`QuerydslPredicateExecutor` 를 상속하면 `CrudRepository` 에서도 `Qclass` 사용이 가능하다.  
-
-```java
-public interface BoardRepository extends 
-    CrudRepository<Board, Long>, 
-    QuerydslPredicateExecutor<Board> {
-    ...
-}
-```
-
-> JPA 의 공식 지원 라이브러리인 `Criteria` 도 `Specifications` 동적쿼리 생성방법이 있으니 참고  
-> <https://www.baeldung.com/rest-api-search-language-spring-data-specifications>
-
-<!-- 
-### path, expression
-
-geo 관련 sql 에서 `alias` 와 표현식을 뜻함.  
-
-```java
-NumberExpression<Double> distanceExpression = 
-    acos(cos(radians(Expressions.constant(latitude)))
-        .multiply(cos(radians(qStore.latitude))
-            .multiply(cos(radians(qStore.longitude))
-                .subtract(radians(Expressions.constant(longitude)))
-                .add(sin(radians(Expressions.constant(latitude)))
-                    .multiply(sin(radians(qStore.latitude))))))).multiply(6371);
-
-NumberPath<Double> distancePath = Expressions.numberPath(Double.class, "distance");
-
-queryFactory.select(Expressions.as(distanceExpression, distancePath))
-    ...
-    ...
-    .having(Expressions.predicate(Ops.LOE, distancePath, Expressions.constant(distance)))
-```
-
-이런식으로 쿼리를 추가하고 조건식에 적용할 수 있음.  
--->
-
-### EntityManager concurrency
-
-멀티 스레드 환경에서 `JPA`를 사용하다 보면 동시성 문제가 발생한다.  
-
-- `Thread1` 이 `DeviceRestartLog` 생성, `redis` 와 같은 저장소에 `DeviceId` 와 로그를 저장  
+- `Thread1` 이 `DeviceRestartLog` 생성
   `Thread.sleep`으로 5초 후 DB에서 `findByLogid` 실행하여 재실행결과 확인  
-
 - `Thread2` 는 `Device` 로부터 재실행 결과 수신, 재실행 결과 로그를 `DeviceRestartLog` 에 업데이트  
 
 ```java
@@ -513,12 +414,13 @@ deviceRestartLogRepository.saveAndFlush(deviceRestartLog);
 ```java
 // Thread1의 코드
 Long logid = curruntTimeMills();
+DeviceRestartLog deviceRestartLog = new DeviceRestartLog()
 deviceRestartLog.setId(logid);
 deviceRestartLog.setDeviceId(deviceId);
 deviceRestartLog.status(0); //0=restart 안됨
 deviceRestartLogRepository.save(deviceRestartLog);
 messageSender.sendMessage(new RestartMessage(logid, deviceId)); // 기기 재부팅 진행
-// 5초후 재실행 결과 확인
+// 5초후 재실행 결과 확인, 5초 동안 Thread2 코드가 실행됨
 Thread.sleep(1000 * 5);
 deviceRestartLog = deviceRestartLogRepository.findByLogId(String.valueOf(logid));
 restartStatus = deviceRestartLog.getStatus();
@@ -567,7 +469,7 @@ DeviceRestartCustomRepository {
 }
 ```
 
-그리고 검색해온 값을 `refresh`해주기만 하면 끝!  
+그리고 검색해온 값을 `refresh` 해주기만 하면 끝!  
 
 ```java
 // 5초후 재실행 결과 확인
@@ -578,19 +480,22 @@ restartStatus = deviceRestartLog.getStatus();
 ...
 ```
 
-### 1차 캐시, 2차 캐시
+```java
+public interface UserRepository extends JpaRepository<User, Long> {
 
-**1차 캐시(First Level Cache, L1 Cache)**  
-트랜잭션 단위에서 공유하는 캐시, 영속성 컨텍스트 내부에 존재하여 엔티티 매니저로 조회하는 모든 엔티티는 1차캐시에서 값을 확인하고 가져온다.  
-영속성 컨택스트는 JPA 를 사용한다면 자동으로 설정된다.  
+    @Modifying
+    @Transactional
+    @Query("UPDATE User u SET u.status = 'INACTIVE' WHERE u.lastLogin < :cutoffDate")
+    void deactivateOldUsers(LocalDateTime cutoffDate);
 
-**2차 캐시(Second Level Cache, L2 Cache)**  
-어플리케이션 단위에서 공유하는 캐시, 애플리케이션을 종료할 때까지 유지된다.  
-대부분 API 단의 캐시(Redis, EhCache 등) 을 사용하고 hibernate 의 2차캐시는 사용하지 않는다.  
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query("DELETE FROM User u WHERE u.lastLogin < :cutoffDate")
+    void deleteOldUsers(LocalDateTime cutoffDate);
+}
+```
 
-hibernate 에서 2차 캐시 연동을 위한 설정을 제공, 아래 url 과 `@javax.persistence.Cacheable`, `@org.hibernate.annotations.Cache` 설정을 통해 각종 추가설정이 가능하다.  
-
-> <https://docs.jboss.org/hibernate/orm/6.2/userguide/html_single/Hibernate_User_Guide.html#caching>  
+#### 
 
 ## 연관관계 어노테이션
 

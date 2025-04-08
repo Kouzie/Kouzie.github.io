@@ -836,3 +836,9 @@ loadedObjects = mapper.transactionLoad(transactionLoadRequest);
 
 DynamoDB 는 단순한 CRUD 에선 최적이라할 수 있지만 복잡한 쿼리식은 아예 설계불가능할 수 있기에 충분한 요구분석후에 사용을 결정해야 한다.
 -->
+
+## SigV4
+
+> <https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/http/auth/aws/signer/AwsV4HttpSigner.html>  
+> <https://github.com/aws-samples/sigv4-signing-examples>  
+

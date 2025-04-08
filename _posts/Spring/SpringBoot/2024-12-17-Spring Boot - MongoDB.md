@@ -145,6 +145,24 @@ public UserDocument getUserByParam(String username, String email) {
 }
 ```
 
+### save, insert
+
+```
+// 새 문서 삽입
+db.collection.insert({ name: "홍길동", age: 30 });
+db.collection.save({ name: "이순신", age: 40 });
+
+// id 지정해서 insert, id 가 이미 존재한다면 예외발생
+db.collection.insert({ _id: ObjectId("1234"), name: "홍길동", age: 30 });
+
+// id 지정해서 save, id 가 없다면 추가, 있다면 업데이트함.
+db.collection.save({ _id: ObjectId("1234"), name: "이순신", age: 41 });
+```
+
+동작에는 큰 차이가 없지만 명시적으로 `save`, `insert` 를 구분해서 사용하는것을 권장한다.  
+
+`Spring Data Mongo` 에서 다중삽입의 경우 `saveAll` 함수는 반복문이고 `insert(list)` 는 일괄처리임으로 성능상에도 차이가 있다.  
+
 ## 트랜잭션
 
 `MongoDB` 트랜잭션은 `Oplog` 를 지원하는 **Cluster 환경(Replica Set, Sharded Cluster) 환경에서만 동작**한다.  
@@ -299,7 +317,7 @@ public class NotificationReadConverter implements Converter<Document, Notificati
 
 > `Converter` 를 정의하지 않고 `_class` 필드와 `@TypeAlias` 사용으로도 클래스 타입에 맞춰 비직렬화 가능하다.  
 
-아래와 같이 `[id, type, userId, message, timestamp]` 까지는 일치하지만 구현별로 이룹 데이터가 조금씩 다를경우 상속구조로 클래스를 설계하는데,
+아래와 같이 `[id, type, userId, message, timestamp]` 까지는 일치하지만 구현별로 데이터가 조금씩 다를경우 상속구조로 클래스를 설계하는데,
 
 ```js
 [
