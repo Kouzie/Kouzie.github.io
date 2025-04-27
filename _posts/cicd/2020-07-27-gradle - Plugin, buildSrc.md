@@ -176,26 +176,28 @@ pluginManagement {
 }
 ```
 
-## buildSrc
+### buildSrc
 
 > <https://docs.gradle.org/current/userguide/plugins.html#sec:buildsrc_plugins_dsl>
 
 `buildSrc` 를 사용하면 커스텀한 코드를 `gradle plugin` 으로 등록하고 빌드시에 `task` 를 동작시킬 수 있다.  
 
+> `buildSrc` 는 프로젝트의 루트 디렉토리에만 존재할 수 있다.  
+> 하위 모듈에서 `buildSrc` 에 정의한 `plugin` 에 접근하는 구조이다.  
+
 디렉터리가 발견되면 `gradle` 에선 코드를 자동으로 컴파일하고 테스트하여 빌드 스크립트의 클래스 경로에 넣는다.  
 별도의 설정 없이 루트 `build.gradle` 과 동일한 위치에 `buildSrc` 이름으로 디렉토리, `src/main/java/{package-name}` 구조로 생성  
 
-`package-name` 은 테스트를 위해 `com.demo.generate` 로 지정  
+`package-name` 은 테스트를 위해 `com.example.buildsrc` 로 지정  
 
-### plugin 등록  
+#### plugin 등록  
 
-`buildSrc/src/main/resources/META-INF/gradle-plugins` 디렉토리에 `com.demo.generate.properties` 파일 생성  
+`buildSrc/src/main/resources/META-INF/gradle-plugins` 디렉토리에 `com.example.buildsrc.properties` 파일 생성  
 
 테스크로 등록할 클래스를 지정해준다.  
 
 ```conf
-# com.demo.generate.properties 파일에 아래 설정
-implementation-class=com.demo.generate.plugin.GeneratorPlugin
+implementation-class=com.example.buildsrc.plugin.GeneratorPlugin
 ```
 
 ```java
@@ -259,12 +261,12 @@ public class GeneratorTask extends DefaultTask {
 }
 ```
 
-이제 사용하고 싶은 application 의 `build.gradle` 에 가서 `plugin` 등록 및 `task` 를 호출하면 된다.  
+이제 사용하고 싶은 모듈의 `build.gradle` 에 가서 `plugin` 등록 및 `task` 를 호출하면 된다.  
 
 ```groovy
 plugins {
     ...
-    id 'com.demo.generate'
+    id 'com.example.buildsrc'
 }
 
 def genSrc = "src/main/java-gen"
@@ -275,13 +277,17 @@ def genSrc = "src/main/java-gen"
     sourceSets.main.java.srcDirs += genSrc
 ```
 
-
 ## Annotation Processor
 
 > <https://www.baeldung.com/java-annotation-processing-builder>
 > <https://medium.com/@jason_kim/annotation-processing-101-번역-be333c7b913>
 
-`Lombok`, `QueryDSL`, `MapStruct` 같이 어노테이션을 사용해 새로운 코드가 컴파일, 소스 단계에서 사용자가 정의한 대로 클래스파일이 생성되도록 하는게 `Annotation Processor` 이다.  
+`Lombok`, `QueryDSL`, `MapStruct` 는 코드생성을 하는 대표적인 프로젝트이다.  
+
+`Lombok`, `QueryDSL`, `MapStruct` 같이 어노테이션을 사용해 새로운 코드가 컴파일, 소스 단계에서 사용자가 정의한 대로 클래스파일이 생성되도록 할때 `Annotation Processor` 를 사용한다.  
+
+> `QueryDSL` 의 경우 내부적으로 복잡한 문자열 조합을 통해 Class 파일을 생성하는 것을 알 수 있다.  
+> <https://github.com/querydsl/querydsl/blob/master/querydsl-codegen/src/main/java/com/querydsl/codegen/DefaultEntitySerializer.java>
 
 아래와 같이 추가로 `javax.annotation.processing.AbstractProcessor` 구현체를 정의하면 직접 작성한 어노테이션에 대해 커스텀한 설정을 처리할 수 있다.  
 
@@ -382,7 +388,7 @@ com.example.redis.annotation.DistributedLockProcessor
 
 ### 구글 auto-service 라이브러리 사용  
 
-`auto-service` 라이브러리가 `javax.notation.processing.Processor` 파일을 자동으로 생성해서 `@AutoService` 처리된 `Annotation Processor` 를 지정해준다.  
+`auto-service` 라이브러리가 `javax.annotation.processing.Processor` 파일을 자동으로 생성해서 `@AutoService` 처리된 `Annotation Processor` 를 지정해준다.  
 
 ```groovy
 dependencies {

@@ -30,11 +30,14 @@ docker의 경우 **`hostOS`의 자원과 커널을 공유**하기에 별도의 `
 
 ![docker2](/assets/2019/docker2.png){: .shadow}  
 
+성능과 리소스 절약을 위해 이러한 최소성을 유지하고 `centOS` 컨테이너의 경우 200MB정도밖에 안된다.  
+
+<!-- 
 어쨋건 docker로 `db`, `webserver`, `elk`와 같은 서비스를 설치하던 `centOS`와 같은 같은 OS이미지를 설치하던 해당 컨테이너에서 동작하는  OS이미지가 있긴 있다.  
 단 해당 이미지의 kernal이 별도로 설치되는 것이 아닌 `hostOS`의 커널로 실행된다.  
 
 도커는 최소성을 만족하기에 해당 기본적이로 설치되는 컨테이너안의 리눅스엔 `ifconfig`, `ps` 와 같은 기본적 명령어도 제공되지 않는다.  
-성능과 리소스 절약을 위해 이러한 최소성을 유지하고 `centOS` 컨테이너의 경우 200MB정도밖에 안된다.  
+
 
 ## docker 설치  
 
@@ -84,6 +87,61 @@ Server: Docker Engine - Community
 
 도커데몬은 docker(클라이언트)로부터 여러 명령을 받아 컨테이너를 실행하고 멈추고 지우고 등등 작업을 한다.  
 `sudo service docker stop`을 하면 도커데몬을 중지시킴으로 `server`가 사라짐을 볼수 있다.  
+ -->
+
+
+## docker 설치(for mac M1)
+
+기존에 Docker Desktop 으로 docker 데몬과 GUI 설치시 컴퓨터가 느려지는 느낌을 받아 Colima + Docker 방식의 CLI 기반으로 설치하기로 결정
+
+```sh
+brew install colima docker docker-compose
+
+colima start
+# colima start --cpu 4 --memory 4 --disk 60 
+# 기본설정은 2CPU, 2GB RAM, 60GB Disk
+
+docker version
+# Client: Docker Engine - Community
+#  Version:           28.1.0
+#  API version:       1.47 (downgraded from 1.49)
+#  Go version:        go1.24.2
+#  Git commit:        4d8c241ff0
+#  Built:             Thu Apr 17 09:52:28 2025
+#  OS/Arch:           darwin/arm64
+#  Context:           colima
+```
+
+```sh
+# buildx 설치
+brew install docker-buildx
+# 링크
+ls /opt/homebrew/bin/docker-buildx
+mkdir -p ~/.docker/cli-plugins
+ln -sfn /opt/homebrew/bin/docker-buildx ~/.docker/cli-plugins/docker-buildx
+
+# 기본 빌더는 buildx 로 설정
+# buildx 빌더가 컨테이너로 실행되고 있어야함.
+docker buildx create --name colima-builder --use
+docker buildx inspect --bootstrap
+
+# credsStore 속성 제거필요
+vim ~/.docker/config.json
+
+docker buildx version
+
+# 설치 확인
+docker info
+# Client: Docker Engine - Community
+#  Version:    28.1.0
+#  Context:    colima
+#  Debug Mode: false
+#  Plugins:
+#   buildx: Docker Buildx (Docker Inc.)
+#     Version:  v0.23.0
+#     Path:     /Users/kouzie/.docker/cli-plugins/docker-buildx
+
+```
 
 
 # docker command  

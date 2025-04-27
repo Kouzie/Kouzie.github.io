@@ -502,7 +502,7 @@ class AdMessageConstraintValidator implements ConstraintValidator<AdMessageConst
                 context.disableDefaultConstraintViolation(); 
                 constraintViolations.stream()
                         .forEach(constraintViolation -> context
-                                .buildConstraintViolationWithTemplate(constraintViolation.getMessageTemplate())
+                                .buildConstraintViolationWithTemplate(constraintViolation.getMessageTemplate()) // 에러메세지 삽입
                                 .addPropertyNode(constraintViolation.getPropertyPath().toString())
                                 .addConstraintViolation());
                 return false;

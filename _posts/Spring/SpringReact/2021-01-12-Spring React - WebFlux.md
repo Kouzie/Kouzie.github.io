@@ -12,7 +12,7 @@ categories:
   - spring-reative
 ---
 
-## 스프링 코어 for Reactive
+## 스프링 MVC
 
 기존 스프링 MVC 에선 tomcat 기반으로 웹서버를 실행해 왔다.  
 
@@ -20,6 +20,7 @@ categories:
 
 ```conf
 # thread pool 개수
+server.tomcat.threads.min-spare=20 # default 10
 server.tomcat.threads.max=200
 # connection 큐 개수(사실상 작업 분배용 큐)
 server.tomcat.max-connections=8192
@@ -29,21 +30,35 @@ server.tomcat.accept-count=100
 
 `Spring Boot embedded tomcat` 의 경우 `default thread` 수가 200개, 이는 동시요청이 200개가 들어오면 http 요청이 block 된다는 뜻이다.  
 
+`AWS 4 vCPU, 16GB` 사양에서 `Tomcat max-threads` 설정으로 다음 값을 권장한다.
+
+- 400개: I/O 작업이 적당히 포함된 일반적인 웹 애플리케이션에 적합. CPU 사용률 70~80% 수준 유지 가능.
+- 600개: I/O 대기 시간이 길거나 동시 요청이 많은 경우(예: 동시 접속자 5000명 이상).
+- 500개: 안전한 시작점, 4 vCPU에서 스레드당 부하를 분산하기에 적당하며, 메모리도 넉넉히 남음.
+
 최근 웹 어플리케이션은 외부API 요청, DB로부터의 CRUD 가 전부인 경우가 많다, 복잡한 `CPU Bound Job` 보다는 외부의존성과 연결을 통해 `IO Bound Job` 이 더 많다는 뜻이다.  
 
 때문에 `멀티스레드 & blocking` 기반으로 동작하는 `tomcat` 은 요청이 몰렸을 때 외부 의존성(DB, API서버) 에 의해 `blocking` 되어 아무런 동작도 하지 않는상태로 대기중인 경우가 많아진다.  
 CPU 사용률을 0% 에 가까워지고 요청이 완료되어 콜백 인터럽트가 발생하기만을 기다리게 되버린다.  
 
-이는 파일처리에 대해서도 동일한 문제였기 때문에 1990 년쯤 linux 에서 NIO 기능을 지원하기 시작했고,  
-위와같은 문제를 알고있는 개발자들도 프레임워크에 NIO 기능을 넣어 멀티스레드의 문제점을 해결해줬다.  
+## 스프링 코어 for Reactive
 
+이는 파일 `read write` 에 대해서도 동일한 문제였기 때문에 했고, 위와같은 문제를 알고있는 개발자들도 프레임워크에 NIO 기능을 넣어 멀티스레드의 문제점을 해결해줬다.  
+
+Spring WebFlux 등장 배경은 아래 참고.  
+
+- 1990 년 linux 에서 NIO 기능을 지원하기 시작.  
 - 2004 년 netty 가 개발되어 NIO 웹서버를 쓸 수 있게 되었다.  
 - 2009 년 Nodejs 역시 NIO 기반으로 동작할 수 있는 프레임워크를 만들어주었다.  
 - 2009 년 비동기 서블릿(servlet 3.0) 이 출시했다.  
+- `Spring WebFlux` 는 NIO 웹서버인 `Netty` 를 기반으로 2017년 `Spring Framework 5.0` 에 처음 도입되었다.  
 
-`Spring WebFlux` 는 NIO 웹서버인 `Netty` 를 기반으로 2017년 `Spring Framework 5.0` 에 처음 도입되었다.  
+Netty 의 경우 **이벤트 루프를 처리하는 스케줄러** 가 사용하는 스레드 풀을 사용한다.  
+워커스레드 기본값은 `Runtime.getRuntime().availableProcessors() * 2`
 
-Netty 의 경우 이벤트 루프를 처리하는 스레드 풀(CPU core * 2)
+스레드 풀에 의존하지 않고 이벤트 루프방식으로 요청을 처리하여 시스템 자원(메모리, 네트워크 소켓 디스크립터)만 충분하다면 4코어 서버에서 수만~수십만 커넥션을 동시에 처리할 수 있다.  
+
+> 네트워크 소켓 디스크립터도 기본값 1024개이지만 튜닝으로 수십만 개 까지 가능하다.  
 
 ```java
 @Bean
