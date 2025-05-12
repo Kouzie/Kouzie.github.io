@@ -23,7 +23,7 @@ categories:
 
 - **AuthenticationFilter(인증 필터)**  
   Spring Security 백본, 전반적인 HTTP 요청을 처리, 하위 Security 객체들과 협력하여 인증처리를 진행한다.  
-  최종적으로 `Authentication` 인증객체를 수신받아 관리하고 `UsernamePasswordAuthenticationToken` 도 그중 하나.  
+  최종적으로 `Authentication` 인증객체를 수신받아 관리하고 `UsernamePasswordAuthenticationToken` 도 인증객체중 하나.  
   아래 SecurityFilterChain 그림에서 Filter Chain 확인  
 - **AuthenticationManager(인증 매니저)**  
   사용자 신원 확인하는 핵심 구성요소.  
@@ -278,6 +278,7 @@ public void printSecurityFilters() {
     }
 }
 /* 
+Security Filter Chain: DefaultSecurityFilterChain [RequestMatcher=any request, Filters=[...]]
 class org.springframework.security.web.session.DisableEncodeUrlFilter
 class org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter
 class org.springframework.security.web.context.SecurityContextHolderFilter
@@ -297,7 +298,7 @@ class org.springframework.security.web.access.intercept.AuthorizationFilter
 */
 ```
 
-`AuthorizationFilter` 에서 최종적으로 `Spring Security Context` 에 저장되어 있는 `Authentication` 객체를 확인, URL 등과 매칭 후 `AccessDeniedException(401)` 에러를 발생시킨다.  
+마지막에 정의된 `AuthorizationFilter` 에서 `Spring Security Context` 에 저장되어 있는 `Authentication` 객체를 확인, URL 등과 매칭 후 인가여부를 확인하고 비인가 요청일 경우 `AccessDeniedException(401)` 에러를 발생시킨다.  
 
 `ExceptionTranslationFilter` 에는 예외를 처리할 수 있는 핸들러 함수를 사용해 에러를 조치한다(redirect OR error reponse)
 
@@ -1701,6 +1702,88 @@ public class CustomSecurityUser extends User {
 }
 ```
 
+### SecurityContextRepository
+
+위에서 정의한 `JwtRequestFilter` 처럼 직접 `SecurityContextHolder` 에 접근해서 `Authentication` 객체를 삽입하였는데  
+`SecurityContextRepository` 를 사용하면 좀더 Spring Security 표준스럽게 작성 가능하다.  
+
+`JwtFilter` 에선 `JWT` 의 검증에만 집중하고 `SecurityContextRepository` 에선 `Authentication` 객체를 생성하도록 코드의 책임 분리가 가능하다.  
+
+`Spring Boot 3.x` 부터 `SecurityContextHolderFilter` 가 `SecurityContextRepository` 를 사용해 보안 컨텍스트를 load 하고 save 하는 역할을 수행한다.  
+
+`saveContext` 는 호출설정을 직접 명시해야 마지막 `Filter` 인 `AuthenticationFilter` 에서 호출된다.  
+
+`JwtTokenFilter` 대신 `SecurityContext` 에 `Authentication` 객체를 저장해줄 `JwtSecurityContextRepository` 정의
+
+```java
+@Slf4j
+public class JwtSecurityContextRepository implements SecurityContextRepository {
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String BEARER = "Bearer";
+    private final List<String> ignoreUrls;
+
+    public JwtSecurityContextRepository(List<String> ignoreUrls) {
+        this.ignoreUrls = ignoreUrls;
+    }
+
+    // Spring Security 6.x 부터 loadDeferredContext 를 사용하며 실제 SecurityContext 를 호출하기 전까지 loadContext 는 deferred 됨,
+    @Override
+    public SecurityContext loadContext(HttpRequestResponseHolder requestResponseHolder) {
+        HttpServletRequest request = requestResponseHolder.getRequest();
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+
+        // Ignore URLs check
+        if (ignoreUrls.contains(request.getRequestURI())) {
+            return context;
+        }
+
+        // Check JWT token
+        String authorization = request.getHeader(AUTHORIZATION_HEADER);
+        if (authorization == null || !authorization.startsWith(BEARER)) {
+            log.warn("JWT Token does not begin with Bearer String, url:{}", request.getRequestURL());
+            request.setAttribute("exception", "INVALID AUTHORIZATION HEADER");
+            return context;
+        }
+
+        // Validate JWT and create Authentication
+        String jwtToken = authorization.substring(7);
+        Map<String, Object> claims = JwtTokenUtil.getAllClaimsFromToken(jwtToken);
+        Authentication authentication = CustomSecurityUser.getAuthentication(claims);
+        context.setAuthentication(authentication);
+
+        return context;
+    }
+
+    @Override
+    public void saveContext(SecurityContext context, HttpServletRequest request, HttpServletResponse response) {
+        // Stateless이므로 SecurityContext를 저장하지 않음\
+        log.info("saveContext invoked");
+    }
+
+    @Override
+    public boolean containsContext(HttpServletRequest request) {
+        // Authorization 헤더가 있는 경우에만 SecurityContext 가 있다고 간주
+        String authorization = request.getHeader(AUTHORIZATION_HEADER);
+        return authorization != null && authorization.startsWith(BEARER);
+    }
+}
+```
+
+```java
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+            ...
+            //.addFilterBefore(new JwtFilter(List.of("/login")), UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
+            .securityContext(context -> context
+                    .securityContextRepository(new JwtSecurityContextRepository(List.of("/login")))
+                    .requireExplicitSave(true) // default true, saveContext 생략처리됨
+            )
+    ;
+    return http.build();
+}
+```
+
 ### Login Controller
 
 ```java
@@ -1720,7 +1803,6 @@ public class RestAuthController {
     }
 }
 ```
-
 
 ## Spring Security cors 에러 이슈
 
