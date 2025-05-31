@@ -211,10 +211,10 @@ public Customer update(String id) throws InterruptedException {
 대부분의 경우 캐시를 다룰 때 `ConcurrentMapCacheManager` 를 사용하지 않음.  
 다음과 같은 장점때문에 `EhCache` 를 로컬레벨의 캐시 라이브러리로 자주 사용한다.  
 
-- 메모리, 디스크 기반 저장 가능
+- 분리된 Tier(heap, off-heap, disk) 에 저장 가능
 - TTL, TTI 기능 지원
 - JMX 모니터링 지원
-- LFU, LRU 등 캐시 전략 지원
+- LFU, LRU 등 캐시 Eviction Policy(제거 정책) 지원
 
 > TTI(Time To Idle) 는 생존은 위한 이전 사용시간을 뜻함  
 
@@ -229,7 +229,6 @@ implementation 'org.ehcache:ehcache:3.10.8'
 ```
 
 ```java
-
 @Primary
 @Bean(name = "ehCacheManager")
 public CacheManager cacheManager() {
@@ -256,11 +255,43 @@ public CacheManager cacheManager() {
 }
 ```
 
-`offheap` 은 메모리 공간이지만 JVM 에 의해 청소되지 않는 공간.
+> `offheap` 은 메모리 공간이지만 JVM 에 의해 청소되지 않는 공간,  큰 캐시공간 생성 가능.
 
 캐시에 저장될 엔트리는 아래 순서대로 저장된다.  
 
-heap > offheap > disk
+heap > off-heap > disk
+
+PUT 요청 발생시 상위 티어에 저장공간이 부족할 경우 기본정책인 `LRU` 를 기반으로 사용하지 않은 데이터를 하위티어로 이동(Demotion)된다.  
+
+GET 요청 발생시 하위티어에서 검색될 경우 상위티어로 이동(Promotion)된다.  
+
+설정한 모든 티어에 저장공간이 부족할 경우 Eviction 이 발생하여 데이터는 제거된다.  
+
+## Caffeine CacheManager
+
+> <https://github.com/ben-manes/caffeine>
+
+대부분 로컬캐시에는 대규모 데이터를 저장하기 보단 짧고 빠른 처리를 위해 구성하는것이 대부분.  
+
+웹서비스에선 Caffeine 캐시를 많이 추천한다.  
+
+Caffeine 은 `W-TinyLFU(Window TinyLFU)` 기반의 높은 캐시 히트율 알고리즘을 기반으로 개발되어있으며,  
+on-heap 공간만을 지원한는 단순한 구조로 개발되어 오버헤드도 적다.  
+
+```java
+@Bean(name = "caffeineCacheManager")
+public CacheManager caffeineCacheManager() {
+    Caffeine<Object, Object> defaultConfig = Caffeine.newBuilder()
+        .maximumSize(100) // 캐시 최대 항목 수
+        .expireAfterWrite(10, TimeUnit.MINUTES) // 쓰기 후 10분 뒤 만료
+        .recordStats(); // 캐시 통계 기록 (선택 사항)
+    CaffeineCacheManager cacheManager = new CaffeineCacheManager("customerCache");
+    cacheManager.setCaffeine(defaultConfig);
+    return cacheManager;
+}
+```
+
+제한개수만 설정가능하고 용량은 설정 불가능하지만 오버헤드가 적어 효율적, 설정 설계 미스로 heap 사이즈 초과시 OOM 에러가 발생할 수 있다.  
 
 ## Redis CacheManager
 
