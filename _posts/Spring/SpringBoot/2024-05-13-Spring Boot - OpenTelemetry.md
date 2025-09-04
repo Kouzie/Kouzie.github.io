@@ -92,9 +92,8 @@ dependencies {
   implementation "io.opentelemetry:opentelemetry-sdk"
   implementation "io.opentelemetry:opentelemetry-exporter-otlp"
 
-  // json 형태로 로그 출력
-  implementation "ch.qos.logback.contrib:logback-json-classic:0.1.5"
-  implementation "ch.qos.logback.contrib:logback-jackson:0.1.5"
+  // json 형태로 로그 출력을 위한 추가 의존성
+  implementation "net.logstash.logback:logstash-logback-encoder:7.4"
 
   // OTEL Log Exporter whit LOGBACK appender
   def OTEL_LOGBACK_VERSION = "2.0.0-alpha"
@@ -103,28 +102,33 @@ dependencies {
 }
 ```
 
-`logback` 에서도 `OpenTelemetry exporter` 를 통해 컬렉터로 로그데이터를 전송하고  `OpenTelemetry appender` 를 통해 관측데이터가 포함된 형태로 로그를 출력하도록 설정한다.  
+`logback` 에서도 `OpenTelemetry exporter` 를 통해 컬렉터로 로그데이터를 전송하고  `OpenTelemetry appender` 를 통해 관측데이터 식별을 위한 `MDC(Mapped Diagnostic Context)` 가 포함된 형태로 로그를 출력하도록 설정한다.  
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+    <!-- Console에 JSON 로그 출력 -->
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
-                <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSX</timestampFormat>
-                <timestampFormatTimezoneId>Etc/UTC</timestampFormatTimezoneId>
-                <appendLineSeparator>true</appendLineSeparator>
-            </layout>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>   <!-- @timestamp 자동 생성 -->
+                <version/>     <!-- @version 자동 생성 -->
+                <logLevel/>    <!-- level -->
+                <threadName/>  <!-- thread -->
+                <loggerName/>  <!-- logger -->
+                <message/>     <!-- message -->
+                <mdc/>         <!-- Micrometer/OTel이 MDC에 주입하는 traceId, spanId 자동 포함 -->
+                <stackTrace/>  <!-- 예외를 JSON 구조로 출력 -->
+            </providers>
         </encoder>
     </appender>
+
+    <!-- OpenTelemetry Exporter: 로그를 OTel Collector로 전송 -->
     <appender name="OpenTelemetry" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender"/>
-    <appender name="OpenTelemetryConsole" class="io.opentelemetry.instrumentation.logback.mdc.v1_0.OpenTelemetryAppender">
-        <appender-ref ref="Console"/>
-    </appender>
 
     <root level="info">
         <appender-ref ref="OpenTelemetry"/>
-        <appender-ref ref="OpenTelemetryConsole"/>
+        <appender-ref ref="Console"/>
     </root>
 </configuration>
 ```
@@ -247,14 +251,14 @@ public String greet() throws JsonProcessingException {
 
 ### Log
 
-위에서 로그를 `OTEL 컬렉터` 로 전달하기 위해 두가지 dependency 를 추가하고 logback 에 설정했다.  
+위에서 로그를 `OTEL 컬렉터` 로 전달하기 위해 두가지 `dependency` 를 추가하고 `logback` 에 설정했다.  
 
 ```groovy
 dependencies {
-  def OTEL_LOGBACK_VERSION = "2.0.0-alpha"
-  // for push log data(OTEL Collector)
-  implementation "io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:$OTEL_LOGBACK_VERSION"
-  // for print file loe
+  ...
+  implementation "net.logstash.logback:logstash-logback-encoder:7.4"
+  def OPENTELEMETRY_VERSION = "2.0.0-alpha"
+  implementation "io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:$OPENTELEMETRY_VERSION"
   implementation "io.opentelemetry.instrumentation:opentelemetry-logback-mdc-1.0:$OPENTELEMETRY_VERSION"
 }
 ```
@@ -271,22 +275,36 @@ OpenTelemetryAppender.install(openTelemetry);
 ```
 
 ```xml
-<appender name="OpenTelemetry" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender"/>
-<appender name="OpenTelemetryConsole" class="io.opentelemetry.instrumentation.logback.mdc.v1_0.OpenTelemetryAppender">
-    <appender-ref ref="Console"/>
-</appender>
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Console에 JSON 로그 출력 -->
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp/>   <!-- @timestamp 자동 생성 -->
+                <version/>     <!-- @version 자동 생성 -->
+                <logLevel/>    <!-- level -->
+                <threadName/>  <!-- thread -->
+                <loggerName/>  <!-- logger -->
+                <message/>     <!-- message -->
+                <mdc/>         <!-- Micrometer/OTel이 MDC에 주입하는 traceId, spanId 자동 포함 -->
+                <stackTrace/>  <!-- 예외를 JSON 구조로 출력 -->
+            </providers>
+        </encoder>
+    </appender>
 
-<root level="info">
-    <!-- OTEL 컬렉터 전달을위한 appender -->
-    <appender-ref ref="OpenTelemetry"/> 
-    <!-- mdc 정보를 같이 로그에 출력하기 위한 appender -->
-    <appender-ref ref="OpenTelemetryConsole"/>
-</root>
+    <!-- OpenTelemetry Exporter: 로그를 OTel Collector로 전송 -->
+    <appender name="OpenTelemetry" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender"/>
+
+    <root level="info">
+        <appender-ref ref="OpenTelemetry"/>
+        <appender-ref ref="Console"/>
+    </root>
+</configuration>
 ```
 
-만약 `[fluentbit, promtail]` 를 사용해 `file log tail` 방식으로 전송할 예정이라면 `file log` 에도 `mdc` 정보 출력해야 함으로 `opentelemetry-logback-mdc` 라이브러리를 사용해야 한다.  
-
-`opentelemetry-logback-mdc` 설정하고 실행하면 아래와 같은 추적 데이터가 포함된 로그가 출력된다.  
+만약 `[fluentbit, promtail]` 를 사용해 `file log tail` 방식으로 전송할 예정이라면 `file log` 에도 `mdc` 정보 출력해야 함으로  
+`<mdc/>` 태그를 통해 추적 데이터가 포함된 로그가 출력되도록 설정한다.  
 
 ```text
 // logback 출력 로그
@@ -294,11 +312,8 @@ OpenTelemetryAppender.install(openTelemetry);
     timestamp=2024-05-14T04:02:18.106Z, 
     level=INFO, 
     thread=http-nio-8080-exec-1, 
-    mdc={
-        trace_id=db5882a7b3d310198106b96f529f0ade, 
-        trace_flags=01, 
-        span_id=3e72805295708786
-    }, 
+    traceId=db5882a7b3d310198106b96f529f0ade, 
+    spanId=3e72805295708786,
     logger=com.kube.demo.greeting.contorller.GreetingController, 
     message=greet invoked, 
     context=default
@@ -514,21 +529,21 @@ management.prometheus.metrics.export.pushgateway.base-url=${METRIC_URL:http://lo
 > `Micrometer` 를 사용한 추적데이터 수집은 `SpringBoot 3.x` 부터 지원되며 `Spring Cloud Sleuth` 형태를 이어받았다.  
 
 `micrometer-tracing-bridge-otel` 은 의존성 분리가 되어있지 않기 때문에 `io.opentelemetry` 라이브러리를 같이 사용해야한다.  
-실제 `Micromter` 에서 제공하는 `OtelTracer` 구현체 내부에서 `io.opentelemetry` 패키지의 구현체를 필요로 한다.  
 
-`OTEL 컬렉터` 로 추적 데이터를 Push 하려면 아래와 같이 설정  
 
 ```groovy
-implementation "io.micrometer:micrometer-tracing-bridge-otel" 
-implementation "io.opentelemetry:opentelemetry-sdk"
-implementation "io.opentelemetry:opentelemetry-exporter-otlp"
+implementation "io.micrometer:micrometer-tracing-bridge-otel" // trace 인터페이스
+implementation "io.opentelemetry:opentelemetry-sdk" // micrometer 의 trace 구현체 역할
+implementation "io.opentelemetry:opentelemetry-exporter-otlp" // trace 데이터 전송을 위한 라이브러리
 ```
 
-`application.properties` 에도 아래와 같이 `OTEL 컬렉터` 주소를 설정한다.  
+`OTEL 컬렉터` 로 추적 데이터를 Push 하기 위해 `application.properties` 에도 아래와 같이 `OTEL 컬렉터` 주소를 설정한다.  
 
 ```
 management.otlp.tracing.endpoint=http://localhost:4318/v1/tracing
 ```
+
+아래와 같이 실제 `Micromter` 에서 제공하는 `OtelTracer` 구현체 내부에서 `io.opentelemetry` 패키지의 구현체를 필요로 하기에 의존성 주입을 해줘야한다.  
 
 ```java
 package io.micrometer.tracing.otel.bridge;
@@ -571,7 +586,7 @@ public String calculate(@SpanTag("num1") @PathVariable Long num1, @SpanTag("num2
 implementation 'io.github.openfeign:feign-micrometer:12.3'
 ```
 
-위와같은 라이브러리를 추가하면 모든 Feign Client 의 HTTP 요청에 대해 Trace Id 를 연계할 수 있다.  
+위 라이브러리를 추가하면 모든 Feign Client 의 HTTP 요청에 대해 Trace Id 를 연계할 수 있다.  
 
 ## 데모코드  
 
