@@ -434,6 +434,28 @@ except Exception as err:
 
 실시간으로 기록된 스팬의 `[이벤트, 예외, 상태]` 관측가능성을 한단계 업그레이드해준다.  
 
+### Service Graph
+
+Tempo, Jaeger 등 여러 Trace 백엔드에서 노드를 graph 형태로 보여주는 서비스를 제공한다.  
+실시간 trace 정보를 prometheus 에 메트릭 형태로 저장하여 제공한다.  
+
+짝이 맞는 Span.Kind 가 한쌍 있어야 한다.  
+
+- SERVER  
+  - 호출 당하는 Span
+- CLIENT  
+  - 호출 하는 Span
+- PRODUCER  
+  - 메세지를 처리하는 Span
+- CONSUMER  
+  - 메세지를 생성하는 Span
+
+`[CLIENT-SERVER]`, `[PRODUCER-CONSUMER]` 형태의 trace 가 일치하는 span 이 있어야 `prometheus` 에 정상적인 형태로 저장된다.  
+짝이 맞지 않는 trace 는 아예 service graph 에 나타나지 않거나 virtual node 형태로 임의의 노드를 생성해서 그래프에 출력된다.  
+
+> Tempo 의 경우 짝이 없는 CLIENT, PRODUCER 의 경우 virtual node 를 생성하지만 짝이없는 SERVER, CONSUMER 의 경우 peer.service 나 service.name 을 지정하더라도 user 노드에서 호출되는것으로 설정된다.  
+
+
 ## 로그  
 
 `OTEL 로그 시그널` 규격 6개  

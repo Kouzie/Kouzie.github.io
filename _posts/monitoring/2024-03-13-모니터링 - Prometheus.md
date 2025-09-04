@@ -71,7 +71,7 @@ services:
 
 ### 데모코드
 
-> <https://github.com/Kouzie/spring-boot-demo/tree/main/micrometer-demo>
+> <https://github.com/Kouzie/spring-boot-demo/tree/main/observability-demo>
 
 기본 `config` 파일  
 
