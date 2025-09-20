@@ -341,6 +341,10 @@ OpenTelemetryAppender.install(openTelemetry);
 
 `io.micrometer` 를 사용하면 여러가지 백엔드 서비스 라이브러리를 주입받아 동일한 코드로 관측데이터 계측을 지원한다.  
 
+```groovy
+api 'io.micrometer:micrometer-tracing-bridge-otel' // Micrometer → OTel 브리지, Tracer 빈 주입받아야되기에 api
+```
+
 ### Metric  
 
 `io.micrometer` 에서 제공하는 `MeterRegistry` 를 사용면 jvm 자동계측 메트릭과 사용자 지정 메트릭을 같이 관리할 수 있다.  
@@ -423,7 +427,10 @@ public class GreetingController {
 > <https://opentelemetry.io/docs/kubernetes/operator/>  
 > <https://medium.com/@dudwls96/kubernetes-환경에서-opentelemetry-collector-구성하기-d20e474a8b18>
 
-`OTEL 컬렉터` 에서 `Pull Prometheus Metric` 방식도 지원하기에 같이 소개한다.  
+대부분 어플리케이션에서 메트릭을 `otlp` 로 전송하는 것 보다 `Pull Prometheus Metric` 방식이 표준으로 자리잡았다.  
+대부분 스프링부트 코드에서 `micrometer-registry-otlp` 보다 `micrometer-registry-prometheus` 라이브러리를 주로 사용한다.  
+
+`OTEL 컬렉터` 에서 `Pull Prometheus Metric` 방식도 지원한다.  
 
 보통 `Pod` 의 `Pull Prometheus Metric` 수집 시 `ServiceMonitor k8s CRD` 사이드카 방식을 사용하지만, 이번 포스팅에선 `OTEL 사이드카 컬렉터` 를 사용해보기로 한다.  
 
@@ -532,15 +539,9 @@ management.prometheus.metrics.export.pushgateway.base-url=${METRIC_URL:http://lo
 
 
 ```groovy
+implementation "org.springframework.boot:spring-boot-starter-actuator"
 implementation "io.micrometer:micrometer-tracing-bridge-otel" // trace 인터페이스
-implementation "io.opentelemetry:opentelemetry-sdk" // micrometer 의 trace 구현체 역할
 implementation "io.opentelemetry:opentelemetry-exporter-otlp" // trace 데이터 전송을 위한 라이브러리
-```
-
-`OTEL 컬렉터` 로 추적 데이터를 Push 하기 위해 `application.properties` 에도 아래와 같이 `OTEL 컬렉터` 주소를 설정한다.  
-
-```
-management.otlp.tracing.endpoint=http://localhost:4318/v1/tracing
 ```
 
 아래와 같이 실제 `Micromter` 에서 제공하는 `OtelTracer` 구현체 내부에서 `io.opentelemetry` 패키지의 구현체를 필요로 하기에 의존성 주입을 해줘야한다.  
@@ -558,6 +559,12 @@ public class OtelTracer implements Tracer {
     private final io.opentelemetry.api.trace.Tracer tracer;
     ...
 }
+```
+
+`OTEL 컬렉터` 로 추적 데이터를 Push 하기 위해 `application.properties` 에도 아래와 같이 `OTEL 컬렉터` 주소를 설정한다.  
+
+```
+management.otlp.tracing.endpoint=http://localhost:4318/v1/tracing
 ```
 
 이제 모든 HTTP 요청에 자동으로 추적 데이터가 설정되며 로그에도 관련 mdc 정보가 출력되고 `OTEL 컬렉터` 로도 추적 데이터가 Push 된다. 
@@ -580,13 +587,46 @@ public String calculate(@SpanTag("num1") @PathVariable Long num1, @SpanTag("num2
 }
 ```
 
-#### Feign Client Trace
+#### 서드파티 Client Trace
 
-```groovy
-implementation 'io.github.openfeign:feign-micrometer:12.3'
+> <https://docs.spring.io/spring-data/redis/reference/observability.html>
+> <https://docs.spring.io/spring-data/mongodb/reference/observability/observability.html>
+
+```kotlin
+// import io.micrometer.observation.ObservationRegistry
+@Bean
+fun mongoClientSettings(observationRegistry: ObservationRegistry): MongoClientSettings {
+    val connection = "mongodb://$username:$password@$host:27017/$databaseName"
+    logger.info("connection string: $connection")
+    val connectionString = ConnectionString(connection)
+    return MongoClientSettings.builder()
+        .applyConnectionString(connectionString)
+        .contextProvider(ContextProviderFactory.create(observationRegistry))
+        .addCommandListener(MongoObservationCommandListener(observationRegistry, connectionString))
+        .build()
+}
+
+// import io.lettuce.core.resource.ClientResources
+// import io.lettuce.core.tracing.MicrometerTracing
+@Bean
+fun clientResources(observationRegistry: ObservationRegistry): ClientResources {
+    return ClientResources.builder()
+        .tracing(MicrometerTracing(observationRegistry, "mobi-redis"))
+        .build()
+}
+
+@Bean
+fun redisConnectionFactory(clientResources: ClientResources): RedisConnectionFactory {
+    val configuration = RedisStandaloneConfiguration(host, port.toInt())
+    configuration.setPassword(password)
+    val clientConfig = LettuceClientConfiguration.builder()
+        .clientResources(clientResources).build()
+    val factory = LettuceConnectionFactory(configuration, clientConfig)
+    factory.afterPropertiesSet() // Redis 연결 테스트 수행
+    val connection = factory.connection
+    return factory;
+}
 ```
-
-위 라이브러리를 추가하면 모든 Feign Client 의 HTTP 요청에 대해 Trace Id 를 연계할 수 있다.  
 
 ## 데모코드  
 

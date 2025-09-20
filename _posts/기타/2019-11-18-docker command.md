@@ -14,157 +14,48 @@ categories:
 
 # docker 개요
 
-도커는 2013년도에 출시되었지만 컨테이너 기능은 기존에 있던 리눅스의 `lxc(Linux Container)`를 사용해 제공되어 왔다.  
+> 설치: <https://docs.docker.com/engine/install/>
 
-`lxc`의 핵심이 `namespaces`, `cgroup` 인데 독립적인 공간 제공과 자원을 공급 역할을 담당한다.  
-리눅스에서 이를 설정하려면 이미지부터 직접만들고 힘들고 번거러움 설정 작업을 해야하는데 
-docker엔진이 이를 포함하고 있고 간단한 docker명령어 몇개로 조작 가능하다!   
+가상화 컨테이너 기능은 기존에 있던 리눅스의 `lxc(Linux Container)`를 사용해 제공되어 왔다.  
+`lxc`의 핵심인 `namespaces`, `cgroup` 을 통해 독립적인 공간 제공과 자원을 공급 역할을 담당한다.  
 
-![docker3](/assets/2019/docker3.png){: .shadow}  
+리눅스에서 `lxc` 사용을 위해 이미지부터 직접만들고 힘들고 번거러움 설정 작업을 해야하는데 2013년 Docker 출시 후 간단한 `docker` 명령어 몇개로 컨테이너 기능 조작이 가능해졌다.  
 
-도커와 기존 가상 서비스와의 차이는 `guestOS`필요 여부, 커널의 존재 여부이다.  
+![docker3](/assets/기타/docker/docker3.png){: .shadow}  
 
-`mysql db` 를 지원하는 가상이미지를 사용하려면 `virtualbox` 혹은 `vmware`같은 가상화 도구 위에 운영체제 `linux` 혹은 `window` 서버를 설치하고 그 위에 `mysql db`를 설치하고 배포한다.  
+더이상 무거운 `virtualbox` 혹은 `vmware`같은 가상화 도구 필요 없이 다양한 서비스 배포가 가능하다.  
 
-docker의 경우 **`hostOS`의 자원과 커널을 공유**하기에 별도의 `guest OS`를 설치할 필요가 업다.  
+docker의 경우 **`hostOS`의 자원과 커널을 공유**하기에 별도의 `guest OS`를 설치할 필요가 없다. `centOS` 컨테이너의 경우 200MB정도밖에 안된다.   
 
-![docker2](/assets/2019/docker2.png){: .shadow}  
-
-성능과 리소스 절약을 위해 이러한 최소성을 유지하고 `centOS` 컨테이너의 경우 200MB정도밖에 안된다.  
-
-<!-- 
-어쨋건 docker로 `db`, `webserver`, `elk`와 같은 서비스를 설치하던 `centOS`와 같은 같은 OS이미지를 설치하던 해당 컨테이너에서 동작하는  OS이미지가 있긴 있다.  
-단 해당 이미지의 kernal이 별도로 설치되는 것이 아닌 `hostOS`의 커널로 실행된다.  
-
-도커는 최소성을 만족하기에 해당 기본적이로 설치되는 컨테이너안의 리눅스엔 `ifconfig`, `ps` 와 같은 기본적 명령어도 제공되지 않는다.  
-
-
-## docker 설치  
-
-현재 `hostOS`는 `ubuntu(16.04)`로 docker를 설치하기전 원활한 환경을 사용하기 위해 부가적인 툴을 설치한다.  
-
-`sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common vim`
-
-docker의 공식 `gpg(GNU Privacy Guard)`키 추가 보안연결을 위한 공개키 설치한다.  
-`curl -fssL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -`
-
-`sudo apt-key fingerprint` 명령실행시 아래 문구가 출력되면 공개키 등록이 완료된것.  
-
-```
-pub   4096R/0EBFCD88 2017-02-22
-      Key fingerprint = 9DC8 5822 9FC7 DD38 854A  E2D8 8D81 803C 0EBF CD88
-uid                  Docker Release (CE deb) <docker@docker.com>
-sub   4096R/F273FCD8 2017-02-22
-```
-
-docker가 제공하는 우분투의 해당 버전의 apt리파지토리를 사용할수 있도록 등록한다.  
-`sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"`  
-
-등록하였다면 로컬 리파지토리를 업데이트하고 설치진행 후 version명령으로 확인한다.  
-`sudo apt-get update`  
-`sudo apt-get install docker-ce`  
-
-docker명령을 사용할 때 항상 `sudo`를 붙여야 하는데 사용자에게 docker실행 권한을 부여
-`sudo usermod -aG docker 사용자이름`  
-`sudo service docker restart`  
-로그아웃 후에 sudo없이 사용가능하다.(모든 원격쉘에서 로그아웃 필요, 마음 편하게 재부팅 하는 것도 좋다)  
-
-`docker version` 명령어를 통해 
-`Client`와 `Server`모두 출력되었다면 설치 완료.  
-
-```
-Client: Docker Engine - Community
- ...
- ...
-
-Server: Docker Engine - Community
- ...
- ...
-```
-
-`Server`는 실제 컨테이너를 실행시키는 도커데몬(`dockerd`)   
-`Client`는 `Server`에게 실행요청을 하는 프로그램(`docker`)  
-
-도커데몬은 docker(클라이언트)로부터 여러 명령을 받아 컨테이너를 실행하고 멈추고 지우고 등등 작업을 한다.  
-`sudo service docker stop`을 하면 도커데몬을 중지시킴으로 `server`가 사라짐을 볼수 있다.  
- -->
-
-
-## docker 설치(for mac M1)
-
-기존에 Docker Desktop 으로 docker 데몬과 GUI 설치시 컴퓨터가 느려지는 느낌을 받아 Colima + Docker 방식의 CLI 기반으로 설치하기로 결정
-
-```sh
-brew install colima docker docker-compose
-
-colima start
-# colima start --cpu 4 --memory 4 --disk 60 
-# 기본설정은 2CPU, 2GB RAM, 60GB Disk
-
-docker version
-# Client: Docker Engine - Community
-#  Version:           28.1.0
-#  API version:       1.47 (downgraded from 1.49)
-#  Go version:        go1.24.2
-#  Git commit:        4d8c241ff0
-#  Built:             Thu Apr 17 09:52:28 2025
-#  OS/Arch:           darwin/arm64
-#  Context:           colima
-```
-
-```sh
-# buildx 설치
-brew install docker-buildx
-# 링크
-ls /opt/homebrew/bin/docker-buildx
-mkdir -p ~/.docker/cli-plugins
-ln -sfn /opt/homebrew/bin/docker-buildx ~/.docker/cli-plugins/docker-buildx
-
-# 기본 빌더는 buildx 로 설정
-# buildx 빌더가 컨테이너로 실행되고 있어야함.
-docker buildx create --name colima-builder --use
-docker buildx inspect --bootstrap
-
-# credsStore 속성 제거필요
-vim ~/.docker/config.json
-
-docker buildx version
-
-# 설치 확인
-docker info
-# Client: Docker Engine - Community
-#  Version:    28.1.0
-#  Context:    colima
-#  Debug Mode: false
-#  Plugins:
-#   buildx: Docker Buildx (Docker Inc.)
-#     Version:  v0.23.0
-#     Path:     /Users/kouzie/.docker/cli-plugins/docker-buildx
-
-```
-
+![docker2](/assets/기타/docker/docker2.png){: .shadow}  
 
 # docker command  
 
-docker의 `life cycle`은 아래와 같다.  
+설치시 sudo 권한 없이 docker 명령어 실행 필요시 아래 명령어 수행
 
-![docker1](/assets/2019/docker1.png){: .shadow}  
+```sh
+sudo usermod -aG docker $USER
+newgrp docker
+```
 
-해당 기능을 모두 `docker command`로 수행할수 있다.  
+`docker` 컨테이너의 `life cycle`은 아래와 같다.  
 
-> `Registry`가 실제 `docker hub`의 저장소인데 `public`한 저장소는 상관 없지만 `private`한 저장소는 하나밖에 생성하지 못한다.  
-> 기업입장에선 자기등리 사용하는 이미지를 모두 공개할 순 없으니 자기 서버에 별도의 `private registry`를 구축하여 사용한다.  
+![docker1](/assets/기타/docker/docker1.png)
 
-이미지부터 컨테이너 조작까지 할 수 있는 docker command를 하나씩 알아보자.  
+`docker` 명령어를 통해 `life cycle` 대로 동작시킨다.  
 
-## docker 이미지 관련 명령어 - pull, image, image rm, image inspect, image tag 
+## docker image 관련 명령어
 
-`docker pull image_name:version`  
+pull, image, image rm, image inspect, image tag 
 
-`pull`명령은 다운받을 이미지의 이름과 버전을 한 쌍으로 사용한다. 버전 생략시 `latest` 사용시 최종버전을 설치한다.  
-받을수 있는 버전이 궁금하다면 `docker hub` 에 가서 검색. (항상 버전을 명시해서 사용하기를 권장한다.)
+`docker pull image_name:{version}`  
+
+`pull`명령은 다운받을 이미지의 이름과 버전을 한 쌍으로 사용한다. 버전 생략시 `latest` 사용시 최종버전을 설치.  
 
 `docker pull centos:7`: centOS 버전7 이미지 다운  
+
+> 항상 버전을 명시해서 사용하기를 권장  
+
 `docker image ls`: 다운받은 docker 이미목록 조회(`docker images` 명령도 같은 기능을 수행)   
 
 ```
@@ -175,25 +66,29 @@ centos              7                   67fa590cfc1c        2 months ago        
 > `IMAGE ID`는 이미지의 고유 코드로 매우 긴 값을 앞의 몇글자만 출력해준다.  
 이미지 삭제, 컨테이너 생성 등의 명령에서 `IMAGE ID`를 사용하는데 중복되지 않는다면 앞의 3~4글자만 사용해도 상관없다.  
 
-`docker image rm imagename`: `image rm`명령으로 이미지 삭제 가능하다  
 (name대신 id를 넣어도 상관 없다 `docker rmi imagename`으로 사용 가능)  
 
 만약 아래와 같은 명령이 출력된다면 해당 이미지로 컨테이너가 생성되 있어 삭제 할 수 없다는 뜻이다.  
+
 ```
 Error response from daemon: conflict: unable to remove repository reference "mywebserver" (must force) - container 1d37ed64b2c9 is using its referenced image fc4c50b45ccd
 ```
 
-`docker image rm -f imagename` 으로 컨테이너와 함께 강제 삭제 가능하다.  
-
 `docker image rm -a` : 사용하지 않는 이미지 모두 삭제  
-`docker image rm -f` : 이미지를 강제로 삭제  
+`docker image rm imagename`: 이미지 삭제  
+`docker image rm -f imagename` : 이미지 강제로 삭제  
+
+`docker rmi $(docker images -q)` : 이미지 모두 삭제(컨테이너 생성되지 않는 것)
 
 
 `docker image inspect imagename`: 이미지의 각종 정보를 확인
 
+
+
 이미지의 각종 정보를 `--format` 속성을 사용해 일부만 출력할 수 있다.  
 
 설치된 `os`, `os bit`, `imageID`를 확인해보자  
+
 ```
 $ docker inspect --format="{{.Os}}" centos:7
 linux
@@ -207,6 +102,7 @@ sha256:4c66d610f9092e18227ae1d0de68350d3da2875452762261ccf1c552462dd90d
 `docker image tag 현재이미지명 변경이미지명`: 이미 생성된 이미지에 별칭을 부여, 기존의 이미지를 그대로 사용한다.(이미지는 불변, 링크를 만드는 개념)  
 
 > 권장되는 이미지 명칭 부여 규칙: `username/repositoryname:tag`
+
 ```
 $ docker image tag nginx kouzie/webserver:1.0
 $ docker image ls
@@ -216,7 +112,8 @@ nginx                     latest              540a289bab6c        10 days ago   
 
 아래의 `docker hub repository`에 만든 내가 만든 이미지를 업로드할 때 위의 이미지 명칭 규칙을 따라야 올릴 수 있다.  
 
-### docker repository - docker login, docker image push  
+
+docker login, docker image push  
 
 도커 허브 `public repository`에 만든 이미지를 올릴 수 있다. 당연히 로그인 과정을 먼저 거쳐야 한다.  
 
@@ -243,32 +140,10 @@ $ docker image push kouzie/exam
   
 명령이 끝나면 `docker hub` 페이지에 아래와 같이 `repository`가 생성되었는지 확인  
 
-![docker6](/assets/2019/docker6.png){: .shadow}  
+![docker6](/assets/기타/docker/docker6.png){: .shadow}  
 
 
-### docker container commit
-
-생성한 컨테이너를 다시 이미지화 하고 싶다면 `docker container commit`명령을 수행하면 된다.  
-
-`unbuntu`이미지를 다운받고 `apache` 서버를 설치한뒤 이를 다시 image로 저장   
-
-```
-$ docker run -it --name ubuntu_webserver -P -p 80 ubuntu:16.04
-$ apt-get update
-$ apt-get install apache2 -y
-$ service apache2 start
-
-[CTRL + P + Q]
-
-$ docker commit ubuntu_webserver ubuntu14/apache2:1.0
-sha256:4356ed973c2bd5ecd3c100e4d92d08b1372a685a22a7fb8b8e55c4bcb223ca5b
-$ docker image ls
-REPOSITORY              TAG                 IMAGE ID            CREATED             SIZE
-ubuntu14/apache2        1.0                 4356ed973c2b        10 seconds ago      247MB
-...
-```
-
-#### 새로 생성한 이미지 리파지토리에 올리기  
+### 새로 생성한 이미지 리파지토리에 올리기  
 
 `$ docker container commit -a "kouzie" webserver webserver:nginx`
 
@@ -284,14 +159,6 @@ webserver           kouzie              78c168df3453        4 minutes ago       
 
 $ docker push kouzie/webserver:nginx
 ```
-
-### docker container export / import
-
-컨테이너를 `tar`파일로 추출 삽입 가능하다.  
-
-`$ docker export webserver > webserver.tar`  
-`$ docker import .webserver.tar`  
-
 
 ### docker image save / load
 
@@ -419,11 +286,10 @@ grep . /etc/*-release
 `docker ps -a -f name=cadviser`: 컨테이너의 이름을 지정해 확인  
 `docker ps -a -f exited=0`: 생성된 컨테이너중 종료된 컨테이너 확인  
 
-### docker image, container 제거  
+### docker container 제거  
 
 `docker stop $(docker ps -q)` : 실행중인 컨테이너 모두 전체 정지  
 `docker rm $(docker ps -a -q)` : 컨테이너 모두 삭제(exit 된 것)  
-`docker rmi $(docker images -q)` : 이미지 모두 삭제(컨테이너 생성되지 않는 것), `-f`붙이면 강제삭제  
 `docker prune` : 정지중인 컨테이너 모두 삭제   
 
 
@@ -435,6 +301,37 @@ grep . /etc/*-release
 역으로 컨테이너에서 hostOS로의 파일 전송시에는 컨테이너명을 먼저 작성한다.    
 `docker cp container_name:/file_name file_name`   
 
+
+### docker 컨테이너 export / import
+
+컨테이너를 `tar`파일로 추출 삽입 가능하다.  
+
+`$ docker export webserver > webserver.tar`  
+`$ docker import .webserver.tar`  
+
+
+### docker 컨테이너 commit
+
+생성한 컨테이너를 다시 이미지화 하고 싶다면 `docker container commit`명령 을 수행하면 된다.  
+
+`unbuntu` 이미지를 다운받고 `apache` 서버를 설치한뒤 이를 다시 image로 저장   
+
+```sh
+docker run -it --name ubuntu_webserver -P -p 80 ubuntu:16.04
+apt-get update
+apt-get install apache2 -y
+service apache2 start
+
+[CTRL + P + Q]
+
+docker commit ubuntu_webserver ubuntu14/apache2:1.0
+# sha256:4356ed973c2bd5ecd3c100e4d92d08b1372a685a22a7fb8b8e55c4bcb223ca5b
+
+docker image ls
+# REPOSITORY              TAG                 IMAGE ID            CREATED             SIZE
+# ubuntu14/apache2        1.0                 4356ed973c2b        10 seconds ago      247MB
+...
+```
 
 ## docker 컨테이너 정보조회
 
@@ -540,7 +437,7 @@ google/cadvisor:latest
 
 아래와 같은 실시간 모니터링 화면이 출력된다.  
 
-![docker5](/assets/2019/docker5.png){: .shadow}  
+![docker5](/assets/기타/docker/docker5.png){: .shadow}  
 
 `80`포트로 계속 새로고침을 누르며 `webserver`컨테이너가 사용하는 `cpu`, `memory`, `network` 사용량 변화를 확인  
 
@@ -549,7 +446,7 @@ google/cadvisor:latest
 `docker engine`을 설치하면 가상 브릿지 네트워크가 생긴다(`docker0`).  
 `virtual ethernet bridge`라 칭한다.  
 
-![docker4](/assets/2019/docker4.png){: .shadow}  
+![docker4](/assets/기타/docker/docker4.png){: .shadow}  
 
 컨테이너를 가동하면 `vethxxxxxxx`형태의 컨테이너 내부의 인터페이스(`eth0`)와 통신하는 가상의 `peer`가 생성되고 게이트웨이와 통신하는 접점역할을 수행한다  
 (direct 케이블 연결 형식의 격리된 네트워크 공간을 제공).  
@@ -964,12 +861,12 @@ $ sudo iptraf-ng
 
 실행시키면 다음과 같은 화면이 출력
 
-![docker7](/assets/2019/docker7.png)  
+![docker7](/assets/기타/docker/docker7.png)  
 
 
 `container -> 실제OS`(mac혹은 윈도우)로 ping 요청시 어떻게 출력되는지 확인  
 
-![docker8](/assets/2019/docker8.png)  
+![docker8](/assets/기타/docker/docker8.png)  
 
 ### memory, cpu 모니터링, 제한  
 
@@ -1020,7 +917,7 @@ cpu모니터링을 `htop`을 통해 진행하자.
 
 아무것도 실행하고 있지 않을때 cpu코어 2개와 4g만큼의 메모리를 할당한 우분투의 상태  
 
-![docker9](/assets/2019/docker9.png)  
+![docker9](/assets/기타/docker/docker9.png)  
 
 
 `alicek106/stress`라는 테스트용 컨테이너를 설치해 다시한번 모니터링 해보자.  
@@ -1050,11 +947,11 @@ kouzie      6446  0.0  0.0  22572   956 pts/8    S+   17:48   0:00  |           
 
 htop화면  
 
-![docker10](/assets/2019/docker10.png)  
+![docker10](/assets/기타/docker/docker10.png)  
 
 google cadviser 화면  
 
-![docker11](/assets/2019/docker11.png)  
+![docker11](/assets/기타/docker/docker11.png)  
 
 
 `--cpuset-cpus=0,3`: 0번째, 3번째 코어만 사용
@@ -1150,7 +1047,7 @@ hostOS의 전체용량인 50G가 출력된다.
 
 `docker run -v /home/kouzie/myvolume:/webapp -it ubuntu:16.04`  
 
-![docker12](/assets/2019/docker12.png){: .shadow}  
+![docker12](/assets/기타/docker/docker12.png){: .shadow}  
 
 설정댈로 `512MB` 크기의 용량을 갖는다.  
 
