@@ -14,8 +14,6 @@ categories:
 
 ## Observability
 
-> 
-
 > <https://opentelemetry.io/docs/what-is-opentelemetry/>
 
 클라우드 네이티브 애플리케이션이 출시되면서 각 서비스에 대한 **관찰가능성(Observability)** 에 대한 중요도가 올라갔다.  

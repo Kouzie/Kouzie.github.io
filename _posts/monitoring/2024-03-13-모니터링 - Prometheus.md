@@ -428,49 +428,219 @@ scrape_configs:
 
 ### Service Discovery
 
-k8s 같은 **동적환경**에서 실시간으로 추가/삭제 되는 서비스들을 `Prometheus` 에 검색대상으로 수동 등록하는것은 불가능하다.  
-`Service Discovery` 를 통해 자동으로 검색대상에 추가되도록 해야한다.  
+클라우드 환경에서는 서비스 인스턴스가 동적으로 생성/삭제되고, IP 주소나 호스트명이 자주 변경된다.  
+이런 환경에서 `static_configs`로 수동 등록하는 것은 불가능하며, **Service Discovery**를 통해 자동으로 타겟을 발견하고 스크랩해야 한다.
 
-k8s 뿐 아니라 다양한 클라우드 시스템과 연동 가능하다.  
+1. Prometheus가 주기적으로 Service Discovery API를 호출하여 타겟 목록을 가져옴
+2. 발견된 타겟에 대해 `discovered labels` (메타데이터) 자동 생성
+3. `relabel_configs`를 통해 필요한 타겟만 필터링하고 라벨 조정
+4. 변경사항이 있으면 자동으로 타겟 목록 업데이트
 
-```yaml
-scrape_configs:
-  # consul service discovery 연동
-  - job_name: consul
-    consul_sd_configs:
-      - server: 'localhost:8500'
-
-  # aws ec2 api 연동
-  - job_name: ec2
-    ec2_sd_configs:
-      - region: <region>
-        access_key: <access key>
-        secret_key: <secret key>
-```
-
-#### k8s 연동  
+k8s 환경에선 `kubernetes_sd_configs(Kubernetes Service Discovery)` 를 지원하며 다른 클라우드 서비스에서도 각종 Service Discovery 기능을 제공한다.  
 
 ```yaml
 scrape_configs:
-  - job_name: 'kubelet' 
+  - job_name: 'kubernetes-pods'
     kubernetes_sd_configs:
-      - role: node 
-    scheme: https 
-    tls_config:
-      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt 
-      insecure_skip_verify: true
+      - role: pod
+        namespaces:
+          names:
+            - default
+            - production
+    relabel_configs:
+      # prometheus.io/scrape: "true" 어노테이션이 있는 Pod만 스크랩
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      # metrics_path 설정
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      # 포트 설정
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
 ```
 
-`kubernetes_sd_configs` 를 사용해 `k8s` 리소스를 대상으로 스크래핑하는 것을 명시,  
-API로 인증하
+**Role 종류**
 
-`role: node` 은 각 노드의 `kublet` 을 모니터링 대상으로 삼는다.  
+- **`role: node`**: 각 노드의 kubelet을 모니터링
+- **`role: pod`**: 모든 Pod를 모니터링 (가장 많이 사용)
+- **`role: service`**: Service 엔드포인트를 모니터링
+- **`role: endpoints`**: Service의 엔드포인트를 모니터링
+- **`role: ingress`**: Ingress 리소스를 모니터링
 
-여러가지 role 설정을 통해 모니터링할 대상을 선택할 수 있다.  
+**Pod 어노테이션을 통한 자동 스크랩**
 
-- role: node  
-- role: endpoints  
-- role: pod  
+Pod에 다음 어노테이션을 추가하면 자동으로 스크랩 대상에 포함된다:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    prometheus.io/scrape: "true"           # 스크랩 여부
+    prometheus.io/port: "8080"            # 메트릭 포트
+    prometheus.io/path: "/actuator/prometheus"  # 메트릭 경로
+spec:
+  containers:
+    - name: app
+      ports:
+        - containerPort: 8080
+```
+
+**예제: Spring Boot 애플리케이션 스크랩**
+
+```yaml
+scrape_configs:
+  - job_name: 'kubernetes-springboot'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      # prometheus.io/scrape 어노테이션이 true인 Pod만 선택
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      # 메트릭 경로 설정
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      # 포트 설정
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      # 라벨 추가
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+```
+
+#### Prometheus Operator 의 ServiceMonitor
+
+Kubernetes 환경에서 Prometheus Operator를 사용하는 경우, **ServiceMonitor** CRD를 통해 더 쉽게 관리할 수 있다.
+
+**ServiceMonitor 예제**
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: springboot-app
+  namespace: production
+  labels:
+    app: springboot-app
+spec:
+  selector:
+    matchLabels:
+      app: springboot-app
+  endpoints:
+    - port: http
+      path: /actuator/prometheus
+      interval: 30s
+      scrapeTimeout: 10s
+  namespaceSelector:
+    matchNames:
+      - production
+      - staging
+```
+
+**PodMonitor 예제**
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: springboot-pods
+spec:
+  selector:
+    matchLabels:
+      app: springboot-app
+  podMetricsEndpoints:
+    - port: http
+      path: /actuator/prometheus
+      interval: 30s
+```
+
+**장점**
+
+- Kubernetes 네이티브 방식으로 관리
+- GitOps와 잘 통합됨
+- 자동으로 relabeling 처리
+- 네임스페이스별로 분리 관리 가능
+
+#### 동적 환경에서의 Best Practices
+
+1. **Relabeling을 통한 필터링**
+   - 필요한 타겟만 선택하여 불필요한 스크랩 방지
+   - 라벨을 통한 메트릭 카디널리티 관리
+
+2. **적절한 스크랩 간격 설정**
+   - 동적 환경에서는 `scrape_interval`을 짧게 설정 (15s~30s)
+   - 타겟이 많을 경우 부하 고려
+
+3. **타임아웃 설정**
+   - `scrape_timeout`을 적절히 설정하여 느린 타겟으로 인한 블로킹 방지
+
+4. **라벨 관리**
+   - `relabel_configs`를 통해 일관된 라벨 구조 유지
+   - 카디널리티가 높은 라벨(IP, 사용자ID 등) 사용 지양
+
+5. **모니터링 대상 선정**
+   - Pod 어노테이션이나 라벨을 통한 명시적 선정
+   - 모든 리소스를 스크랩하지 않고 필요한 것만 선택
+
+**예제: 종합 설정**
+
+```yaml
+scrape_configs:
+  - job_name: 'kubernetes-apps'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - production
+            - staging
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    relabel_configs:
+      # prometheus.io/scrape 어노테이션이 있는 Pod만 선택
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      # 메트릭 경로 설정
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      # 포트 설정
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      # Pod 라벨을 메트릭 라벨로 추가
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      # 네임스페이스와 Pod 이름 추가
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      # 불필요한 라벨 제거
+      - action: labeldrop
+        regex: '__meta_kubernetes_pod_.*'
+```  
 
 ### 타겟 라벨(traget labels)
 
@@ -607,7 +777,7 @@ scrape_configs:
         regex: '(job|job_deploy)' # job_deploy 이외 모든 target label 삭제
 ```
 -->
- 
+
 ## PromQL
 
 ### 백터 선택기
@@ -890,7 +1060,6 @@ rate(node_network_receive_bytes_total[1m])
 
 ![1](/assets/monitoring/prometheus3.png)  
 
-
 ```conf
 # k8s node 의 receive bytes 측정 후 모드 합하기
 sum without(device)(rate(node_network_receive_bytes_total[1m]))
@@ -1086,7 +1255,7 @@ groups:
 
 `record rule` 명명 규칙으로 콜론으로 `[레이블, 메트릭명, 연산]` 을 구분짖는다.  
 
-```
+```conf
 instance:http_server_requests_seconds:avg_rate5m
 ```
 

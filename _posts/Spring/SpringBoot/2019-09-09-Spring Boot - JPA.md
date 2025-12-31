@@ -409,19 +409,76 @@ public interface SurveyRepository extends CrudRepository<Survey, Long> {
 }
 ```
 
-### 1차 캐시, 2차 캐시
+### 1차 캐시(First Level Cache, L1 Cache)
 
-- **1차 캐시(First Level Cache, L1 Cache)**  
-  트랜잭션 단위에서 공유하는 캐시, 영속성 컨텍스트 내부에 존재하여 엔티티 매니저로 조회하는 모든 엔티티는 1차캐시에서 값을 확인하고 가져온다.  
-  영속성 컨택스트는 JPA 를 사용한다면 자동으로 설정된다.  
+- 영속성 컨텍스트(Persistence Context) 내부에 존재하는 캐시
+- 엔티티 매니저(EntityManager)가 관리하는 트랜잭션 범위의 캐시
+- JPA를 사용하면 자동으로 설정되며, 별도의 설정 없이 사용 가능
+- 트랜잭션이 시작되면 생성되고, 트랜잭션이 종료되면 함께 소멸
 
-- **2차 캐시(Second Level Cache, L2 Cache)**  
-  어플리케이션 단위에서 공유하는 캐시, 애플리케이션을 종료할 때까지 유지된다.  
-  대부분 API 단의 캐시(Redis, EhCache 등) 을 사용하고 hibernate 의 2차캐시는 사용하지 않는다.  
+1. **조회 동작**  
+   - `EntityManager.find()` 또는 `Repository.findById()` 호출 시 먼저 1차 캐시에서 엔티티를 조회  
+   - 1차 캐시에 없으면 DB를 조회하고, 조회한 엔티티를 1차 캐시에 저장  
+   - 이후 같은 트랜잭션 내에서 동일한 엔티티 조회 시 DB 조회 없이 1차 캐시에서 반환  
+1. **동일성 보장(Identity)**  
+   - 같은 트랜잭션 내에서 같은 ID로 조회한 엔티티는 항상 같은 인스턴스  
+   - 이를 통해 데이터 일관성과 메모리 효율성 확보  
+2. **쓰기 지연(Write Behind)**  
+   - 엔티티를 저장하거나 수정해도 즉시 DB에 반영되지 않음  
+   - 트랜잭션 커밋 시점에 한 번에 DB에 반영 (Flush)  
+   - `save()` 메서드 호출 시 1차 캐시에 저장만 하고, 실제 INSERT 쿼리는 커밋 시 실행  
+3. **변경 감지(Dirty Checking)**  
+   - 1차 캐시에 저장된 엔티티의 변경사항을 자동으로 감지  
+   - 트랜잭션 커밋 시 변경된 엔티티에 대해 UPDATE 쿼리 자동 실행  
+   - 별도의 `update()` 메서드 호출 없이도 엔티티 수정 가능  
 
-hibernate 에서 2차 캐시 연동을 위한 설정을 제공, 아래 url 과 `@javax.persistence.Cacheable`, `@org.hibernate.annotations.Cache` 설정을 통해 각종 추가설정이 가능하다.  
+```java
+// 첫 번째 조회: DB 쿼리 실행
+Member member1 = memberRepository.findById(1L); // SELECT 쿼리 실행
+// 두 번째 조회: 1차 캐시에서 조회 (DB 쿼리 없음)
+Member member2 = memberRepository.findById(1L); // 쿼리 실행 안됨
+// 동일성 보장
+System.out.println(member1 == member2); // true
+```
 
-> <https://docs.jboss.org/hibernate/orm/6.2/userguide/html_single/Hibernate_User_Guide.html#caching>  
+```java
+@Transactional
+public void saveMember() {
+    Member member = new Member();
+    member.setName("홍길동");
+    memberRepository.save(member); // 1차 캐시에 저장, DB 쿼리 아직 실행 안됨
+    // 트랜잭션 커밋 시점에 INSERT 쿼리 실행
+}
+```
+
+```java
+@Transactional
+public void updateMember(Long id) {
+    Member member = memberRepository.findById(id).get();
+    member.setName("이름변경"); // 엔티티 수정
+    
+    // memberRepository.save() 호출 불필요
+    // 트랜잭션 커밋 시 자동으로 UPDATE 쿼리 실행
+}
+```
+
+5. **생명주기**
+   - 트랜잭션 시작 시 생성
+   - 트랜잭션 종료 시 소멸
+   - 각 트랜잭션마다 독립적인 1차 캐시 생성
+   - 멀티스레드 환경에서는 각 스레드마다 별도의 영속성 컨텍스트와 1차 캐시 보유
+
+**장점**
+
+- 같은 트랜잭션 내에서 반복 조회 시 DB 접근 최소화로 성능 향상
+- 동일성 보장을 통한 데이터 일관성 유지
+- 변경 감지로 명시적인 UPDATE 쿼리 작성 불필요
+
+**단점**
+
+- 트랜잭션 범위를 벗어나면 캐시가 사라짐
+- 다른 트랜잭션과 캐시 공유 불가
+- 메모리 사용량 증가 가능성 (대량의 엔티티 조회 시)
 
 #### 영속성 concurrency
 
@@ -523,6 +580,118 @@ public interface UserRepository extends JpaRepository<User, Long> {
     void deleteOldUsers(LocalDateTime cutoffDate);
 }
 ```
+
+### 2차 캐시(Second Level Cache, L2 Cache)
+
+**개념 및 특징**
+
+- 애플리케이션 레벨에서 공유하는 캐시
+- 여러 트랜잭션과 엔티티 매니저 간에 공유 가능
+- 애플리케이션이 종료될 때까지 유지
+- Hibernate에서 제공하는 기능이나, 실제 프로덕션에서는 잘 사용하지 않음
+
+**동작 방식**
+
+1. **조회 흐름**
+   - 엔티티 조회 시 1차 캐시 → 2차 캐시 → DB 순서로 조회
+   - 2차 캐시에 있으면 DB 조회 없이 반환
+   - DB에서 조회한 엔티티는 1차 캐시와 2차 캐시 모두에 저장
+
+```
+조회 요청
+  ↓
+1차 캐시 확인
+  ↓ (없으면)
+2차 캐시 확인
+  ↓ (없으면)
+DB 조회
+  ↓
+1차 캐시 + 2차 캐시에 저장
+```
+
+2. **캐시 영역**
+   - 엔티티 캐시: 엔티티 객체 자체를 저장
+   - 컬렉션 캐시: 연관관계 컬렉션을 저장
+   - 쿼리 캐시: 쿼리 결과를 저장
+
+**설정 방법**
+
+1. **의존성 추가** (예: EhCache 사용 시)
+
+```xml
+<!-- pom.xml -->
+<dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-ehcache</artifactId>
+</dependency>
+```
+
+2. **application.yml 설정**
+
+```yaml
+spring:
+  jpa:
+    properties:
+      hibernate:
+        cache:
+          use_second_level_cache: true
+          use_query_cache: true
+        region:
+          factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
+```
+
+3. **엔티티에 캐시 활성화**
+
+```java
+@Entity
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+public class Member {
+    // ...
+}
+```
+
+**캐시 전략(CacheConcurrencyStrategy)**
+
+- `READ_ONLY`: 읽기 전용, 수정 불가
+- `READ_WRITE`: 읽기/쓰기 가능, 동시성 제어 포함
+- `NONSTRICT_READ_WRITE`: 읽기/쓰기 가능, 약한 일관성 보장
+- `TRANSACTIONAL`: 트랜잭션 범위에서 동시성 제어
+
+**사용 시나리오**
+
+- 읽기 작업이 많은 경우
+- 변경이 거의 없는 마스터 데이터
+- 복잡한 조인 쿼리 결과
+
+**주의사항**
+
+- 동시성 문제: 여러 트랜잭션에서 동시 수정 시 데이터 일관성 문제 발생 가능
+- 메모리 관리: 잘못된 설정 시 메모리 부족 발생 가능
+- 캐시 무효화: 데이터 변경 시 캐시 무효화 전략 필요
+
+**실무에서의 사용**
+
+- 대부분의 경우 Hibernate 2차 캐시 대신 **애플리케이션 레벨의 캐시** 사용
+- **Redis**, **EhCache**, **Caffeine** 등을 직접 사용하여 캐시 구현
+- 이유:
+  - 더 세밀한 캐시 제어 가능
+  - 분산 환경에서의 캐시 공유 용이
+  - 캐시 전략의 유연성
+  - JPA와의 결합도 감소
+
+**Hibernate 2차 캐시 vs 애플리케이션 레벨 캐시**
+
+| 구분 | Hibernate 2차 캐시 | 애플리케이션 레벨 캐시 (Redis 등) |
+|------|------------------|--------------------------------|
+| 범위 | JPA/Hibernate에 종속 | 프레임워크 독립적 |
+| 설정 | JPA 설정에 포함 | 별도 설정 필요 |
+| 제어 | JPA가 자동 관리 | 개발자가 직접 제어 |
+| 분산 | 어려움 | 용이 (Redis Cluster 등) |
+| 유연성 | 제한적 | 높음 |
+
+**참고 자료**
+> <https://docs.jboss.org/hibernate/orm/6.2/userguide/html_single/Hibernate_User_Guide.html#caching>  
 
 ## 기본 어노테이션
 

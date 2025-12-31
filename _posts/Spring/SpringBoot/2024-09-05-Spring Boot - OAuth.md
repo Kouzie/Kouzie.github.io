@@ -62,8 +62,8 @@ OAuth 중 `Authorization Code` 방식인증은 아래 순서대로 진행된다.
 단순 라이브러리 설정을 통해 아래 3가지 서버를 구성 가능하다.  
 
 - Authorization Server(인증서버)  
-- Resource Client(리소스 서버)  
-- Resource Server(사용자정보 서버)  
+- Resource Client(클라이언트 앱)  
+- Resource Server(리소스 서버)  
 
 ## Spring Boot Resource Client
 
@@ -1630,8 +1630,14 @@ server.ssl.key-alias=spring
 
 ## Spring Boot Resource Server  
 
+> Resource Server 는 인증받은 사용자의 데이터(사용자정보, 이메일, 드라이브 등)를 관리하는 서버,  
+> 이번 포스팅에선 단순 사용자정보만 취급하는 리소스 서버로 구성한다.  
+
+
 이전에는 `Spring Authorization Server` 에서 사용자 인증 및 조회까지 수행하였는데,  
-사용자의 상세정보는 별도의 서버에서 운영하는 경우가 많다. naver 와 kakao 의 경우에도 인증서버와 `userinfo` 조회서버가 다르다.  
+사용자의 상세정보는 별도의 서버에서 운영하는 경우가 많다. 
+
+naver 와 kakao 의 경우에도 인증서버와 `userinfo` 조회서버가 다르다.  
 
 - naver
   - authorization_url: <https://nid.naver.com/oauth2.0/authorize>
@@ -1763,7 +1769,7 @@ public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
 ## Spring OAuth Opaque Token
 
 > **Opaque Token**
-> 불투명 토큰, Authorization Server 에서 식별자 용도로 사용하는 랜덤 문자열 형태의 토큰  
+> 불투명 토큰, `Authorization Server` 에서 식별자 용도로 사용하는 랜덤 문자열 형태의 토큰  
 > `OAuth 2.0` 프로토콜에서 사용한다.  
 
 JWT 의 경우 `Authorization Server` 의 공개키를 통해 `Resource Server` 에서도 자체적으로 검증이 가능하기 때문에 추가적인 `Authorization Server` 의 개입을 필요로 하지 않는다.  
