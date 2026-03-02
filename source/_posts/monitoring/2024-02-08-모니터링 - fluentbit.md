@@ -237,7 +237,7 @@ services:
 - `springboot_log`  
 - `springboot_multiline`  
 
-```conf
+```ini
 # parser.conf
 [PARSER]
     Name        docker_json
@@ -278,7 +278,7 @@ docker 컨테이너가 출력하는 `/var/log/containers/*.log` 로그파일을 
 위에서 정의한 `PARSER` 를 `INPUT`, `FILTER` 에서 적저히 사용하고 `OUPUT` 으로 내보내야 한다.  
 그리고 태그에 `docker.spring` 를 설정해서 하나의 파이프라인으로 처리되도록 설정.  
 
-```conf
+```ini
 [INPUT]
     Name tail
     Path /demo/*.log
@@ -343,7 +343,7 @@ services:
 
 사용한 `fluent-bit.conf` 파일은 아래와 같다.  
 
-```conf
+```ini
 [Service]
     Flush        1
     Log_Level    info
@@ -382,7 +382,7 @@ mv fluent-bit fluent-bit-helm
 위에서 구성한 SpringBoot 로그 `[PARSING, INPUT, OUTPUT, FILTER]` 를 `value.yaml` 에 설정  
 수많은 conatiners 로그중 `demo-*.log` 형태의 로그만 저장시킨다.  
 
-```conf
+```ini
 # value.yaml
 config:
   service: |

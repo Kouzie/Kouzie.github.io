@@ -31,7 +31,7 @@ services:
 
 docker registry 의 경우 https 미사용시 `insecure-registries` 설정없이는 동작하지 않음으로 아래와 같이 `nginx https proxy` 구성을 추천.  
 
-```conf
+```nginx
 # /etc/nginx/sites-available/nexus.mydomain.co.kr
 server {
     listen 80;
