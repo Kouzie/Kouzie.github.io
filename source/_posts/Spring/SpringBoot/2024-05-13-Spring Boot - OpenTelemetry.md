@@ -16,7 +16,7 @@ categories:
 
 ![1](/assets/springboot/spring-cloud/springcloud_otel2.png)  
 
-클라우드 네이티브 환경에서 어플리케이션의 관측가능성을 지원하기 위한 유명한 프로젝트.  
+클라우드 네이티브 환경에서 애플리케이션의 관측가능성을 지원하기 위한 유명한 프로젝트.  
 현재 CNCF 프로젝트중 다운로드 횟수 2위를 차지할 만큼 모니터링 프로젝트의 표준으로 자리잡았다.  
 
 각종 언어별 라이브러리, 컨테이너 이미지, 헬름 차트, `k8s CRD` 등을 제공한다.  
@@ -55,11 +55,11 @@ services:
       - "4318:4318" # OTLP HTTP
 ```
 
-> `OpenTelemetry` `javaagent` 를 사용하면 코드변경 없이 `[로그, 추적, 메트릭]` 에 대해 자동계측이 가능하다.  
-> 하지만 `javaagent` 의 잠재적인 보안 문제, 애플리케이션 내 메서드 인터셉터로 인해 성능 문제가 발생함으로 직접 구성하는 것을 추천한다.  
+> `OpenTelemetry` `javaagent` 를 사용하면 코드 변경 없이 `[로그, 추적, 메트릭]` 에 대해 자동 계측이 가능하다.  
+> 하지만 `javaagent` 의 잠재적인 보안 문제, 애플리케이션 내 메서드 인터셉터로 인해 성능 문제가 발생하므로 직접 구성하는 것을 추천한다.  
 > <https://medium.com/cloud-native-daily/how-to-send-traces-from-spring-boot-to-jaeger-229c19f544db>  
 >
-> 모든 관측데이터를 수집하기 위해 `OpenTelemetry` 를 사용하지 않아도 된다.  
+> 모든 관측 데이터를 수집하기 위해 `OpenTelemetry` 를 사용하지 않아도 된다.  
 > 로그는 `fluentbit` 같은 `file log tail` 방식, 메트릭은 `prometheus pull` 방식을 사용하면 된다.  
 > 추적데이터는 `OpenTelemetry` 연동구조가 가장 대중적이며, `zipkin` 이나 `jeager` 시스템을 사용중이라면 전용 라이브러리를 사용할 수 있다.  
 > `tempo` 의 경우 입력으로 otlp 프로토콜을 받기에 `OpenTelemetry` 라이브러리를 써야만한다.  
@@ -72,7 +72,7 @@ services:
 
 > <https://mvnrepository.com/artifact/io.opentelemetry>  
 
-`io.opentelemetry` 는 `OpenTelemetry` 에서 제공하는 라이브러리로 `[로그, 추적, 메트릭]` 관측데이터를 `OTEL 컬렉터` 로 전달 할 수 있다.  
+`io.opentelemetry` 는 `OpenTelemetry` 에서 제공하는 라이브러리로 `[로그, 추적, 메트릭]` 관측 데이터를 `OTEL 컬렉터` 로 전달할 수 있다.  
 
 `io.opentelemetry` 패키지에서 주로 사용하는 라이브러리는 아래 3가지  
 
@@ -80,8 +80,8 @@ services:
 - **opentelemetry-sdk**: 측정데이터의 처리를 위한 클래스, 함수 구현체.  
 - **opentelemetry-exporter-otlp**: 측정데이터 exporter 의 구현체, `OTEL HTTP`, `OTEL GRPC` 프로토콜을 사용 가능.  
 
-> `opentelemetry-sdk` 안에 이미 `opentelemetry-api` 가 포함되어 있지만 비즈니스 로직에서는 `opentelemetry-api` 의존성 주입 받아 사용하는것을 권장.  
-> `opentelemetry-sdk` 는 별도의 모듈로 구성해서 비즈니스 로직이 담겨있는 모듈의 의준성 주입하는것을 권장한다.  
+> `opentelemetry-sdk` 안에 이미 `opentelemetry-api` 가 포함되어 있지만 비즈니스 로직에서는 `opentelemetry-api` 의존성을 주입받아 사용하는 것을 권장한다.  
+> `opentelemetry-sdk` 는 별도의 모듈로 구성해서 비즈니스 로직이 담겨있는 모듈에 의존성을 주입하는 것을 권장한다.  
 
 ```groovy
 dependencyManagement {
@@ -98,10 +98,10 @@ dependencies {
   // mdc 포맷 추가, json 형태로 로그 출력을 위한 추가 의존성
   implementation "net.logstash.logback:logstash-logback-encoder:8.1"
 
-  // OTEL Log Exporter whit LOGBACK appender
+  // OTEL Log Exporter with LOGBACK appender
   def OTEL_LOGBACK_VERSION = "2.0.0-alpha"
   implementation "io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:$OTEL_LOGBACK_VERSION" // otel collector 로 로그 전송
-  implementation "io.opentelemetry.instrumentation:opentelemetry-logback-mdc-1.0:$OPENTELEMETRY_VERSION" // appender 와 logback mdc 통합
+  implementation "io.opentelemetry.instrumentation:opentelemetry-logback-mdc-1.0:$OTEL_LOGBACK_VERSION" // appender 와 logback mdc 통합
 }
 ```
 
@@ -193,7 +193,7 @@ public class OpenTelemetryConfig {
 
 > otel logback: <https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/logback/logback-appender-1.0/library>  
 
-만약 `[fluentbit, promtail]` 를 사용해 `file log tail` 방식으로 전송할 예정이라면 `file log` 에도 `MDC(Mapped Diagnostic Context)` 정보 출력해야 함으로 추적 데이터가 포함된 로그가 standard output 에 출력되도록 설정한다.  
+만약 `[fluentbit, promtail]` 를 사용해 `file log tail` 방식으로 전송할 예정이라면 `file log` 에도 `MDC(Mapped Diagnostic Context)` 정보를 출력해야 하므로 추적 데이터가 포함된 로그가 표준 출력(Standard Output)에 출력되도록 설정한다.  
 
 
 `logback` 에서도 `OpenTelemetry exporter` 를 통해 컬렉터로 로그데이터를 전송하고  `OpenTelemetry appender` 를 통해 관측데이터 식별을 위한 `mdc` 가 포함된 형태로 로그를 출력하도록 설정한다.  
@@ -309,7 +309,7 @@ public String greet() throws JsonProcessingException {
 
 사용자가 코드 사이사이에 `[Meter, Tracer]` 를 사용해 수기로 관측데이터를 생성 및 지정해줘야 한다.  
 
-대부분의 사용자가 운영코드 사이사이에 계측관련 코드를 넣고싶지 않을것이기에 `io.micrometer` 와 같은 자동계측을 지원하는 라이브러리와 같이 사용한다.  
+대부분의 사용자가 운영 코드 사이사이에 계측 관련 코드를 넣고 싶지 않을 것이기에 `io.micrometer` 와 같은 자동 계측을 지원하는 라이브러리와 같이 사용한다.  
 
 메트릭, 추적 데이터를 수집하는 어플리케이션은 `OpenTelemetry` 말고도 굉장히 많은데,  
 `io.micrometer` 는 자동계측 뿐만 수동계측을 진행할 때에도 동일한 코드로 다양한 관측 백엔드 서비스를 사용할 수 있도록 도와준다.  
@@ -326,7 +326,7 @@ public String greet() throws JsonProcessingException {
 
 ### Metric  
 
-`io.micrometer` 에서 제공하는 `MeterRegistry` 를 사용면 jvm 자동계측 메트릭과 사용자 지정 메트릭을 같이 관리할 수 있다.  
+`io.micrometer` 에서 제공하는 `MeterRegistry` 를 사용하면 JVM 자동 계측 메트릭과 사용자 지정 메트릭을 같이 관리할 수 있다.  
 
 ```groovy
 implementation 'io.micrometer:micrometer-registry-otlp'
@@ -395,16 +395,16 @@ public class GreetingController {
 }
 ```
 
-`MeterRegistry` 는 HTTP 프로토콜을 사용하는 만큼 `OTLP` 포로토콜의 의존성이 완벽히 분리되어 아예 `io.opentelemetry` 라이브러리를 사용하지 않는다.  
+`MeterRegistry` 는 HTTP 프로토콜을 사용하는 만큼 `OTLP` 프로토콜의 의존성이 완벽히 분리되어 아예 `io.opentelemetry` 라이브러리를 사용하지 않는다.  
 
-메트릭만 측정해도 되는 상황이라면 `io.opentelemetry` 라이브러리를 모두 걷어내고 `micrometer-registry-otlp` 만 설정해도 `Micrometer` 에서 메트릭 데이터를 `OTEL 컬렉터` 로 Export 해준다.  
+메트릭만 측정해도 되는 상황이라면 `io.opentelemetry` 라이브러리를 모두 걷어내고 `micrometer-registry-otlp` 만 설정해도 `Micrometer` 에서 메트릭 데이터를 `OTEL 컬렉터` 로 내보내(Export) 준다.  
 
 ![1](/assets/springboot/spring-cloud/springcloud_otel3.png)  
 
 #### Prometheus
 
-대부분 어플리케이션에서 메트릭을 `otlp` 로 전송하지 않는다.  
-`Pull Prometheus Metric` 방식이 표준으로 자리잡았다.  
+대부분 애플리케이션에서 메트릭을 `otlp` 로 전송하지 않는다.  
+`Pull Prometheus Metric` 방식이 표준으로 자리 잡았다.  
 
 > `OTEL 컬렉터` 에서 `Pull Prometheus Metric` 방식도 지원한다.  
 
@@ -420,97 +420,29 @@ implementation "io.micrometer:micrometer-registry-prometheus"
 ```yml
 management:
   server:
-    port: 9000
+    port: ${MANAGEMENT_SERVER_PORT:9000}
   endpoints:
     web:
       exposure:
-        include: prometheus, health, info
+        include: prometheus, health, info, threaddump # 외부에 노출할 actuator 엔드포인트 목록
   metrics:
     tags:
-      application: ${spring.application.name}
-    export:
-      prometheus:
-        enabled: true # prometheus 의 메트릭 생성 여부
+      application: ${spring.application.name} # 모든 메트릭에 application 이름을 태그로 붙여 Prometheus 에서 구분 가능하게 함
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true # HTTP 요청 처리 시간에 대한 히스토그램 생성 (Grafana 에서 P99 등 계산 시 사용)
+  prometheus:
+    metrics:
+      export:
+        enabled: true # Prometheus 형식으로 메트릭 수집 허용
   endpoint:
     prometheus:
-      enabled: true # endpoint 활성화 여부
-metrics:
-  distribution:
-    percentiles-histogram:
-      http.server.requests: true
-  tracing:
-    enabled: true
+      enabled: true # /actuator/prometheus 엔드포인트 활성화
+    threaddump:
+      enabled: true # 스레드 덤프 확인 엔드포인트 활성화
 ```
 
 `http://localhost:9000/actuator/prometheus` 를 통해 `Metric` 을 읽어올 수 있다.  
-
-
-<!-- 
-> <https://opentelemetry.io/docs/kubernetes/operator/>  
-> <https://medium.com/@dudwls96/kubernetes-환경에서-opentelemetry-collector-구성하기-d20e474a8b18>
-
-`OTEL 사이드카 컬렉터` 운영을 위해 `opentelemetry-operator deployment` 및 `k8s CRD` 추가  
-
-`sidecar.opentelemetry.io/inject` 주석이 추가되면 `OTEL 사이드카 컬렉터` 가 같은 `Pod` 에서 동작한다.  
-
-> `opentelemetry-operator deployment`, `k8s CRD` 설치참고  
-> <https://kouzie.github.io/monitoring/모니터링-OpenTelemetry/#sidecar-operating-mode>
-
-`[Log, Trace]` 관측데이터는 `otlp` 로 전달받고, `Metric` 은 `Prometheus` `pull base` 로 진행,  
-`OTEL 사이드카 컬렉터` 에서 수집한 모든 관측데이터는 `OTEL 게이트웨이 컬렉터` 로 전달한다,  
-
-```yaml
-apiVersion: opentelemetry.io/v1alpha1
-kind: OpenTelemetryCollector
-metadata:
-  name: sidecar-for-spring
-  namespace: spring
-spec:
-  mode: sidecar
-  config: |
-    receivers:
-      otlp:
-        protocols:
-          grpc:
-            endpoint: 0.0.0.0:4317 # 모든 입력 IP 허용
-      prometheus:
-        config:
-          scrape_configs:
-          - job_name: 'spring-kube-demo'
-            scrape_interval: 1m
-            static_configs:
-            - targets: ["0.0.0.0:9404"]
-            metrics_path: "/actuator/prometheus"
-    processors:
-    exporters: # 모든 데이터 otel gateway 로 전송
-      logging: {}
-      otlp:
-        endpoint: "http://opentelemetry-collecor-opentelemetry-collector.monitoring.svc.cluster.local:4317"
-        tls:
-          insecure: true
-
-    service:
-      pipelines:
-        traces:
-          receivers: [otlp]
-          processors: []
-          exporters: [logging, otlp]
-        logs:
-          receivers: [otlp]
-          processors: []
-          exporters: [logging, otlp]
-        metrics:
-          receivers: [otlp, prometheus]
-          processors: []
-          exporters: [logging, otlp]
-```
-
-`OTEL 게이트웨이 컬랙터`는 아래 데모코드 참고(helm 차트로 설치).
-
-아래 그림과 같은 구성으로, `OTEL 게이트웨이 컬렉터` 에서 최종으로 `[Loki, Tempo, Prometheus]` 와 같은 백엔드 서비스에 관측 데이터를 전달하게 된다.  
-
-![1](/assets/springboot/spring-cloud/springcloud_otel1.png)  
--->
 
 #### Prometheus Metric Push Base
 
@@ -527,13 +459,13 @@ management.prometheus.metrics.export.pushgateway.base-url=${METRIC_URL:http://lo
 
 ### Trace
 
-`SpringBoot2` 에서는 `zipkin`, `jaeger` 등의 추적 백엔드 서비스를 사용하기 위해 `Slueth` 자동계측 라이브러리를 사용했다.  
+`SpringBoot2` 에서는 `zipkin`, `jaeger` 등의 추적 백엔드 서비스를 사용하기 위해 `Sleuth` 자동 계측 라이브러리를 사용했다.  
 `SpringBoot3` 부터는 `Micrometer` 를 사용해서 추적 백엔드 서비스 사용이 가능하다.  
 
 > `Spring Cloud Sleuth` 는 `SpringBoot 3.x` 에서 중단되었다.  
 > `Micrometer` 를 사용한 추적데이터 수집은 `SpringBoot 3.x` 부터 지원되며 `Spring Cloud Sleuth` 형태를 이어받았다.  
 
-`micrometer-tracing-bridge-otel` 은 의존성 분리가 되어있지 않기 때문에 `io.opentelemetry` 라이브러리를 같이 사용해야한다.  
+`micrometer-tracing-bridge-otel` 은 의존성 분리가 되어 있지 않기 때문에 `io.opentelemetry` 라이브러리를 같이 사용해야 한다.  
 
 ```groovy
 implementation "org.springframework.boot:spring-boot-starter-actuator"
@@ -541,7 +473,7 @@ implementation "io.micrometer:micrometer-tracing-bridge-otel" // trace 인터페
 implementation "io.opentelemetry:opentelemetry-exporter-otlp" // trace 데이터 전송을 위한 라이브러리
 ```
 
-아래와 같이 실제 `Micromter` 에서 제공하는 `OtelTracer` 구현체 내부에서 `io.opentelemetry` 패키지의 구현체를 필요로 하기에 의존성 주입을 해줘야한다.  
+아래와 같이 실제 `Micrometer` 에서 제공하는 `OtelTracer` 구현체 내부에서 `io.opentelemetry` 패키지의 구현체를 필요로 하기에 의존성을 주입해 줘야 한다.  
 
 ```java
 package io.micrometer.tracing.otel.bridge;
@@ -564,7 +496,7 @@ public class OtelTracer implements Tracer {
 management.otlp.tracing.endpoint=http://localhost:4318/v1/tracing
 ```
 
-이제 모든 HTTP 요청에 자동으로 추적 데이터가 설정되며 로그에도 관련 mdc 정보가 출력되고 `OTEL 컬렉터` 로도 추적 데이터가 Push 된다. 
+이제 모든 HTTP 요청에 자동으로 추적 데이터가 설정되며 로그에도 관련 MDC 정보가 출력되고 `OTEL 컬렉터` 로도 추적 데이터가 Push 된다. 
 
 아래와 같이 `micrometer-tracing` 라이브러리에서 제공하는 어노테이션을 사용해서 새로운 Span 을 메서드마다 생성할 수 있다.  
 
@@ -631,7 +563,7 @@ fun redisConnectionFactory(clientResources: ClientResources): RedisConnectionFac
 
 ```kotlin
 @Component
-class TraceSupport(_trace: TraceDeligator) {
+class TraceSupport(_trace: TraceDelegator) {
     init {
         trace = _trace
     }
@@ -666,7 +598,7 @@ class TraceSupport(_trace: TraceDeligator) {
     }
 
     @Component
-    class TraceDeligator(
+    class TraceDelegator(
         private val tracer: Tracer,
         private val propagator: Propagator, // trace context 전파를 위한 Propagator, inject, extract 기능 제공
     ) {
@@ -739,3 +671,168 @@ class TraceSupport(_trace: TraceDeligator) {
     }
 }
 ```
+
+
+## Slow Query 모니터링
+
+Spring Boot 애플리케이션에서 발생하는 데이터베이스 지연(Slow Query)을 실시간으로 감지하고 시각화하는 것은 운영 환경에서 매우 중요하다.
+여기서는 **MySQL(JDBC)**와 **MongoDB**를 대상으로 슬로우 쿼리를 측정하고, 이를 Grafana 대시보드로 구성하는 과정을 다룬다.
+
+관측 데이터 수집의 표준인 `OpenTelemetry`와 `Micrometer`를 활용하며, 모든 구성은 Docker 환경에서 동작하도록 설계되었다.
+
+매번 실제 부하를 기다릴 수 없으므로, 의도적으로 지연을 발생시키는 엔드포인트를 구성한다.
+
+### MySQL (JDBC)
+
+`JdbcTemplate`과 MySQL의 `SLEEP()` 함수를 사용한다. `datasource-micrometer` 라이브러리를 통해 쿼리 실행 시간이 자동으로 측정된다.
+
+```java
+@GetMapping("/sleep/{seconds}")
+public String sleepQuery(@PathVariable int seconds) {
+    int clampedSeconds = Math.min(seconds, 30);
+    log.info("[SlowQuery] 자동 측정 시작 - SLEEP {}초", clampedSeconds);
+
+    // 바인딩 변수를 사용해야 Prometheus에서 동일한 태그(SELECT SLEEP(?))로 묶입니다.
+    jdbcTemplate.queryForObject("SELECT SLEEP(?)", Integer.class, clampedSeconds);
+
+    log.info("[SlowQuery] 자동 측정 종료");
+    return String.format("자동 측정 완료: %d초 대기됨\n" +
+            "→ /actuator/prometheus 에서 'jdbc_query_seconds'를 확인하세요.\n" +
+            "→ 'jdbc_query' 태그값이 'SELECT SLEEP(?)' 인지 확인하세요.", clampedSeconds);
+}
+```
+
+```yml
+management:
+  observations:
+    key-values:
+      jdbc:
+        query:
+          enabled: true # JDBC 쿼리 실행을 관찰(Observation) 대상으로 등록
+  metrics:
+    distribution:
+      percentiles-histogram:
+        jdbc.query: true # SQL 실행 시간에 대한 히스토그램 생성 (슬로우 쿼리 감지용)
+```
+
+### MongoDB
+
+MongoDB의 `$where` 연산자와 JavaScript `sleep()`을 활용한다.
+
+```java
+@GetMapping("/mongo/sleep/{seconds}")
+public String mongoSleep(@PathVariable int seconds) {
+    long ms = seconds * 1000L;
+    log.info("[MongoDB] 자동 측정 시작 - SLEEP {}ms", ms);
+
+    // 1. 데이터가 없으면 지연이 발생하지 않으므로, 임시 문서를 하나 생성하거나 확인합니다.
+    String tempCollection = "slow_query_temp";
+    if (mongoTemplate.count(new Query(), tempCollection) == 0) {
+        mongoTemplate.insert(new Document("name", "dummy"), tempCollection);
+    }
+
+    // 2. 안전한 전용 컬렉션에서 $where 실행 (JavaScript sleep 활용)
+    // 주의: $where는 성능에 좋지 않으며, 실서비스에서는 모니터링 테스트용으로만 사용해야 합니다.
+    Query query = new Query(Criteria.where("$where").is("sleep(" + ms + ") || true"));
+
+    try {
+        mongoTemplate.find(query, Object.class, tempCollection);
+    } catch (Exception e) {
+        log.error("[MongoDB] 쿼리 실행 중 오류 발생", e);
+        return "오류 발생: " + e.getMessage();
+    }
+
+    log.info("[MongoDB] 자동 측정 종료");
+    return String.format("MongoDB 자동 측정 완료: %d초 대기됨\n" +
+            "→ /actuator/prometheus 에서 'mongodb_driver_commands'를 확인하세요.", seconds);
+}
+```
+
+```yml
+management:
+  metrics:
+    mongo:
+      command:
+        enabled: true # MongoDB 명령어 실행 메트릭 활성화
+    distribution:
+      percentiles-histogram:
+        mongodb.driver.commands: true # MongoDB 명령어 실행 시간에 대한 히스토그램 생성 (슬로우 쿼리 감지용)
+```
+
+
+### 대시보드 쿼리 (PromQL)
+
+중복된 수집 경로 문제를 방지하기 위해 `sum by`를 사용하여 데이터를 그룹화하고, 전체 합계를 횟수로 나누어 평균 지연 시간을 산출한다.
+
+랜덤한 부하를 발생시켜 대시보드에 데이터가 쌓이는지 확인한다.
+
+```bash
+# 랜덤 숫자 연산 및 1~5초 사이의 지연 발생 테스트 스크립트
+for i in {1..10}; do 
+  num1=$((RANDOM % 100)); num2=$((RANDOM % 100)); sleep_sec=$((1 + RANDOM % 5)); 
+  curl -s "http://localhost:8080/slow-query/sleep/$sleep_sec" > /dev/null; 
+  curl -s "http://localhost:8081/calculating/mongo/sleep/$sleep_sec" > /dev/null; 
+  echo "Request set $i complete"; 
+done
+```
+
+위와 같이 쿼리를 호출하고 `/actuator/prometheus` 요청 시 아래와 같은 응답을 확인할 수 있다.  
+
+
+MySQL (JDBC) 원본 데이터
+
+```text
+# HELP jdbc_query_seconds
+# TYPE jdbc_query_seconds summary
+jdbc_query_seconds_count{application="service-greeting",error="none",jdbc_query="SELECT SLEEP(?)",jdbc_query_enabled="true",} 1.0
+jdbc_query_seconds_sum{application="service-greeting",error="none",jdbc_query="SELECT SLEEP(?)",jdbc_query_enabled="true",} 1.017248001
+```
+
+MongoDB 원본 데이터
+
+```text
+# HELP mongodb_driver_commands_seconds
+# TYPE mongodb_driver_commands_seconds summary
+mongodb_driver_commands_seconds_count{application="service-calculating",cluster_id="...",collection="test_collection",command="find",server_address="mongodb:27017",status="SUCCESS",} 1.0 
+mongodb_driver_commands_seconds_sum{application="service-calculating",cluster_id="...",collection="test_collection",command="find",server_address="mongodb:27017",status="SUCCESS",} 0.015247209
+```
+
+Prometheus 쿼리는 아래와 같이 작성한다.  
+
+```json
+"targets": [
+    {
+        "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+        },
+        "editorMode": "code",
+        "expr": "sum by (application, jdbc_query) (rate(jdbc_query_seconds_sum{jdbc_query!=\"\"}[1m])) / sum by (application, jdbc_query) (rate(jdbc_query_seconds_count[1m]))",
+        "format": "time_series",
+        "legendFormat": "{{application}} - {{jdbc_query}}",
+        "range": true,
+        "refId": "A"
+    }
+],
+"title": "MySQL Average Query Duration",
+"type": "timeseries"
+
+"targets": [
+    {
+        "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+        },
+        "editorMode": "code",
+        "expr": "sum by (application, command, collection) (rate(mongodb_driver_commands_seconds_sum{command!=\"\"}[1m])) / sum by (application, command, collection) (rate(mongodb_driver_commands_seconds_count[1m]))",
+        "format": "time_series",
+        "legendFormat": "{{application}} - {{command}} ({{collection}})",
+        "range": true,
+        "refId": "A"
+    }
+],
+"title": "MongoDB Average Command Duration",
+"type": "timeseries"
+```
+
+![1](/assets/springboot/spring-cloud/springcloud_otel4.png)  
