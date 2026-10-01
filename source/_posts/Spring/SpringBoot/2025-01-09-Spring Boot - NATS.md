@@ -15,8 +15,8 @@ categories:
 
 Go로 개발된 Pub/Sub 기반 메시징 시스템  
 
-`Kafka` 나 `RabbitMQ` 와 같이 **구독/발행** 구조의 메시지 브로커 역할을 하지만
-서비스 실행 초반에 큐/파티션 등을 만드는 브로커와 다르게 가볍고 빠르게 `Pub/Sub` 이 가능하다.  
+Kafka, RabbitMQ 와 같이 구독/발행 구조의 메시지 브로커 역할을 하지만
+서비스 실행 초반에 큐/파티션 등을 만드는 브로커와 다르게 가볍고 빠르게 Pub/Sub 이 가능하다.  
 
 Core NATS 는 기본적으로 `At most once QoS(fire-and-forget)` 기반으로 동작하며 메시지를 메모리에만 보관하고 디스크에 작성하지 않는다.  
 
@@ -116,74 +116,224 @@ PUB <subject> [reply-to] <#bytes> [payload]
 
 > <https://docs.nats.io/nats-concepts/jetstream>
 
-`JetStream` 을 한 문장으로 `built-in distributed persistence system`(분산 지속형 시스템) 으로 부르며 다른 메시지 스트리밍 기술의 여러 특수한 기능들을 모두 지원한다고 쓰여있다.  
-신뢰성 있는 메시지 전송, 메시지 유실에 대한 보존정책 등, 안정성을 위한 개념으로 `STAN(aka NATS Streaming)` 의 후속 개념.  
+`JetStream`은 NATS에 메시지 저장과 재전송 기능을 추가한 `built-in distributed persistence system`이다.
 
-`JetStream` 과 `Core NATS` 는 메시지 교환 방식에서 중요한 차이가 있다.  
-여기서 **Stream** 이란 `JetStream` 시스템 내부에서 메시지를 수집하고 저장하는 일종의 **저장소(Container)** 개념.  
-마치 Kafka Topic 로그처럼, 사전에 정의된 Subject 패턴에 매칭되는 메세지를 캡처하여 이 **Stream** 에 영구적으로(또는 설정된 정책만큼) 보관하게 된다.  
+Core NATS가 현재 접속한 subscriber에게 메시지를 즉시 전달하는 데 집중한다면, JetStream은 subject가 일치하는 메시지를 **Stream**에 저장하여 나중에도 다시 읽을 수 있게 한다.
 
-`Stream` 은 사용전에 생성해야한다.  
+![JetStream 메시지 저장과 Consumer 재수신 흐름](/assets/springboot/nats-jetstream-store-consume-flow.svg)
 
-```shell
-$ nats stream add default-stream --subjects "jetstream.nats.>"
+그림의 요소를 메시지 흐름 순서로 살펴보면 다음과 같다.
+
+**1. Publisher → Stream**
+
+Publisher는 Stream 이름이 아니라 `jetstream.nats.order` 같은 subject로 메시지를 발행한다.
+
+Stream의 `subjects` 설정이 `jetstream.nats.>`라면 subject가 패턴과 일치하므로 메시지를 저장한다.
+
+JetStream publish는 저장 후 Stream 이름과 sequence가 포함된 `PubAck`를 반환한다.
+
+**2. Stream: Persistent Queue / Log**
+
+Stream은 메시지를 `100`, `101`, `102`처럼 증가하는 **Stream sequence**와 함께 보관한다. 이 sequence는 Kafka partition offset처럼 Stream 안의 메시지 위치값이다.  
+
+원본 메시지는 Consumer가 Ack했다고 바로 삭제되지 않는다. 삭제 시점은 `Limits`, `Interest`, `WorkQueue` 보존 정책과 `max_age`, `max_bytes` 같은 제한이 결정한다.
+
+저장소는 내구성이 필요하면 `File`, 재시작 후 유실되어도 되는 데이터라면 `Memory`를 사용한다.
+
+**3. Durable Consumer: Cursor / Ack Floor**
+
+클라이언트별 처리 위치는 Stream sequence 자체가 아니라 **Consumer 상태**로 관리한다. Consumer는 어떤 Stream sequence까지 전달했고 어디까지 Ack되었는지를 서버에 보관하는 객체다.
+
+그림의 `Ack Floor = 102`는 `APP_A`가 102번까지 처리했다는 뜻이다. 따라서 다음 수신 메시지는 103번이다.
+
+Consumer의 `Ack Floor`가 Kafka consumer group의 committed offset과 가장 유사하다. 클라이언트가 offset 파일이나 flag를 직접 보관하는 대신, 재접속할 때 같은 Durable Consumer 이름을 사용하면 서버에 저장된 위치에서 이어받는다.
+
+따라서 서로 다른 Durable Consumer인 `APP_A`, `APP_B`는 같은 Stream sequence의 메시지를 읽더라도 각자 다른 Ack Floor를 가진다. 반대로 여러 클라이언트가 동일한 `APP_A`를 사용하면 하나의 Ack Floor를 공유한다.
+
+Consumer에는 Stream sequence와 별도로 **Consumer sequence**도 존재한다. subject filter로 일부 메시지를 건너뛰거나 같은 메시지가 재전송되면 두 sequence가 서로 달라질 수 있다.
+
+- 여러 worker가 동일한 Durable Consumer를 사용하면 하나의 queue처럼 메시지를 나누어 처리한다.
+- 서로 다른 Durable Consumer를 사용하면 각 Consumer가 같은 Stream을 독립적으로 읽는다.
+- Push Consumer는 서버가 메시지를 전달한다.
+- Pull Consumer는 worker가 처리 가능한 만큼 요청하므로 백프레셔 제어에 유리하다.
+
+**4. Worker 처리와 Ack/Nak**
+
+`Explicit Ack` Consumer에서는 worker가 처리를 완료한 뒤 Ack해야 Cursor가 진행된다.
+
+Ack하지 않고 `AckWait`이 지나거나 `Nak`하면 같은 메시지가 재전송된다. 처리가 오래 걸리면 `InProgress`로 AckWait을 연장하고, 재시도해도 처리할 수 없는 메시지는 `Term`으로 종료할 수 있다.
+
+`AckWait`은 Stream이 아니라 **Consumer에 설정하는 값**이다. 메시지가 worker에 전달된 시점부터 `AckWait` 안에 Ack가 NATS 서버에 도착하지 않으면 서버는 처리에 실패한 것으로 판단하여 같은 메시지를 다시 전달한다.
+
+```java
+ConsumerConfiguration consumerConfig = ConsumerConfiguration.builder()
+    .durable("ORDER_CONSUMER")
+    .ackPolicy(AckPolicy.Explicit)
+    .ackWait(Duration.ofSeconds(30)) // 전달 후 30초 안에 Ack가 없으면 재전송
+    .maxDeliver(3)                  // 최초 전달을 포함하여 최대 3회 전달
+    .build();
 ```
 
-- **JetStream으로 발행 → Core NATS로 수신**  
-  - **A: subject가 Stream에 포함된 경우**
-    - `JetStream.publish("test.subject", "message")`  
-    - `Stream` 이 `test.subject`를 포함할 경우 `Stream` 에 저장됨 로직  
-    - Core NATS subscriber도 받을 수 있음 (같은 subject 를 구독 중이라면)  
-  - **B: subject가 Stream에 포함되지 않은 경우**  
-    - **에러 발생**, JetStream 은 메시지가 Stream 에 안전하게 저장되었다는 **Ack** 를 받아야 한다.  
-    - Stream 이 정의되어 있지 않다면 저장이 불가능하므로 에러가 발생.
+NATS CLI로 Consumer를 생성할 때는 `--wait` 옵션으로 설정한다.
 
-- **Core NATS로 발행 → JetStream으로 수신**  
-  - **C: Stream에 포함된 subject**
-    - `Core NATS.publish("test.subject", "message")`
-    - Stream에 저장됨, 하지만 Core NATS publish는 Ack 기반 저장 확인이 없다.  
-    - JetStream consumer도 받을 수 있음  
-    - Core NATS subscriber도 받을 수 있음  
-  - **D: Stream에 포함되지 않은 subject**
-    - `Core NATS.publish("other.subject", "message")`
-    - Stream에 저장되지 않음, Core NATS subscriber만 받을 수 있음
-    - JetStream consumer는 받을 수 없음  
+```shell
+$ nats consumer add ORDERS ORDER_CONSUMER \
+    --ack explicit \
+    --wait 30s \
+    --max-deliver 3
+```
+
+`Nak`은 `AckWait` 만료를 기다리지 않고 재전송을 요청한다. 반대로 아무 응답도 하지 않으면 서버는 `AckWait`이 만료될 때까지 기다린 뒤 재전송한다.
+
+**5. DLQ 처리**
+
+JetStream에는 RabbitMQ처럼 `MaxDeliver`를 초과한 메시지를 별도 Queue로 자동 이동시키는 내장 DLQ가 없다.
+
+```text
+처리 실패 → Ack 없음/Nak → 재전송 → MaxDeliver 도달
+         → MAX_DELIVERIES Advisory 발행
+```
+
+`MaxDeliver`에 도달하면 해당 Consumer의 재전송만 중단된다. 원본 메시지는 폐기되지 않고 Stream의 Retention Policy에 따라 계속 보관된다.
+
+실패 이벤트는 다음 Advisory subject로 발행된다.
+
+```text
+# MaxDeliver 횟수만큼 재전송한 뒤 서버가 자동으로 발행
+$JS.EVENT.ADVISORY.CONSUMER.MAX_DELIVERIES.<STREAM>.<CONSUMER>
+
+# Consumer가 복구 불가능한 메시지에 Term을 보내 재전송을 즉시 종료하면 발행
+$JS.EVENT.ADVISORY.CONSUMER.MSG_TERMINATED.<STREAM>.<CONSUMER>
+```
+
+Advisory는 실패한 원본 payload가 아니라 `stream`, `consumer`, `stream_seq`, `deliveries` 등의 메타데이터를 담은 시스템 이벤트다. 따라서 DLQ를 구성하는 방법은 다음 두 가지로 나뉜다.
+
+**Advisory를 DLQ Stream에 직접 저장**
+
+별도 프로그램 없이 Advisory subject를 저장하는 Stream을 만들 수 있다.
+
+```shell
+# MaxDeliver 실패 이벤트를 저장하는 Stream
+$ nats stream add dlq-advisory-stream \
+    --subjects '$JS.EVENT.ADVISORY.CONSUMER.MAX_DELIVERIES.>' \
+    --storage file \
+    --retention limits \
+    --defaults
+
+# 저장된 Advisory에서 stream_seq를 확인한 뒤 원본 조회
+$ nats stream get default-stream 100
+```
+
+이 방식은 DLQ Stream에서 실패 이력을 확인한 뒤, Advisory의 `stream_seq`를 이용해 원본 Stream을 한 번 더 조회한다. 별도 프로그램은 필요 없지만 원본이 Retention Policy로 삭제되면 더 이상 조회할 수 없다.
+
+**원본 메시지를 DLQ Stream에 복사**
+
+DLQ에서 원본 subject, header, payload를 바로 확인하려면 Advisory를 처리하는 별도 프로그램이 필요하다.
+
+```text
+MAX_DELIVERIES Advisory 구독
+    → stream_seq로 원본 조회
+    → dlq.<원본-subject>로 JetStream publish
+    → DLQ Stream에서 원본을 바로 조회
+```
+
+```shell
+# 별도 프로그램이 재발행한 원본 메시지를 저장하는 Stream
+$ nats stream add dlq-stream \
+    --subjects 'dlq.>' \
+    --storage file \
+    --retention limits \
+    --defaults
+```
+
+별도 프로그램은 Advisory의 `stream_seq`로 원본을 조회하고 `dlq.<원본-subject>`로 재발행한다. 이 로직은 독립된 DLQ Relay로 실행하거나 기존 Consumer 애플리케이션에 포함할 수 있다.
+
+| 구성 | DLQ에 저장되는 내용 | 원본 확인 방법 | 별도 프로그램 |
+| --- | --- | --- | --- |
+| Advisory Stream | 실패 메타데이터와 `stream_seq` | 원본 Stream을 한 번 더 조회 | 불필요 |
+| 원본 복사 DLQ Stream | 원본 subject, header, payload | DLQ에서 바로 조회 | 필요 |
+
+원본 조회와 DLQ 재발행은 하나의 트랜잭션이 아니다. 원본 복사 방식을 사용할 때는 DLQ publish의 `PubAck`를 확인하고 `Nats-Msg-Id`로 중복 저장을 방지하는 것이 안전하다.
+
+> 공식 문서: <https://docs.nats.io/using-nats/developing-with-nats/js/consumers#dead-letter-queues-type-functionality>
+
+**6. 특정 위치부터 재수신**
+
+운영 Consumer에 영향을 주지 않으려면 `--deliver 100`처럼 시작 Stream sequence를 지정한 별도 Replay Consumer를 만든다.
+
+NATS Server 2.14 이상에서는 `consumer reset --sequence 100`으로 기존 Consumer도 되돌릴 수 있다. 다만 Ack 상태가 변경되어 중복 처리가 발생할 수 있다.
+
+이 글의 Docker 예시인 Server `2.9.15`에서는 reset API를 지원하지 않으므로 새 Replay Consumer를 사용해야 한다. Retention Policy에 의해 이미 삭제된 메시지는 어떤 방법으로도 다시 받을 수 없다.
+
+**발행 방식과 Stream subject 매칭 여부**
+
+- **A. JetStream publish + Stream subject와 일치**
+  - 메시지를 Stream에 저장한다.
+  - 발행자는 저장 결과인 `PubAck`를 받는다.
+  - 같은 subject를 구독 중인 Core NATS subscriber도 실시간으로 받을 수 있다.
+  - 해당 Stream의 JetStream Consumer도 메시지를 받을 수 있다.
+
+- **B. JetStream publish + Stream subject와 불일치**
+  - 메시지를 저장할 Stream이 없으므로 저장되지 않는다.
+  - `PubAck`를 받을 수 없어 `no responders` 또는 timeout 오류가 발생한다.
+  - 같은 subject를 구독 중인 Core NATS subscriber는 실시간 메시지를 받을 수 있지만, JetStream publish 호출 자체는 저장 실패로 처리된다.
+  - 저장된 메시지가 없으므로 JetStream Consumer는 받을 수 없다.
+
+- **C. Core NATS publish + Stream subject와 일치**
+  - Stream이 메시지를 캡처하여 저장한다.
+  - Core NATS publish는 `PubAck`를 기다리지 않으므로 발행자는 저장 성공 여부를 확인하지 않는다.
+  - Core NATS subscriber는 실시간으로 받을 수 있다.
+  - JetStream Consumer도 저장된 메시지를 받을 수 있다.
 
 
-1. **JetStream으로 발행된 메시지**:
-   - Stream의 subject 패턴에 포함되어야 저장된다.
-   - 저장되면 JetStream consumer와 Core NATS subscriber 모두 수신 가능하다.
+**CLI 예제**
 
-2. **Core NATS로 발행된 메시지**:
-   - Stream이 해당 subject를 수집하도록 설정되어 있다면 저장된다.
-   - Stream이 없거나 subject가 매칭되지 않으면 저장되지 않는다.
+```shell
+# default.conf에 설정한 계정으로 접속
+$ export NATS_URL="nats://admin:password@localhost:4222"
 
-3. **메시지 지속성**:
-   - **JetStream 발행**: Ack 기반 저장 확인 가능, 재시도/지속성 보장에 적합
-   - **Core NATS 발행**: 저장 여부를 확인할 수 없으므로 지속성 보장 불가
+# jetstream.nats.> subject를 파일로 저장하는 Stream 생성
+$ nats stream add default-stream \
+    --subjects "jetstream.nats.>" \
+    --storage file \
+    --retention limits \
+    --defaults
 
-따라서 **유실되면 안 되는 중요한 메시지는 JetStream 발행**을 사용하고, **유실되어도 무방한 메시지는 Core NATS**를 사용하는 것이 권장된다. 메시지의 성격에 따라 혼용하지 않고 명확히 구분하여 사용하는 것이 좋다.  
+# JetStream 송신: Stream 저장 완료 후 PubAck 확인
+$ nats pub --jetstream jetstream.nats.test "message-1"
+$ nats pub --jetstream jetstream.nats.test "message-2"
 
-#### retry
+# APP_A의 수신 위치와 Ack 상태를 서버가 보관하는 Durable Pull Consumer 생성
+$ nats consumer add default-stream APP_A \
+    --pull \
+    --filter "jetstream.nats.>" \
+    --ack explicit \
+    --deliver all \
+    --wait 30s \
+    --max-deliver 5 \
+    --defaults
 
-JetStream 은 메시지 처리 실패 시 재시도를 지원하며, `maxDeliver` 설정값을 초과하면 해당 컨슈머에 대한 재전송을 중단한다.  
-이때 **Advisory Event** 를 발행하여 시스템이 이를 인지할 수 있도록 한다. (메시지 보존 여부는 Stream 보존 정책에 따라 결정됨)
+# 메시지를 가져와 처리 완료 Ack; 다시 실행하면 다음 위치에서 이어받는다.
+$ nats consumer next default-stream APP_A --count 1 --ack
+$ nats consumer info default-stream APP_A
 
-> **Advisory Event**: `$JS.EVENT.ADVISORY.CONSUMER.MAX_DELIVERIES.>` 토픽으로 발행되는 시스템 이벤트. 이를 구독하여 별도의 저장소에 저장하거나 알림을 보낼 수 있다.
+# Stream sequence 100부터 독립적으로 다시 읽는 Replay Consumer
+$ nats consumer add default-stream APP_A_REPLAY_100 \
+    --pull \
+    --filter "jetstream.nats.>" \
+    --ack explicit \
+    --deliver 100 \
+    --defaults
 
-기존의 MQ 시스템들이 실패한 메시지를 별도의 Queue 로 이동시키는 것과 달리, NATS JetStream 은 이벤트를 통해 비동기적으로 처리하는 방식을 권장한다.
+$ nats consumer next default-stream APP_A_REPLAY_100 --count 10 --ack
 
-### JetStream 추가 참고사항
+# NATS Server 2.14 이상에서 기존 Consumer를 되돌리는 방법
+$ nats consumer reset default-stream APP_A --sequence 100
 
-- **Stream 보존 정책**: `Limits`, `Interest`, `WorkQueue`에 따라 삭제 조건이 달라진다. 메시지 삭제 시점은 정책과 `max_age`, `max_bytes` 등의 제한값을 함께 고려해야 한다.
-- **Storage 유형**: `Memory`는 빠르지만 재시작 시 사라질 수 있다. 내구성이 필요한 경우 `File` 저장소를 사용한다.
-- **Consumer 유형**: `Durable`은 상태(시퀀스)를 유지하고, `Ephemeral`은 연결이 끊기면 사라진다.
-- **Push vs Pull**: Push는 실시간 푸시에 적합하고, Pull은 처리량/백프레셔 제어에 유리하다.
-- **Ack 정책**: `Explicit`은 메시지 단위 Ack가 필요하고, `None`은 자동 처리(유실 가능), `All`은 마지막 메시지 Ack로 일괄 처리된다.
-- **AckWait / MaxDeliver**: 처리 시간이 길면 `ack_wait`을 늘리고, 재시도 횟수(`max_deliver`)를 명확히 정의해야 한다.
-- **Deliver 정책**: `All`, `Last`, `New`, `ByStartTime`, `ByStartSequence` 등으로 시작 지점을 제어할 수 있다.
-- **중복 제거**: `Nats-Msg-Id` 헤더와 `duplicate_window`를 사용해 중복 메시지를 제어할 수 있다.
-- **Stream/Consumer 선행 생성**: JetStream 발행은 Stream이 먼저 정의되어 있어야 한다. 운영 환경에서는 사전 생성 및 관리가 안전하다.
+# Durable Consumer 삭제
+# APP_A의 Cursor, Ack Floor, Pending Ack 상태는 삭제되지만 Stream 원본 메시지는 유지된다.
+$ nats consumer rm default-stream APP_A
+```
 
 ## Spring Boot NATS
 
@@ -309,47 +459,6 @@ public class JetStreamComponent {
 }
 ```
 
-### DLQ Consumer
-
-메세지 처리에 실패하여 재시도가 필요한 경우 `ConsumerConfiguration` 을 통해 설정할 수 있다.
-
-- `ackWait`: 메세지 처리 대기 시간 (Default 30초)
-- `maxDeliver`: 최대 재전송 횟수
-
-```java
-    // DLQ 처리용 구독
-    public void subscribeDlqProcessor(String subject, boolean autoAck) throws IOException, JetStreamApiException {
-        Dispatcher dispatcher = connection.createDispatcher();
-        
-        // Ephemeral Consumer (임시 컨슈머) 생성: 구독 취소 시 컨슈머도 자동 삭제됨
-        ConsumerConfiguration cc = ConsumerConfiguration.builder()
-                .ackWait(Duration.ofSeconds(3)) // 30초는 너무 길어서 3초로 설정 (빠른 재전송)
-                .maxDeliver(3) // 최대 3번 재전송 후 중단
-                .build();
-
-        PushSubscribeOptions options = PushSubscribeOptions.builder()
-                .configuration(cc)
-                .build();
-
-        jetStream.subscribe(subject, dispatcher, msg -> {
-             log.error("Processing failed for message: {}", new String(msg.getData()));
-             // Ack를 보내지 않으면 재전송됨 (maxDeliver 횟수만큼)
-        }, autoAck, options);
-    }
-```
-
-**Advisory Listener**
-
-`maxDeliver` 횟수만큼 재전송 했음에도 처리에 실패하면 메세지는 폐기된다.  
-이때 `$JS.EVENT.ADVISORY.CONSUMER.MAX_DELIVERIES.>` 토픽으로 이벤트가 발행되는데 이를 구독하여 모니터링 할 수 있다.
-
-```java
-        // DLQ 모니터링: 최대 전송 횟수 초과 이벤트 구독
-        Dispatcher advisoryDispatcher = connection.createDispatcher(msg -> {
-            log.error("Advisory: Max deliveries exceeded for messsage: {}", new String(msg.getData()));
-        });
-        advisoryDispatcher.subscribe("$JS.EVENT.ADVISORY.CONSUMER.MAX_DELIVERIES.>");
-```
 
 ## 데모코드  
 

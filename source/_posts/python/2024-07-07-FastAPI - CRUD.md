@@ -38,21 +38,18 @@ ASGI 서버 (Uvicorn / Gunicorn)
 워커는 별개의 프로세스로 메모리도 공유하지 않는다.  
 API 호출횟수 등을 구하려면 redis, prometheus 같은 외부저장소의 도움을 받아야한다.  
 
-
-> <https://gunicorn.org/>  
-> <https://www.uvicorn.org/>
-> 
 > **WSGI(Web Server Gateway Interface)**  
 > Python 웹서버에서 사용하는 웹 어플리케이션 인터페이스, `gunicorn` 이 구현하여 제공한다.  
 > 
 > **ASGI(Asynchronous Server Gateway Interface)**  
 > Python 웹서버에서 사용, 비동기 웹 애플리케이션을 지원하기 위해 WSGI의 비동기 확장판으로 개발된 인터페이스, `uvicorn` 이 구현하여 제공한다.  
 > 
-> FastAPI 는 ASGI 에서 동작하는 웹 어플리케이션, `app = FastAPI()` 로 만든 그 객체가 곧 ASGI 애플리케이션이고,
-> `uvicorn app.main:app` 의 `app.main:app` 은 **"어느 모듈의 어느 변수를 띄울지"** 를 가리킨다.  
+> FastAPI 는 ASGI 에서 동작하는 웹 어플리케이션, `app = FastAPI()` 로 만든 그 객체가 곧 ASGI 애플리케이션이고, `uvicorn app.main:app` 의 `app.main:app` 은 **"어느 모듈의 어느 변수를 띄울지"** 를 가리킨다.  
 > 
 > `gunicorn -k uvicorn.workers.UvicornWorker` 조합도 오래 쓰였지만, 지금은 uvicorn 자체가 `--workers` 를 지원하므로 굳이 얹을 이유가 줄었다.
 > 컨테이너 환경이라면 워커 수를 늘리는 대신 **컨테이너 replica 를 늘리는 쪽**이 스케줄링·모니터링 면에서 다루기 쉽다.  
+> <https://gunicorn.org/>  
+> <https://www.uvicorn.org/>
 
 ### 실행환경
 
@@ -86,9 +83,25 @@ async def read_item(item_id: int, q: str | None = None):
 
 ```sh
 # myapi
-python3 -m venv .venv          # .venv/ 디렉터리에 독립된 인터프리터 생성
-source .venv/bin/activate      # 활성화 (Windows: .venv\Scripts\activate)
-pip install "fastapi[standard]"
+python3 -m venv .venv                 # .venv/ 디렉터리에 독립된 인터프리터 생성
+source .venv/bin/activate             # macOS/Linux 활성화
+
+python -m pip install --upgrade pip
+python -m pip install "fastapi[standard]"
+python -m pip freeze > requirements.txt
+```
+
+가상환경을 활성화하면 현재 셸의 `python`, `pip`, `fastapi` 명령은 `.venv` 안의 실행 파일을 사용한다.  
+개발 서버도 같은 셸에서 실행한다.  
+
+```sh
+fastapi dev main.py
+```
+
+활성화하지 않고 실행하려면 `.venv` 안의 실행 파일을 직접 지정하면 된다.  
+
+```sh
+.venv/bin/fastapi dev main.py
 ```
 
 `fastapi` 만 설치하면 웹 프레임워크의 핵심 의존성만 들어온다.  
@@ -170,21 +183,16 @@ if __name__ == "__main__":
 
 **uvicorn 워커는 서로 메모리를 공유하지 않는 별개 프로세스**다.  
 
-여기서 나오는 실수가 두 가지다.  
+여기서 나오는 실수는 아래와 같다.    
 
 1. 프로세스 변수에 상태를 담으면 워커를 늘리는 순간 깨진다  
-요청이 어느 워커로 갈지는 알 수 없다. 공유가 필요하면 Redis 로 빼고, 불일치가 무해한 캐시만 프로세스 로컬로 둔다.  
-1. 워커 안에서는 이벤트 루프 하나가 모든 요청을 처리한다  
-블로킹 호출 하나가 그 워커의 **모든** 요청을 멈춘다.
-
-**1. `async def` 안의 블로킹 호출은 워커 전체를 멈춘다**  
-`time.sleep`, `requests.get`, 동기 SDK, 파일 I/O 는 `asyncio.to_thread()` 로 감싸거나 핸들러를 `def` 로 선언한다.  
-
-**2. CPU 작업은 스레드로 해결되지 않는다**  
-이미지 처리나 암호화처럼 CPU 를 오래 쓰는 작업은 `ProcessPoolExecutor` 같은 별도 프로세스로 보낸다.  
-
-**3. 프로세스 로컬 상태는 워커 사이에 공유되지 않는다**  
-`--workers 4` 는 서로 다른 메모리를 가진 프로세스 네 개를 만든다. 공유 상태는 외부 시스템으로 분리한다.  
+   요청이 어느 워커로 갈지는 알 수 없다. 공유가 필요하면 Redis 로 빼고, 불일치가 무해한 캐시만 프로세스 로컬로 둔다.  
+2. `async def` 안의 블로킹 호출은 워커 전체를 멈춘다  
+   `time.sleep`, `requests.get`, 동기 SDK, 파일 I/O 는 `asyncio.to_thread()` 로 감싸거나 핸들러를 `def` 로 선언한다.  
+3. CPU 작업은 스레드로 해결되지 않는다  
+   이미지 처리나 암호화처럼 CPU 를 오래 쓰는 작업은 `ProcessPoolExecutor` 같은 별도 프로세스로 보낸다.  
+4. 프로세스 로컬 상태는 워커 사이에 공유되지 않는다  
+   `--workers 4` 는 서로 다른 메모리를 가진 프로세스 네 개를 만든다. 공유 상태는 외부 시스템으로 분리한다.  
 
 ### 자동 탐색 규칙(auto-discovered)
 
@@ -209,7 +217,7 @@ main.py  →  app.py  →  api.py  →  app/main.py  →  app/app.py  →  app/a
 > 후자는 `app/` 디렉터리 자체를 경로에 넣고 `main` 만 import 한다.
 > 이 상태에서 `from app.core.config import settings` 같은 **절대 import 를 쓰면 전부 깨진다.**  
 
-Java 는 디렉터리가 곧 패키지지만, Python 은 `__init__.py` 가 있어야 (전통적인 의미의) 패키지다.  
+Python 은 `__init__.py` 가 있어야 (전통적인 의미의) 패키지다.  
 그래서 뒤에 나오는 예제 구조에서는 **모든 디렉터리에 빈 `__init__.py` 를 둔다.**  
 
 ```sh
@@ -1070,9 +1078,7 @@ class ApiRouter(APIRouter):
 ```
 
 이후 각 도메인에서 `APIRouter` 대신 `ApiRouter` 를 사용하면 `exclude_none` 을 라우트마다 반복하지 않아도 된다.  
-`204`, `304` 는 응답 본문이 없어야 하므로 `response_model` 자체를 제거한다.  
-
-> 참고 [요청 body](https://fastapi.tiangolo.com/tutorial/body/), [응답 모델](https://fastapi.tiangolo.com/tutorial/response-model/)    
+`204`, `304` 는 응답 본문이 없어야 하므로 `response_model` 자체를 제거한다.    
 
 위 객체들을 조합하면 설정과 도메인 스키마를 프로젝트 파일로 분리해 사용할 수 있다.  
 
@@ -1530,8 +1536,8 @@ FastAPI 애플리케이션
 응답: 안쪽 → 바깥
 ```
 
-`HTTPException(status_code=500)` 을 직접 발생시키면 등록된 HTTP 예외이므로 `ExceptionMiddleware`가
-처리한다. 반면 `RuntimeError`처럼 처리되지 않은 일반 예외가 스택 밖으로 빠져나오면
+`HTTPException(status_code=500)` 을 직접 발생시키면 등록된 HTTP 예외이므로  `ExceptionMiddleware`가 처리한다.  
+반면 `RuntimeError`처럼 처리되지 않은 일반 예외가 스택 밖으로 빠져나오면
 `ServerErrorMiddleware`가 최종 `500` 응답을 만든다.  
 
 FastAPI/Starlette에 미리 정의된 클래스형 미들웨어는 `app.add_middleware()` 로 등록하여 사용한다.  
